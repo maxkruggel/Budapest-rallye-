@@ -1,14 +1,18 @@
 name: Deploy zu GitHub Pages
 
+# Deploy-Mechanismus: Pages ist auf "Deploy from branch: gh-pages" konfiguriert.
+# Dieser Workflow spiegelt main nach gh-pages; GitHub baut und veroeffentlicht
+# die Site dann automatisch (Workflow "pages build and deployment").
+# Der direkte Actions-Deploy (actions/deploy-pages) scheitert in diesem Repo
+# an den Token-Rechten der Pages-API - der Branch-Weg funktioniert nachweislich.
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
@@ -17,20 +21,13 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Pages konfigurieren (aktiviert Pages, falls noch nicht geschehen)
-        uses: actions/configure-pages@v5
         with:
-          enablement: true
-      - name: Statische App als Artefakt hochladen
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+          fetch-depth: 0
+      - name: main nach gh-pages spiegeln
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git push origin HEAD:gh-pages --force
