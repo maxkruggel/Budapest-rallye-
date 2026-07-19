@@ -12,6 +12,8 @@ const DEFAULT_STATE = () => ({
   sound: true,     // Soundeffekte
   voice: true,     // magische Erzählerstimme
   voiceURI: null,  // vom User gewählte Gerätestimme
+  apiKey: null,    // optional: Anthropic-API-Key für den Magischen Prüfmeister
+  archive: [],     // Halle der Legenden: abgeschlossene Rallyes
   settings: {
     players: ['', '', '', ''],
     mode: 'coop',            // 'coop' | 'versus'
@@ -33,6 +35,8 @@ function loadState() {
         if (s.sound === undefined) s.sound = true;
         if (s.voice === undefined) s.voice = true;
         if (s.voiceURI === undefined) s.voiceURI = null;
+        if (s.apiKey === undefined) s.apiKey = null;
+        if (!Array.isArray(s.archive)) s.archive = [];
         return s;
       }
     }
@@ -95,6 +99,20 @@ async function loadPhoto(id) {
     if (val) return val;
   } catch (e) { /* fällt durch zum Fallback */ }
   return localStorage.getItem('br_photo_' + id) || null;
+}
+
+/* Gezielt Fotos löschen (z. B. beim Löschen eines Archiv-Eintrags) */
+async function deletePhotoList(ids) {
+  if (!ids || !ids.length) return;
+  try {
+    const db = await photoDB();
+    await new Promise((res, rej) => {
+      const tx = db.transaction('photos', 'readwrite');
+      ids.forEach(id => tx.objectStore('photos').delete(id));
+      tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+    });
+  } catch (e) { /* Fallback unten */ }
+  ids.forEach(id => localStorage.removeItem('br_photo_' + id));
 }
 
 async function clearPhotos() {

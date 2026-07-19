@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyAudioIcon();
   spawnFireflies();
   bindStatic();
+  updateArchiveButton();
   startGeo(onGeoUpdate);
   if (S.game && !S.game.finished) {
     showScreen('splash');
@@ -63,12 +64,14 @@ function bindStatic() {
   $('#ov-task .ov-close').onclick = closeTask;
   $('#ov-ar .ar-close').onclick = closeAR;
 
-  $('#btn-again').onclick = async () => {
-    if (!confirm('Neue Rallye starten? Das alte Ergebnis inkl. Fotos wird gelöscht.')) return;
-    await clearPhotos();
+  $('#btn-again').onclick = () => {
+    // Ergebnis + Fotos liegen sicher in der Halle der Legenden
     S.game = null; saveState();
     renderSetup(); showScreen('setup');
   };
+  $('#btn-archive').onclick = () => { renderArchive(); showScreen('archive'); };
+  $('#btn-archive-back').onclick = () => showScreen('splash');
+  $('#btn-final-back').onclick = () => { renderArchive(); showScreen('archive'); };
 
   // 🥚 Verstecktes Easter Egg: 5× auf den Splash-Titel tippen
   let secretTaps = 0;
@@ -118,7 +121,13 @@ async function requestWakeLock() {
   try { wakeLock = await navigator.wakeLock?.request('screen'); } catch (e) { /* optional */ }
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && S.screen === 'game') requestWakeLock();
+  if (document.visibilityState === 'visible') {
+    if (S.screen === 'game') requestWakeLock();
+    // App kommt aus dem Hintergrund: frische Position erzwingen,
+    // Watch neu aufsetzen (iOS legt watchPosition im Hintergrund schlafen)
+    refreshPosition(() => onGeoUpdate());
+    restartGeoWatch(onGeoUpdate);
+  }
 });
 
 /* ---------------- Setup ---------------- */
@@ -449,9 +458,20 @@ function updateScores() {
   $('#hud-progress').textContent = `${done}/${g.taskIds.length}`;
 }
 
+let lastWatchRestart = 0;
+
 function tick() {
   const g = S.game;
   if (!g || g.finished) return;
+
+  // GPS-Watchdog: kein Update seit >60 s → Watch neu aufsetzen + frische Position
+  if (lastPos && Date.now() - lastPos.at > 60000 && Date.now() - lastWatchRestart > 30000) {
+    lastWatchRestart = Date.now();
+    restartGeoWatch(onGeoUpdate);
+    refreshPosition(() => onGeoUpdate());
+  }
+  if ($('#tab-map').classList.contains('active')) updateGpsChip();
+
   if (g.pausedAt) {
     $('#hud-timer').textContent = 'PAUSE';
     $('#hud-timer').classList.remove('lastmins', 'overtime');
@@ -490,6 +510,9 @@ function switchTab(tab) {
       return;
     }
     initMap(S.theme);
+    // GPS-Frische: beim Öffnen der Karte IMMER die aktuelle Position holen
+    refreshPosition(() => { refreshMapLayers(); updateGpsChip(); });
+    updateGpsChip();
     setTimeout(() => {
       map.invalidateSize();
       refreshMapLayers();
@@ -504,6 +527,22 @@ function refreshMapLayers() {
   const sorted = sortedGameTasks();
   renderTaskMarkers(sorted, S.game.completed, openTask, activeQuestId());
   updateRouteLine(sorted.filter(t => !S.game.completed[t.id]));
+}
+
+/* GPS-Alters-Chip auf der Karte: zeigt, wie frisch die Position ist */
+function updateGpsChip() {
+  const chip = $('#gps-chip');
+  if (!chip) return;
+  const age = gpsAgeSec();
+  if (age == null) {
+    chip.hidden = false;
+    chip.textContent = '🛰️ Suche GPS…';
+    chip.classList.add('stale');
+    return;
+  }
+  chip.hidden = false;
+  chip.textContent = age <= 3 ? '🛰️ GPS live' : `🛰️ vor ${age} s`;
+  chip.classList.toggle('stale', age > 30);
 }
 
 /* ---------------- Aufgabenliste ---------------- */
@@ -536,6 +575,7 @@ function renderTaskList() {
           <span class="badge">${CATS[t.cat].icon} ${CATS[t.cat].label}</span>
           ${t.complicated ? '<span class="badge hard">★ knifflig</span>' : ''}
           ${locked ? '<span class="badge lock">🔒 gesperrt</span>' : ''}
+          ${!done && !locked && attemptsLocked(t) ? '<span class="badge lock">⛔ ' + lockCountdown(t) + '</span>' : ''}
           ${i === activeIdx ? '<span class="badge active">▶ aktive Quest</span>' : ''}
         </div>
         <h3>${locked ? 'Agentenmission ' + t.step + '/3: ???' : t.title}</h3>
@@ -604,6 +644,28 @@ function openTask(id) {
   const t = TASKS.find(x => x.id === id);
   const g = S.game;
   const done = g.completed[id];
+
+  // Sperre nach 3 abgelehnten Foto-Versuchen: Countdown-Akte
+  if (!done && attemptsLocked(t)) {
+    SFX.nope();
+    $('#task-badge').innerHTML = `<span class="badge lock">⛔ Prüfmeister-Sperre</span>`;
+    $('#task-title').textContent = t.title;
+    $('#task-place').textContent = '🧙 Der Prüfmeister hat dreimal abgelehnt.';
+    $('#task-desc').textContent = `Diese Quest ist für eine Stunde gesperrt. Neuer Anlauf in ${lockCountdown(t)} – dann gibt es wieder ${MAX_ATTEMPTS} frische Versuche. Der Prüfmeister empfiehlt: erst mal ein Sör.`;
+    $('#task-points').textContent = t.points + ' Punkte';
+    $('#task-gmaps').hidden = true;
+    $('#task-transit').hidden = true;
+    $('#task-actions').innerHTML = '';
+    $('#btn-speak').onclick = () => Narrator.speak('Geduld! Diese Quest ist gesperrt. Kommt in einer Stunde wieder.');
+    $('#ov-task').classList.add('open');
+    return;
+  }
+
+  // Blitz-Bonus: Zeitpunkt des ERSTEN Öffnens merken
+  if (!done && !taskLocked(t)) {
+    g.opened = g.opened || {};
+    if (!g.opened[id]) { g.opened[id] = Date.now(); saveState(); }
+  }
 
   if (taskLocked(t) && !done) {
     SFX.nope();
@@ -701,21 +763,56 @@ function renderTransitPanel(t, dist) {
 
 function buildVerifyUI(t, act) {
   if (t.verify === 'photo') {
+    const a = attemptState(t);
+    const triesLeft = MAX_ATTEMPTS - (a ? a.n : 0);
     act.innerHTML = `
-      <label class="btn primary big">
+      <label class="btn primary big" id="photo-label">
         📸 Beweisfoto aufnehmen
         <input type="file" accept="image/*" capture="environment" hidden>
       </label>
-      <p class="small muted">Das Foto validiert die Aufgabe. Es bleibt nur auf diesem Handy gespeichert.</p>`;
+      <div class="verdict" id="photo-verdict" hidden></div>
+      <p class="small muted">${S.apiKey && t.photoCheck
+        ? '🧙 Der Magische Prüfmeister begutachtet jedes Foto – ' + triesLeft + ' von ' + MAX_ATTEMPTS + ' Versuchen übrig.'
+        : 'Das Foto validiert die Quest. Es bleibt nur auf diesem Handy gespeichert.'}</p>`;
     act.querySelector('input').onchange = async e => {
       const file = e.target.files[0];
       if (!file) return;
+      const label = $('#photo-label');
+      const verdictBox = $('#photo-verdict');
       try {
+        label.classList.add('checking');
+        label.firstChild.textContent = '🧙 Der Prüfmeister begutachtet… ';
         const dataUrl = await shrinkImage(file);
-        const photoId = t.id + '_' + Date.now();
-        await savePhoto(photoId, dataUrl);
-        completeTask(t, { photoId });
-      } catch (err) { alert('Foto konnte nicht verarbeitet werden: ' + err.message); }
+        const verdict = await checkProof(t, dataUrl);
+        if (verdict.pass) {
+          const photoId = t.id + '_' + Date.now();
+          await savePhoto(photoId, dataUrl);
+          completeTask(t, { photoId, verdictReason: verdict.reason });
+        } else {
+          const st = registerFailedAttempt(t, verdict.reason);
+          verdictBox.hidden = false;
+          if (st.lockedUntil) {
+            verdictBox.innerHTML = `<span class="denied-stamp">ABGELEHNT</span>
+              <p>${escapeHtml(verdict.reason)}</p>
+              <p><b>3 Fehlversuche – Quest gesperrt.</b> Neuer Anlauf in <b>${lockCountdown(t)}</b>. Nehmt euch derweil eine andere Quest vor!</p>`;
+            act.querySelector('#photo-label').style.display = 'none';
+            renderTaskList();
+          } else {
+            verdictBox.innerHTML = `<span class="denied-stamp">ABGELEHNT</span>
+              <p>${escapeHtml(verdict.reason)}</p>
+              <p><b>Erneut versuchen</b> – noch ${MAX_ATTEMPTS - st.n} von ${MAX_ATTEMPTS} Versuchen.</p>`;
+            label.firstChild.textContent = '📸 Erneut versuchen ';
+          }
+        }
+      } catch (err) {
+        alert('Foto konnte nicht verarbeitet werden: ' + err.message);
+      } finally {
+        label.classList.remove('checking');
+        if (label.firstChild.textContent.includes('Prüfmeister')) {
+          label.firstChild.textContent = '📸 Beweisfoto aufnehmen ';
+        }
+        e.target.value = '';
+      }
     };
   }
 
@@ -801,6 +898,29 @@ function buildVerifyUI(t, act) {
     const force = $('#ghost-force');
     if (force) force.onclick = () => { if (confirm('Ehrenwort?')) open(); };
   }
+
+  // 💡 Tipp: günstige Stufe vor dem Joker (−5 XP auf die Belohnung)
+  if (t.tip && t.verify !== 'quiz') {
+    const g = S.game;
+    const used = g.tips && g.tips[t.id];
+    const tipRow = document.createElement('div');
+    tipRow.className = 'tip-row';
+    tipRow.innerHTML = used
+      ? `<div class="tip-box">💡 ${escapeHtml(t.tip)}</div>`
+      : `<button class="btn ghost small-btn" id="btn-tip">💡 Tipp anzeigen (−5 XP)</button><div class="tip-box" id="tip-box" hidden></div>`;
+    act.appendChild(tipRow);
+    const btn = tipRow.querySelector('#btn-tip');
+    if (btn) btn.onclick = () => {
+      g.tips = g.tips || {};
+      g.tips[t.id] = true;
+      saveState();
+      btn.hidden = true;
+      const box = tipRow.querySelector('#tip-box');
+      box.hidden = false;
+      box.textContent = '💡 ' + t.tip;
+      Narrator.speak('Ein Tipp vom Prüfmeister: ' + t.tip);
+    };
+  }
 }
 
 function normalize(s) {
@@ -809,22 +929,185 @@ function normalize(s) {
     .replace(/\s+/g, ' ');
 }
 
+/* ---------------- Der Magische Prüfmeister (Foto-Validierung) ---------------- */
+
+const MAX_ATTEMPTS = 3;
+const LOCK_MS = 60 * 60 * 1000;   // 1 Stunde Sperre nach 3 Fehlversuchen
+
+function attemptState(t) {
+  const g = S.game;
+  g.attempts = g.attempts || {};
+  const a = g.attempts[t.id];
+  if (a && a.lockedUntil && Date.now() >= a.lockedUntil) {
+    delete g.attempts[t.id];   // Stunde vorbei → 3 frische Versuche
+    saveState();
+    return null;
+  }
+  return a || null;
+}
+
+function attemptsLocked(t) {
+  const a = attemptState(t);
+  return !!(a && a.lockedUntil && Date.now() < a.lockedUntil);
+}
+
+function lockCountdown(t) {
+  const a = attemptState(t);
+  if (!a || !a.lockedUntil) return '';
+  const s = Math.max(0, Math.floor((a.lockedUntil - Date.now()) / 1000));
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+}
+
+function registerFailedAttempt(t, reason) {
+  const g = S.game;
+  g.attempts = g.attempts || {};
+  const a = g.attempts[t.id] = g.attempts[t.id] || { n: 0 };
+  a.n++;
+  if (a.n >= MAX_ATTEMPTS) a.lockedUntil = Date.now() + LOCK_MS;
+  saveState();
+  SFX.nope();
+  if (navigator.vibrate) navigator.vibrate([100, 60, 100]);
+  if (a.lockedUntil) {
+    Narrator.speak('Dreimal verweigert! Der Prüfmeister braucht eine Stunde Pause von euch. Versucht derweil eine andere Quest.');
+  } else {
+    Narrator.speak(`Abgelehnt! ${reason} Ihr habt noch ${MAX_ATTEMPTS - a.n} ${MAX_ATTEMPTS - a.n === 1 ? 'Versuch' : 'Versuche'}.`);
+  }
+  return a;
+}
+
+/* Stufe 1: lokaler Plausibilitäts-Check (ohne KI) –
+   fängt schwarze, leere oder Winz-Bilder ab. Nacht-tauglich kalibriert. */
+function heuristicPhotoCheck(dataUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.width < 80 || img.height < 80) {
+        resolve({ pass: false, reason: 'Das Bild ist verdächtig winzig – das war kein echtes Beweisfoto.' });
+        return;
+      }
+      const c = document.createElement('canvas');
+      c.width = 48; c.height = 48;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, 48, 48);
+      const d = ctx.getImageData(0, 0, 48, 48).data;
+      let sum = 0;
+      const lum = [];
+      for (let i = 0; i < d.length; i += 4) {
+        const l = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        lum.push(l); sum += l;
+      }
+      const mean = sum / lum.length;
+      const variance = lum.reduce((acc, l) => acc + (l - mean) ** 2, 0) / lum.length;
+      if (mean < 6) resolve({ pass: false, reason: 'Der Prüfmeister sieht: nichts. Objektiv zugehalten? Selbst Budapester Nacht ist heller.' });
+      else if (variance < 25) resolve({ pass: false, reason: 'Ein einfarbiges Bild? Der Prüfmeister ist alt, aber nicht blind.' });
+      else resolve({ pass: true, reason: '' });
+    };
+    img.onerror = () => resolve({ pass: true, reason: '' });
+    img.src = dataUrl;
+  });
+}
+
+/* Stufe 2: KI-Prüfmeister (Claude Vision, optional per API-Key) */
+async function aiPhotoCheck(t, dataUrl) {
+  const b64 = dataUrl.split(',')[1];
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': S.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-8',
+      max_tokens: 300,
+      output_config: {
+        format: {
+          type: 'json_schema',
+          schema: {
+            type: 'object',
+            properties: {
+              pass: { type: 'boolean' },
+              reason: { type: 'string' }
+            },
+            required: ['pass', 'reason'],
+            additionalProperties: false
+          }
+        }
+      },
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } },
+          {
+            type: 'text',
+            text: `Du bist der „Magische Prüfmeister" einer nächtlichen Schnitzeljagd in Budapest. ` +
+              `Quest: „${t.title}". Erwarteter Foto-Beweis: ${t.photoCheck || t.desc} ` +
+              `Prüfe wohlwollend, aber ehrlich: Erfüllt das Foto die Quest plausibel? ` +
+              `Nachtaufnahmen sind dunkel, verwackelt und chaotisch – das ist okay und KEIN Ablehnungsgrund. ` +
+              `Lehne ab, wenn das Motiv klar NICHT zur Quest passt (z. B. eine Steinstatue statt der geforderten Bronzestatue, ` +
+              `ein Zimmer statt eines Platzes, ein völlig anderes Objekt). ` +
+              `Antworte mit pass (true/false) und reason: 1–2 witzige deutsche Sätze im Ton eines mittelalterlichen Prüfmeisters.`
+          }
+        ]
+      }]
+    })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  if (data.stop_reason === 'refusal') throw new Error('refusal');
+  const txt = (data.content || []).find(b => b.type === 'text');
+  return JSON.parse(txt.text);
+}
+
+/* Gesamt-Prüfung: Heuristik → KI (falls Key) → sonst durchwinken */
+async function checkProof(t, dataUrl) {
+  const h = await heuristicPhotoCheck(dataUrl);
+  if (!h.pass) return { ...h, source: 'lokal' };
+  if (S.apiKey && t.photoCheck) {
+    try {
+      const v = await aiPhotoCheck(t, dataUrl);
+      return { pass: !!v.pass, reason: v.reason || '', source: 'ki' };
+    } catch (e) {
+      // Prüfmeister nicht erreichbar → kein Fehlversuch, Foto zählt
+      return { pass: true, reason: 'Der Prüfmeister schlummert (kein Netz) – euer Wort gilt.', source: 'offline' };
+    }
+  }
+  return { pass: true, reason: '', source: 'lokal' };
+}
+
 /* ---------------- Aufgabe abschließen ---------------- */
 
 function completeTask(t, extra) {
   const g = S.game;
-  const points = extra.points != null ? extra.points : t.points;
+  let points = extra.points != null ? extra.points : t.points;
+
+  // 💡 Tipp genutzt → −5 XP (min. 5 bleiben)
+  if (g.tips && g.tips[t.id]) points = Math.max(5, points - 5);
+
+  // ⚡ Blitz-Bonus: schnell gelöst nach dem ersten Öffnen?
+  let blitz = 0;
+  const openedAt = g.opened && g.opened[t.id];
+  if (openedAt) {
+    const limitMin = t.points <= 15 ? 3 : t.points <= 30 ? 5 : 10;
+    if (Date.now() - openedAt <= limitMin * 60000) blitz = 10;
+  }
+  points += blitz;
 
   const finish = team => {
     const rankBefore = rankFor(g.scores[0] + g.scores[1]);
-    g.completed[t.id] = { at: Date.now(), points, team, photoId: extra.photoId || null, answer: extra.answer || null };
+    g.completed[t.id] = {
+      at: Date.now(), points, team, blitz,
+      photoId: extra.photoId || null, answer: extra.answer || null,
+      verdict: extra.verdictReason || null
+    };
     g.scores[team] += points;
     saveState();
     closeTask();
     renderTaskList();
     if (map) refreshMapLayers();
     if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
-    showStampToast(t, points);
+    showStampToast(t, points, blitz);
     SFX.stamp();
     setTimeout(() => SFX.coins(), 250);
     confettiBurst();
@@ -859,9 +1142,9 @@ function completeTask(t, extra) {
   }
 }
 
-function showStampToast(t, points) {
+function showStampToast(t, points, blitz) {
   const el = $('#stamp-toast');
-  el.innerHTML = `<div class="stamp-inner">ENTWERTET<br><b>+${points} Punkte</b><span>${t.title}</span></div>`;
+  el.innerHTML = `<div class="stamp-inner">ENTWERTET<br><b>+${points} XP${blitz ? ' ⚡' : ''}</b><span>${t.title}${blitz ? ' · Blitz-Bonus +' + blitz : ''}</span></div>`;
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2200);
 }
@@ -915,9 +1198,33 @@ function renderCrew() {
         <button class="tbtn a ${S.voice ? 'sel' : ''}" id="tog-voice">${S.voice ? 'an' : 'aus'}</button></label>
       ${renderVoicePicker()}
     </div>`;
+  html += `
+    <div class="card audio-card">
+      <h3>🧙 Magischer Prüfmeister</h3>
+      <p class="small muted">Mit einem Anthropic-API-Key prüft eine KI eure Beweisfotos wirklich inhaltlich
+      (falsches Motiv = abgelehnt, max. 3 Versuche, dann 1 h Sperre). Ohne Key gilt der lokale Basis-Check.
+      Der Key bleibt nur auf diesem Gerät.</p>
+      <div class="voice-row">
+        <input type="password" id="apikey-input" placeholder="sk-ant-…" value="${S.apiKey ? '••••••••' : ''}" autocomplete="off">
+        <button class="btn ghost small-btn" id="apikey-save">${S.apiKey ? 'Ändern' : 'Aktivieren'}</button>
+      </div>
+      <p class="small ${S.apiKey ? '' : 'muted'}" id="apikey-status">${S.apiKey ? '✅ Prüfmeister wacht – Fotos werden von der KI begutachtet.' : 'Prüfmeister schläft – Fotos zählen per Ehrenwort + Basis-Check.'}</p>
+    </div>`;
   html += `<p class="small muted center">Spielstand wird automatisch gespeichert –
     ihr könnt die App jederzeit schließen und weiterspielen.</p>`;
   box.innerHTML = html;
+  $('#apikey-save').onclick = () => {
+    const val = $('#apikey-input').value.trim();
+    if (!val || val.startsWith('••')) {
+      if (S.apiKey && confirm('Prüfmeister deaktivieren (Key löschen)?')) {
+        S.apiKey = null; saveState(); renderCrew();
+      }
+      return;
+    }
+    S.apiKey = val; saveState(); renderCrew();
+    Narrator.speak('Der Magische Prüfmeister ist erwacht. Ab jetzt wird jedes Beweisfoto begutachtet!');
+    SFX.unlock();
+  };
   $('#tog-sound').onclick = () => {
     S.sound = !S.sound; saveState(); applyAudioIcon(); renderCrew();
     if (S.sound) SFX.chime();
@@ -980,7 +1287,22 @@ function finishGame() {
   }
   S.game.finished = true;
   S.game.finishedAt = Date.now();
+
+  // 🏆 Halle der Legenden: komplette Rallye archivieren (inkl. Foto-Referenzen)
+  S.archive = S.archive || [];
+  S.archive.unshift({
+    id: 'ral_' + g.startedAt,
+    date: Date.now(),
+    settings: JSON.parse(JSON.stringify(S.settings)),
+    game: JSON.parse(JSON.stringify(g))
+  });
+  if (S.archive.length > 20) {
+    const old = S.archive.pop();
+    deletePhotoList(Object.values(old.game.completed || {}).map(c => c.photoId).filter(Boolean));
+  }
   saveState();
+  updateArchiveButton();
+
   if (tickInterval) clearInterval(tickInterval);
   showFinal();
   SFX.fanfare();
@@ -988,9 +1310,12 @@ function finishGame() {
   setTimeout(() => confettiBurst(32), 900);
 }
 
-async function showFinal() {
+async function showFinal(entry, fromArchive) {
   showScreen('final');
-  const g = S.game, st = S.settings;
+  const g = entry ? entry.game : S.game;
+  const st = entry ? entry.settings : S.settings;
+  $('#btn-final-back').hidden = !fromArchive;
+  $('#btn-again').hidden = !!fromArchive;
   const total = g.scores[0] + g.scores[1];
   const done = Object.keys(g.completed).length;
   const mins = Math.round(((g.finishedAt || Date.now()) - g.startedAt) / 60000);
@@ -1014,22 +1339,25 @@ async function showFinal() {
   $('#final-headline').textContent = headline;
   $('#final-sub').textContent = sub + ` Euer Rang: ${rank.icon} ${rank.name}.` +
     (pausedMin > 0 ? ` Davon ${pausedMin} min ehrenwerte Barpause. 🍺` : '');
-  Narrator.speak(`${headline.replace(/[^\wäöüÄÖÜß !:.,-]/g, '')} ${sub} Ihr tragt fortan den Rang: ${rank.name}. Die Nacht wird sich an euch erinnern.`);
+  if (!fromArchive) {
+    Narrator.speak(`${headline.replace(/[^\wäöüÄÖÜß !:.,-]/g, '')} ${sub} Ihr tragt fortan den Rang: ${rank.name}. Die Nacht wird sich an euch erinnern.`);
+  }
 
+  const entryTasks = g.taskIds.map(id => TASKS.find(t => t.id === id)).filter(Boolean);
   const list = $('#final-list');
   list.innerHTML = '';
-  gameTasks().forEach(t => {
+  entryTasks.forEach(t => {
     const c = g.completed[t.id];
     list.insertAdjacentHTML('beforeend', `
       <div class="final-row ${c ? 'ok' : 'miss'}">
-        <span>${CATS[t.cat].icon} ${t.title}</span>
+        <span>${CATS[t.cat].icon} ${t.title}${c && c.blitz ? ' ⚡' : ''}</span>
         <b>${c ? '+' + c.points : '–'}</b>
       </div>`);
   });
 
   const gal = $('#final-gallery');
   gal.innerHTML = '';
-  for (const t of gameTasks()) {
+  for (const t of entryTasks) {
     const c = g.completed[t.id];
     if (!c || !c.photoId) continue;
     const url = await loadPhoto(c.photoId);
@@ -1037,6 +1365,54 @@ async function showFinal() {
       `<figure><img src="${url}" alt="${escapeHtml(t.title)}"><figcaption>${escapeHtml(t.title)}</figcaption></figure>`);
   }
   $('#final-gallery-empty').hidden = gal.children.length > 0;
+}
+
+/* ---------------- Halle der Legenden (Archiv) ---------------- */
+
+function updateArchiveButton() {
+  const btn = $('#btn-archive');
+  if (!btn) return;
+  const n = (S.archive || []).length;
+  btn.hidden = n === 0;
+  btn.textContent = `🏆 Halle der Legenden (${n})`;
+}
+
+function renderArchive() {
+  const list = $('#archive-list');
+  list.innerHTML = '';
+  if (!(S.archive || []).length) {
+    list.innerHTML = '<p class="small muted center">Noch keine abgeschlossenen Rallyes. Zieht los und schreibt Geschichte!</p>';
+    return;
+  }
+  S.archive.forEach(entry => {
+    const g = entry.game;
+    const total = g.scores[0] + g.scores[1];
+    const rank = rankFor(total);
+    const d = new Date(entry.date);
+    const done = Object.keys(g.completed || {}).length;
+    const row = document.createElement('div');
+    row.className = 'archive-row';
+    row.innerHTML = `
+      <button class="archive-main" type="button">
+        <span class="archive-icon">${rank.icon}</span>
+        <span class="archive-info">
+          <b>${d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} Uhr</b>
+          <span class="small muted">${entry.settings.mode === 'versus' ? '⚔️ Versus' : '🤝 Koop'} · ${done}/${g.taskIds.length} Quests · ${total} XP · ${rank.name}</span>
+        </span>
+        <span class="archive-go">›</span>
+      </button>
+      <button class="archive-del" type="button" aria-label="Eintrag löschen">🗑️</button>`;
+    row.querySelector('.archive-main').onclick = () => showFinal(entry, true);
+    row.querySelector('.archive-del').onclick = async () => {
+      if (!confirm('Diese Rallye samt Siegerehrungs-Fotos endgültig löschen?')) return;
+      await deletePhotoList(Object.values(entry.game.completed || {}).map(c => c.photoId).filter(Boolean));
+      S.archive = S.archive.filter(e => e.id !== entry.id);
+      saveState();
+      updateArchiveButton();
+      renderArchive();
+    };
+    list.appendChild(row);
+  });
 }
 
 /* ---------------- AR: Zeitfenster ---------------- */

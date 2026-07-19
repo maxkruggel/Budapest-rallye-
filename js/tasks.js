@@ -393,6 +393,93 @@ const TASKS = [
   }
 ];
 
+/* ---------- Tipps (günstige Stufe vor dem Joker, −5 XP) ---------- */
+const TASK_TIPS = {
+  reagan:      'Er „läuft" Richtung Süden – stellt euch neben ihn, gleiche Schrittstellung, und diskutiert mit den Händen.',
+  parliament:  'Serienbild-Modus + im Moment des Auslösens springen. Oder: auf einen Poller stützen und die Stütze hinter dem Körper verstecken.',
+  jozsef:      'Er sitzt auf der Treppenstufe zur Donau, südlich vom Parlament am Ufer. Hut liegt links neben ihm.',
+  princess:    'Sie sitzt auf dem Geländer direkt an der Tramlinie beim Vigadó. Ein Bein angewinkelt, Hände neben den Hüften.',
+  policeman:   'Zrínyi utca, die Fußgängerstraße von der Basilika Richtung Donau – er steht nach ca. 100 m rechts.',
+  eye:         'Selbstauslöser mit 10 s + Handy auf einen Mülleimer legen. Auf „drei" springen ALLE – Übung macht den Blitz-Bonus.',
+  tram2:       'Fahrplan-Trick: Die Tram kommt ca. alle 10–12 min. Stellt euch schon mal in Position und wartet posierend.',
+  panorama:    'Bestes Gegenlicht: direkt am Geländer, Kamera auf Burg-Beleuchtung belichten (auf die Burg tippen), dann rückt ihr ins Bild.',
+  vaci:        'Die großen Modeketten-Fenster nahe Vörösmarty tér sind hell genug für scharfe Fotos.',
+  neon:        'Casino- und Wechselstuben-Schilder leuchten am hellsten. Gesicht nah ans Schild, Kamera gegen das Licht.',
+  turorudi:    'Sucht ein „ABC" oder „Non-Stop"-Schild. Túró Rudi liegt IMMER im Kühlregal, rote Punkte, bei den Joghurts.',
+  paprika:     '„Erős Pista" spricht sich ungefähr „Ärrosch Pischta". Steht meist beim Senf/Ketchup-Regal.',
+  forint:      'Grobe Eselsbrücke: 400 Forint ≈ 1 Euro. 2.500 HUF sind also etwas mehr als 6 Euro.',
+  toast:       'Ihr müsst nicht einkehren – ein Kiosk-Getränk auf einer Donau-Bank zählt voll.',
+  coffee:      'Nachts haben die Cafés an der Váci utca und rund um den Deák tér am längsten offen.',
+  snack:       'Kürtőskalács-Stände am Vörösmarty tér haben oft bis Mitternacht offen. Notfall-Lösung: Pogácsa ausm Non-Stop.',
+  cheers:      'Barpersonal ist der beste Lehrer – die freuen sich. „Ägg-esch-scheh-gedre" – das „scheh" lang ziehen.',
+  spellbuda:   'B = einer steht, einer macht die zwei Bäuche. U = zwei Personen als Schalen. Teamwork!',
+  statue:      'Rund um den Vörösmarty tér und die Promenade steht alle 50 m Bronze. Faltenwurf mit Jacke imitieren!',
+  choir:       'An der Promenade zwischen Vigadó und Kettenbrücke hört euch niemand böse zu – nur die Burg.',
+  columbo:     'Falk Miksa utca, nördlich vom Kossuth tér – ca. 5 min zu Fuß die Straße hoch. Er steht mitten auf dem Gehweg.',
+  zerostone:   'Der Stein steht im Kreisverkehr-Park direkt am Budaer Brückenkopf, eine große „0" aus Stein.',
+  gozsdu:      'Eingang Király utca 13 – die Passage zieht sich bis zur Dob utca durch.',
+  ruinpub:     'Kazinczy utca 14. Kein Dresscode, kein Eintritt. Im Innenhof ist der berühmte Trabant.',
+  'cp-vorosmarty': 'Der Platz mit dem großen weißen Marmordenkmal am nördlichen Ende der Váci utca.',
+  'cp-szechenyi':  'Direkt am Pester Ende der Kettenbrücke, vor dem beleuchteten Jugendstil-Palast.',
+  'cp-fovam':      'Immer die Váci utca Richtung Süden bis zum Ende durchlaufen – die Markthalle ist unübersehbar.',
+  spy1:        'Der Bronze-Reagan „geht" mitten auf dem Gehweg der Südseite des Platzes, Richtung Parlament.',
+  spy3:        'Der Pester Löwe auf der Nordseite der Brücke hat den besten Schatten für konspirative Übergaben.',
+  'egg-squirrel': 'Sucht die kurzen Metallpoller an der Nordseite, Höhe US-Botschaft. Es liegt AUF einem davon. Wirklich winzig!',
+  'egg-kermit':   'Am Geländer der kleinen Parkanlage, Südseite des Platzes. Auf Kniehöhe schauen!',
+  'egg-rubik':    'Treppe zum unteren Kai bei der Akademie nehmen, dann die Kaimauer Richtung Kettenbrücke absuchen – er „tropft" über eine Kante.',
+  'egg-peacock':  'Das große schmiedeeiserne Haupttor in der Mitte der Fassade – die Pfauen sind im Torbogen-Gitter versteckt.',
+  'egg-radar':    'Geheimtipp: Auch an Hauswänden und Fenstersimsen sitzen Minis. Augen auf Bauch- und Kniehöhe!',
+  'secret-oath':  'Wortlaut vergessen? „Wir schwören bei Sisi, beim Paprika und beim heiligen Túró Rudi: Wir kommen wieder!"',
+  'ar-sisi':      'Stellt euch mit Blick zur Kettenbrücke – die Kaiserin erscheint in Richtung der Brücke.',
+  'ar-szechenyi': 'Vor dem Gresham-Palast Richtung Brücke schauen – der Graf inspiziert sein Lebenswerk.',
+  'ar-1956':      'Mit dem Rücken zum Parlament Richtung Platz schauen und langsam drehen.',
+  'ar-tram':      'An den Gleisen Richtung Süden blicken – die Ur-Tram kommt aus Richtung Vigadó.',
+  'ar-literat':   'Vor dem Gerbeaud Richtung Osten drehen – der Literat sitzt an seinem unsichtbaren Marmortisch.'
+};
+
+/* ---------- Prüfkriterien für den Magischen Prüfmeister (KI-Fotoprüfung) ---------- */
+const PHOTO_CHECKS = {
+  reagan:      'Foto zeigt Personen neben der bronzenen, lebensgroßen Ronald-Reagan-Statue (gehender Mann in Anzug) – Nachtaufnahme auf einem Stadtplatz.',
+  parliament:  'Foto zeigt einen Levitations-/Sprung-Trick: Eine Person scheint zu schweben, im Hintergrund das beleuchtete ungarische Parlament (neugotisch, Kuppel) oder dessen Umgebung bei Nacht.',
+  jozsef:      'Foto zeigt Personen neben einer sitzenden Bronzestatue (Attila József) auf Stufen am Wasser.',
+  princess:    'Foto zeigt eine Person, die auf einem Geländer sitzt und die Pose der kleinen Prinzessinnen-Statue (kleine Bronzefigur mit Zipfelkappe) nachahmt, idealerweise ist die Statue zu sehen.',
+  policeman:   'Foto zeigt die dicke Polizisten-Bronzestatue mit rundem Bauch und/oder Personen, die ihre Pose mit improvisiertem Schnurrbart nachstellen.',
+  eye:         'Foto zeigt Personen beim Springen (in der Luft), im Hintergrund ein beleuchtetes Riesenrad bei Nacht.',
+  tram2:       'Foto zeigt eine Gruppe, im Hintergrund eine Straßenbahn (idealerweise gelb).',
+  panorama:    'Nachtfoto: beleuchtete Burg/Palast und/oder Brücke über einem Fluss, davor Personen-Silhouetten.',
+  vaci:        'Foto zeigt Personen, die Posen von Schaufensterpuppen vor/neben einem Schaufenster imitieren.',
+  neon:        'Porträt einer Person, beleuchtet von einem Neon-/Leuchtschild bei Nacht.',
+  turorudi:    'Foto zeigt Personen beim Probieren eines Snacks und/oder eine rot-gepunktete Túró-Rudi-Verpackung.',
+  paprika:     'Foto zeigt ein Paprika-Produkt (z. B. Erős Pista Glas oder Paprikapulver) mit Personen, vermutlich in einem Laden.',
+  forint:      'Foto zeigt eine Wechselkurs-Anzeigetafel einer Wechselstube (Währungscodes wie EUR/USD/HUF mit Zahlen).',
+  toast:       'Foto zeigt Personen beim Anstoßen mit Getränken.',
+  coffee:      'Foto zeigt Personen mit Heißgetränken/Bechern, Stadt bei Nacht.',
+  snack:       'Foto zeigt das Teilen eines Snacks (z. B. Lángos, Baumstriezel, Gebäck) in einer Gruppe.',
+  cheers:      'Foto zeigt die Gruppe mit einer weiteren (fremden) Person zusammen, Stimmung: Sprachunterricht/Prost-Situation.',
+  spellbuda:   'Foto zeigt Personen, die mit ihren Körpern einen Buchstaben formen.',
+  statue:      'Foto zeigt eine Statue UND eine Person, die deren Pose imitiert.',
+  choir:       'Foto zeigt eine singende Gruppe (offene Münder) am Wasser bei Nacht.',
+  columbo:     'Foto zeigt die Columbo-Bronzestatue (Mann im Trenchcoat, kleiner Hund) und Personen, die eine Krimi-Szene nachstellen.',
+  zerostone:   'Foto zeigt das Kilometer-Null-Denkmal (große steinerne 0) mit Personen in Expeditions-Pose.',
+  gozsdu:      'Foto zeigt eine Gruppe mit ernsten Gesichtern in einer belebten, beleuchteten Passage/Barmeile.',
+  ruinpub:     'Foto aus dem Inneren einer Ruinenbar: schräge Deko, alte Möbel, Lichterketten o. ä.',
+  'spy1':      'Foto zeigt Personen in konspirativer Pose (hochgeschlagene Kragen, Geheimgespräch) neben der gehenden Reagan-Bronzestatue.',
+  'spy3':      'Foto zeigt eine Übergabe-Szene zwischen Personen, im Hintergrund/Umfeld eine steinerne Löwenstatue oder Brücke.',
+  'egg-squirrel': 'Nahaufnahme einer winzigen Bronze-Miniatur: liegendes Eichhörnchen (ggf. mit Revolver) auf einem Poller.',
+  'egg-kermit':   'Nahaufnahme einer winzigen grünen/bronzenen Frosch-Miniatur auf einem Geländer, ggf. mit Person, die den Gesichtsausdruck imitiert.',
+  'egg-rubik':    'Nahaufnahme einer kleinen Bronze-Skulptur eines schmelzenden Zauberwürfels an/auf einer Steinmauer.',
+  'egg-radar':    'Nahaufnahme irgendeiner Mini-Bronzefigur oder eines versteckten kleinen Kunstwerks im Stadtraum.',
+  'secret-oath':  'Foto zeigt eine Gruppe am Flussgeländer bei Nacht, Hände auf dem Geländer, feierliche/alberne Schwur-Pose.',
+  sisibridge:  'Foto zeigt Personen in vornehmer/kaiserlicher Pose, im Hintergrund eine weiße Hängebrücke bei Nacht.',
+  parishchurch:'Foto zeigt Personen in Archäologen-Pose bei alten Steinen/Ruinen vor einer Kirche.'
+};
+
+/* Tipps + Prüfkriterien in die Aufgaben mergen */
+TASKS.forEach(t => {
+  if (TASK_TIPS[t.id]) t.tip = TASK_TIPS[t.id];
+  if (PHOTO_CHECKS[t.id]) t.photoCheck = PHOTO_CHECKS[t.id];
+});
+
 /* Kategorie-Metadaten für UI */
 const CATS = {
   history: { label: 'Geschichte', icon: '🏛️' },

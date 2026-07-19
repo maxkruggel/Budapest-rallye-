@@ -36,13 +36,44 @@ function startGeo(onUpdate) {
   geoWatchId = navigator.geolocation.watchPosition(pos => {
     lastPos = {
       lat: pos.coords.latitude, lng: pos.coords.longitude,
-      acc: pos.coords.accuracy, at: pos.timestamp
+      acc: pos.coords.accuracy, at: Date.now()
     };
     updateUserMarker();
     if (onUpdate) onUpdate(lastPos);
   }, err => {
     console.warn('GPS:', err.message);
   }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
+}
+
+/* GPS-Frische: sofort eine AKTUELLE Position erzwingen (maximumAge: 0) –
+   beim Öffnen der Karte, beim Spielstart und wenn die App aus dem
+   Hintergrund zurückkommt. Kein Recovern alter Punkte. */
+function refreshPosition(onUpdate) {
+  if (!('geolocation' in navigator)) return;
+  navigator.geolocation.getCurrentPosition(pos => {
+    lastPos = {
+      lat: pos.coords.latitude, lng: pos.coords.longitude,
+      acc: pos.coords.accuracy, at: Date.now()
+    };
+    updateUserMarker();
+    if (onUpdate) onUpdate(lastPos);
+  }, err => {
+    console.warn('GPS-Refresh:', err.message);
+  }, { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+}
+
+/* watchPosition neu aufsetzen (iOS legt den Watch im Hintergrund schlafen) */
+function restartGeoWatch(onUpdate) {
+  if (!('geolocation' in navigator)) return;
+  if (geoWatchId != null) {
+    try { navigator.geolocation.clearWatch(geoWatchId); } catch (e) {}
+    geoWatchId = null;
+  }
+  startGeo(onUpdate);
+}
+
+function gpsAgeSec() {
+  return lastPos ? Math.round((Date.now() - lastPos.at) / 1000) : null;
 }
 
 function initMap(theme) {

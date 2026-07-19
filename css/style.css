@@ -642,6 +642,55 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
   50% { box-shadow: 0 3px 8px rgba(0,0,0,.5), 0 0 0 10px rgba(255,193,69,.25); }
 }
 
+/* ---------- Prüfmeister, Archiv, Tipps, GPS-Chip ---------- */
+
+.verdict { display: grid; gap: 8px; justify-items: start; }
+.verdict p { font-size: .9rem; line-height: 1.5; }
+.denied-stamp {
+  font-family: var(--font-m); font-weight: 700; font-size: 1.1rem;
+  letter-spacing: .15em; color: var(--paprika);
+  border: 3px solid var(--paprika); border-radius: 8px; padding: 4px 12px;
+  transform: rotate(-6deg); background: var(--paprika-soft);
+  animation: stamptoast-in .3s ease-out;
+}
+@keyframes stamptoast-in { from { transform: rotate(-6deg) scale(1.6); opacity: 0; } }
+#photo-label.checking { opacity: .7; pointer-events: none; animation: pulse 1.2s infinite; }
+
+.tip-row { display: grid; gap: 8px; }
+.tip-box {
+  background: var(--gold-soft); border: 1.5px dashed var(--gold);
+  border-radius: 14px; padding: 12px 14px; font-size: .9rem; line-height: 1.5;
+}
+
+#gps-chip {
+  position: absolute; top: 10px; left: 10px; z-index: 500;
+  font-family: var(--font-m); font-size: .75rem; font-weight: 700;
+  background: var(--surface); border: 1.5px solid var(--ok);
+  color: var(--ok); border-radius: 999px; padding: 5px 11px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.4);
+}
+#gps-chip.stale { border-color: var(--gold); color: var(--gold); animation: pulse 1.5s infinite; }
+
+.archive-row {
+  display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px;
+}
+.archive-main {
+  flex: 1; display: flex; align-items: center; gap: 12px; text-align: left;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px; color: var(--ink);
+  box-shadow: var(--shadow); min-width: 0;
+}
+.archive-main:active { transform: scale(.98); }
+.archive-icon { font-size: 1.7rem; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(255,193,69,.5)); }
+.archive-info { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.archive-info b { font-size: .95rem; }
+.archive-go { color: var(--gold); font-size: 1.3rem; font-weight: 800; }
+.archive-del {
+  width: 46px; border-radius: 14px; background: var(--surface);
+  border: 1px solid var(--line); font-size: 1.05rem; flex-shrink: 0;
+}
+.archive-del:active { border-color: var(--paprika); }
+
 /* ---------- Sör o'clock: Barpause ---------- */
 .overlay.pause {
   background: rgba(6, 8, 22, .9); backdrop-filter: blur(8px);

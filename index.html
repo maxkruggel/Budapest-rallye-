@@ -31,6 +31,7 @@
       <div class="splash-actions">
         <button class="btn primary big" id="btn-new">Neue Rallye starten</button>
         <button class="btn ghost big" id="btn-resume" hidden>▶ Weiterspielen</button>
+        <button class="btn ghost big" id="btn-archive" hidden>🏆 Halle der Legenden</button>
       </div>
       <details class="rules">
         <summary>Wie funktioniert's?</summary>
@@ -124,6 +125,7 @@
       </div>
       <div class="tab" id="tab-map">
         <div id="map"></div>
+        <div id="gps-chip" hidden></div>
       </div>
       <div class="tab" id="tab-crew">
         <div id="crew-box"></div>
@@ -153,6 +155,19 @@
         <p class="small muted" id="final-gallery-empty" hidden>Keine Fotos aufgenommen – nächstes Mal!</p>
       </div>
       <button class="btn primary big" id="btn-again">🔄 Neue Rallye</button>
+      <button class="btn ghost big" id="btn-final-back" hidden>← Zurück zur Halle der Legenden</button>
+    </div>
+  </section>
+
+  <!-- ═══════════ HALLE DER LEGENDEN (Archiv) ═══════════ -->
+  <section class="screen" id="s-archive">
+    <header class="page-head">
+      <button class="btn ghost small-btn" id="btn-archive-back">← Zurück</button>
+      <h2>🏆 Halle der Legenden</h2>
+    </header>
+    <div class="setup-body">
+      <p class="small muted">Alle abgeschlossenen Rallyes mit Siegerehrung und Beweisfotos – für immer gespeichert (bis ihr sie löscht).</p>
+      <div id="archive-list"></div>
     </div>
   </section>
 
