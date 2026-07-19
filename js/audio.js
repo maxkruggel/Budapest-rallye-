@@ -111,47 +111,111 @@ const Narrator = {
   voice: null,
   available: 'speechSynthesis' in window,
 
-  pickVoice() {
-    if (!this.available) return;
-    const all = speechSynthesis.getVoices() || [];
-    const de = all.filter(v => (v.lang || '').toLowerCase().startsWith('de'));
-    this.voice =
-      de.find(v => /anna|petra|helena|katja|vicki|marlene|hedda/i.test(v.name)) ||
-      de[0] || null;
+  /* --- Studio-Stimme: vorproduzierte MP3s (assets/voice/), falls vorhanden --- */
+  clips: null,          // Set der Clip-Keys aus assets/voice/manifest.json, sonst null
+  player: null,
+
+  async loadClips() {
+    try {
+      const res = await fetch('assets/voice/manifest.json', { cache: 'force-cache' });
+      if (res.ok) this.clips = new Set(await res.json());
+    } catch (e) { /* keine Studio-Clips - Geraetestimme uebernimmt */ }
   },
 
-  speak(text, opts = {}) {
-    if (!S.voice || !this.available) return;
+  playClip(key) {
+    if (!this.clips || !this.clips.has(key)) return false;
     try {
-      speechSynthesis.cancel();
+      if (!this.player) this.player = new Audio();
+      this.player.pause();
+      this.player.src = 'assets/voice/' + key + '.mp3';
+      this.player.play().catch(() => {});
+      return true;
+    } catch (e) { return false; }
+  },
+
+  /* --- Geraetestimme: beste verfuegbare deutsche Stimme waehlen --- */
+  germanVoices() {
+    if (!this.available) return [];
+    return (speechSynthesis.getVoices() || [])
+      .filter(v => (v.lang || '').toLowerCase().startsWith('de'));
+  },
+
+  scoreVoice(v) {
+    const s = (v.name + ' ' + (v.voiceURI || '')).toLowerCase();
+    let p = 0;
+    if (s.includes('premium')) p += 40;
+    if (s.includes('enhanced') || s.includes('erweitert')) p += 30;
+    if (s.includes('siri')) p += 25;
+    if (s.includes('natural') || s.includes('neural')) p += 25;
+    if (s.includes('eloquence') || s.includes('compact')) p -= 40;  // die Roboter
+    if (/anna|petra|helena|katja|vicki|marlene|hedda|viktor|markus/.test(s)) p += 5;
+    if (v.localService) p += 3;
+    return p;
+  },
+
+  pickVoice() {
+    const de = this.germanVoices();
+    if (!de.length) { this.voice = null; return; }
+    if (S.voiceURI) {
+      const chosen = de.find(v => v.voiceURI === S.voiceURI);
+      if (chosen) { this.voice = chosen; return; }
+    }
+    this.voice = de.slice().sort((a, b) => this.scoreVoice(b) - this.scoreVoice(a))[0];
+  },
+
+  /* --- Sprechen: MP3 zuerst, sonst Geraetestimme (satzweise = bessere Kadenz) --- */
+  say(key, text, opts = {}) {
+    if (!S.voice) return;
+    this.stop();
+    if (key && this.playClip(key)) return;
+    if (!this.available) return;
+    try {
       const clean = (text || '')
-        .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}⭐ ]/gu, ' ')
-        .replace(/[„“"″]/g, '')
+        .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, ' ')
+        .replace(/[\u201E\u201C"\u2033]/g, '')
         .replace(/\s+/g, ' ').trim();
       if (!clean) return;
       if (!this.voice) this.pickVoice();
-      const u = new SpeechSynthesisUtterance(clean);
-      if (this.voice) u.voice = this.voice;
-      u.lang = 'de-DE';
-      u.rate = opts.rate != null ? opts.rate : 1.02;
-      u.pitch = opts.pitch != null ? opts.pitch : 1.18;  // leicht erhöht = „magisch"
-      u.volume = 1;
-      speechSynthesis.speak(u);
+      const sentences = clean.match(/[^.!?\u2026]+[.!?\u2026]+["']?|[^.!?\u2026]+$/g) || [clean];
+      sentences.forEach(sent => {
+        const u = new SpeechSynthesisUtterance(sent.trim());
+        if (this.voice) u.voice = this.voice;
+        u.lang = 'de-DE';
+        u.rate = opts.rate != null ? opts.rate : 1.0;
+        u.pitch = opts.pitch != null ? opts.pitch : 1.12;
+        u.volume = 1;
+        speechSynthesis.speak(u);   // Queue: Satz fuer Satz = natuerlichere Pausen
+      });
     } catch (e) { /* Stimme ist optional */ }
   },
 
+  speak(text, opts = {}) { this.say(null, text, opts); },
+
   speakQuest(t) {
     const intro = QUEST_INTROS[t.cat] || 'Eine neue Quest erwartet euch.';
-    const where = t.place ? `Euer Ziel: ${t.place}.` : 'Diese Quest könnt ihr überall bestehen.';
-    this.speak(`${intro} ${t.title}. ${where} ${t.desc} Belohnung: ${t.points} Erfahrungspunkte.`);
+    const where = t.place ? `Euer Ziel: ${t.place}.` : 'Diese Quest koennt ihr ueberall bestehen.';
+    this.say('quest_' + t.id,
+      `${intro} ${t.title}. ${where} ${t.desc} Belohnung: ${t.points} Erfahrungspunkte.`);
   },
 
   praise(points) {
-    const p = PRAISE[Math.floor(points * 7 + (points % 3) * 13) % PRAISE.length];
-    this.speak(`${p} ${points} Erfahrungspunkte!`, { pitch: 1.25 });
+    const i = Math.floor(points * 7 + (points % 3) * 13) % PRAISE.length;
+    this.say('praise_' + i, `${PRAISE[i]} ${points} Erfahrungspunkte!`, { pitch: 1.2 });
+  },
+
+  preview(voiceURI) {
+    const v = this.germanVoices().find(x => x.voiceURI === voiceURI);
+    if (!v) return;
+    this.stop();
+    try {
+      const u = new SpeechSynthesisUtterance('Hoert, Abenteurer der Nacht! So klingt eure Erzaehlerstimme.');
+      u.voice = v; u.lang = 'de-DE'; u.pitch = 1.12;
+      speechSynthesis.speak(u);
+    } catch (e) {}
   },
 
   stop() {
+    if (this.player) { try { this.player.pause(); } catch (e) {} }
     if (this.available) { try { speechSynthesis.cancel(); } catch (e) {} }
   }
 };
@@ -160,6 +224,7 @@ if (Narrator.available) {
   speechSynthesis.onvoiceschanged = () => Narrator.pickVoice();
   Narrator.pickVoice();
 }
+Narrator.loadClips();
 
 /* ---------- Ränge (Quest-Level) ---------- */
 

@@ -9,8 +9,9 @@ const DEFAULT_STATE = () => ({
   theme: 'night',
   screen: 'splash',
   secretUnlocked: false,
-  sound: true,   // Soundeffekte
-  voice: true,   // magische Erzählerstimme
+  sound: true,     // Soundeffekte
+  voice: true,     // magische Erzählerstimme
+  voiceURI: null,  // vom User gewählte Gerätestimme
   settings: {
     players: ['', '', '', ''],
     mode: 'coop',            // 'coop' | 'versus'
@@ -31,6 +32,7 @@ function loadState() {
         // Migration: neue Audio-Flags für ältere Spielstände
         if (s.sound === undefined) s.sound = true;
         if (s.voice === undefined) s.voice = true;
+        if (s.voiceURI === undefined) s.voiceURI = null;
         return s;
       }
     }

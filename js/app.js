@@ -52,6 +52,8 @@ function bindStatic() {
   $('#btn-endgame').onclick = () => {
     if (confirm('Rallye jetzt beenden und zur Auswertung?')) finishGame();
   };
+  $('#btn-pause').onclick = pauseGame;
+  $('#btn-resume-game').onclick = resumeGame;
   $('#btn-extend').onclick = () => {
     S.game.endsAt += 15 * 60000; S.game.extraMin += 15;
     $('#time-up-banner').hidden = true; saveState(); tick();
@@ -323,10 +325,78 @@ function enterGame() {
   if (tickInterval) clearInterval(tickInterval);
   tickInterval = setInterval(tick, 1000);
   tick();
+  // App wurde mitten in der Barpause geschlossen? Dann direkt zurück ins Pausen-Overlay.
+  if (S.game.pausedAt) openPauseOverlay();
 }
 
 function gameTasks() {
   return S.game.taskIds.map(id => TASKS.find(t => t.id === id)).filter(Boolean);
+}
+
+/* ---------------- Sör o'clock: Barpause ---------------- */
+
+const PAUSE_QUOTES = [
+  '„Egészségedre!" – aber beim Bier nicht anstoßen, ihr wisst Bescheid.',
+  'Die Sanduhr macht ein Nickerchen. Die Geister warten geduldig.',
+  'Auch Ritter von Belváros brauchen Hopfen.',
+  '„Sör" heißt Bier. Mehr Ungarisch braucht ihr an der Theke nicht.',
+  'Kolodko versteckt derweil keine neuen Mini-Statuen. Versprochen.',
+  'Trinkt aus, Novizen – Budapest schläft nie, aber es wartet auf euch.',
+  'Selbst Graf Széchenyi hat zwischen zwei Brücken mal ein Bier gebraucht.'
+];
+let pauseQuoteTimer = null;
+
+function pauseGame() {
+  const g = S.game;
+  if (!g || g.finished || g.pausedAt) return;
+  g.pausedAt = Date.now();
+  saveState();
+  openPauseOverlay();
+  SFX.gong();
+  Narrator.say('pause_on', 'Sör o clock! Die Sanduhr legt sich schlafen. Lasst es euch schmecken, Abenteurer.');
+}
+
+function resumeGame() {
+  const g = S.game;
+  if (!g || !g.pausedAt) return;
+  const d = Date.now() - g.pausedAt;
+  g.endsAt += d;
+  g.pausedTotal = (g.pausedTotal || 0) + d;
+  g.pausedAt = null;
+  saveState();
+  closePauseOverlay();
+  tick();
+  SFX.chime();
+  Narrator.say('pause_off', 'Die Sanduhr erwacht! Weiter geht die Jagd durch die Nacht.');
+}
+
+function openPauseOverlay() {
+  $('#ov-pause').classList.add('open');
+  rotatePauseQuote();
+  if (pauseQuoteTimer) clearInterval(pauseQuoteTimer);
+  pauseQuoteTimer = setInterval(rotatePauseQuote, 7000);
+  updatePauseClock();
+}
+
+function closePauseOverlay() {
+  $('#ov-pause').classList.remove('open');
+  if (pauseQuoteTimer) { clearInterval(pauseQuoteTimer); pauseQuoteTimer = null; }
+}
+
+function rotatePauseQuote() {
+  const el = $('#pause-quote');
+  const i = (parseInt(el.dataset.i || '-1', 10) + 1) % PAUSE_QUOTES.length;
+  el.dataset.i = i;
+  el.textContent = PAUSE_QUOTES[i];
+}
+
+function updatePauseClock() {
+  const g = S.game;
+  if (!g || !g.pausedAt) return;
+  const s = Math.floor((Date.now() - g.pausedAt) / 1000);
+  const m = Math.floor(s / 60);
+  $('#pause-clock').textContent =
+    String(m).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 }
 
 /* ---------------- HUD & Timer ---------------- */
@@ -353,6 +423,12 @@ function updateScores() {
 function tick() {
   const g = S.game;
   if (!g || g.finished) return;
+  if (g.pausedAt) {
+    $('#hud-timer').textContent = 'PAUSE';
+    $('#hud-timer').classList.remove('lastmins', 'overtime');
+    updatePauseClock();
+    return;
+  }
   const left = g.endsAt - Date.now();
   const el = $('#hud-timer');
   const abs = Math.abs(left);
@@ -746,6 +822,7 @@ function renderCrew() {
       <div class="stat"><b>${g.taskIds.length - done}</b><span>offen</span></div>
       <div class="stat"><b>${elapsed}′</b><span>unterwegs</span></div>
       <div class="stat"><b>${g.jokersLeft}</b><span>Joker übrig</span></div>
+      <div class="stat"><b>🍺 ${Math.round((g.pausedTotal || 0) / 60000)}′</b><span>Barpause</span></div>
     </div>`;
   if (st.mode === 'versus') {
     html += `<div class="crew-teams">
@@ -768,7 +845,7 @@ function renderCrew() {
         <button class="tbtn a ${S.sound ? 'sel' : ''}" id="tog-sound">${S.sound ? 'an' : 'aus'}</button></label>
       <label class="toggle-row"><span>🔮 Magische Erzählerstimme</span>
         <button class="tbtn a ${S.voice ? 'sel' : ''}" id="tog-voice">${S.voice ? 'an' : 'aus'}</button></label>
-      ${Narrator.available ? '' : '<p class="small muted">Dieses Gerät stellt leider keine Vorlesestimme bereit.</p>'}
+      ${renderVoicePicker()}
     </div>`;
   html += `<p class="small muted center">Spielstand wird automatisch gespeichert –
     ihr könnt die App jederzeit schließen und weiterspielen.</p>`;
@@ -782,11 +859,57 @@ function renderCrew() {
     if (S.voice) Narrator.speak('Die Stimme der Nacht ist erwacht.');
     else Narrator.stop();
   };
+  const sel = $('#voice-select');
+  if (sel) {
+    sel.onchange = () => {
+      S.voiceURI = sel.value || null;
+      saveState();
+      Narrator.pickVoice();
+      Narrator.preview(Narrator.voice ? Narrator.voice.voiceURI : null);
+    };
+  }
+  const prev = $('#voice-preview');
+  if (prev) prev.onclick = () => {
+    Narrator.pickVoice();
+    if (Narrator.voice) Narrator.preview(Narrator.voice.voiceURI);
+  };
+}
+
+function renderVoicePicker() {
+  if (!Narrator.available) {
+    return '<p class="small muted">Dieses Gerät stellt leider keine Vorlesestimme bereit.</p>';
+  }
+  const voices = Narrator.germanVoices();
+  if (!voices.length) {
+    return '<p class="small muted">Keine deutsche Stimme gefunden – die Stimmen laden manchmal erst nach dem ersten Tippen.</p>';
+  }
+  Narrator.pickVoice();
+  const current = S.voiceURI || (Narrator.voice ? Narrator.voice.voiceURI : '');
+  const sorted = voices.slice().sort((a, b) => Narrator.scoreVoice(b) - Narrator.scoreVoice(a));
+  const opts = sorted.map(v => {
+    const nice = Narrator.scoreVoice(v) >= 25 ? ' ✨' : '';
+    return `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === current ? 'selected' : ''}>${escapeHtml(v.name)}${nice}</option>`;
+  }).join('');
+  return `
+    <div class="voice-picker">
+      <label class="small muted" for="voice-select">Stimme wählen (✨ = beste Qualität auf diesem Gerät)</label>
+      <div class="voice-row">
+        <select id="voice-select">${opts}</select>
+        <button class="btn ghost small-btn" id="voice-preview">▶ Hörprobe</button>
+      </div>
+      <p class="small muted">📱 iPhone-Tipp: Unter <b>Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch</b> könnt ihr gratis eine „Premium"-Stimme laden – sie taucht danach hier in der Liste auf und klingt WESENTLICH magischer.</p>
+    </div>`;
 }
 
 /* ---------------- Finale ---------------- */
 
 function finishGame() {
+  const g = S.game;
+  if (g.pausedAt) {   // Beenden mitten in der Barpause: Pause sauber abschließen
+    g.pausedTotal = (g.pausedTotal || 0) + (Date.now() - g.pausedAt);
+    g.pausedAt = null;
+    closePauseOverlay();
+  }
   S.game.finished = true;
   S.game.finishedAt = Date.now();
   saveState();
@@ -819,8 +942,10 @@ async function showFinal() {
     sub = `${total} Punkte, ${done} von ${g.taskIds.length} Aufgaben in ${mins} Minuten.`;
   }
   const rank = rankFor(total);
+  const pausedMin = Math.round((g.pausedTotal || 0) / 60000);
   $('#final-headline').textContent = headline;
-  $('#final-sub').textContent = sub + ` Euer Rang: ${rank.icon} ${rank.name}.`;
+  $('#final-sub').textContent = sub + ` Euer Rang: ${rank.icon} ${rank.name}.` +
+    (pausedMin > 0 ? ` Davon ${pausedMin} min ehrenwerte Barpause. 🍺` : '');
   Narrator.speak(`${headline.replace(/[^\wäöüÄÖÜß !:.,-]/g, '')} ${sub} Ihr tragt fortan den Rang: ${rank.name}. Die Nacht wird sich an euch erinnern.`);
 
   const list = $('#final-list');

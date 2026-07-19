@@ -101,6 +101,7 @@
           <span class="score-chip a">🏮 <b id="scoreA">0</b></span>
           <span class="score-chip b">🌶️ <b id="scoreB">0</b></span>
         </span>
+        <button class="theme-btn pause-btn" id="btn-pause" aria-label="Barpause – Sör o'clock">🍺</button>
         <button class="theme-btn" id="btn-audio" aria-label="Ton an/aus"><span id="audio-icon">🔊</span></button>
         <button class="theme-btn" id="btn-theme" aria-label="Tag/Nacht wechseln"><span class="theme-icon">☀️</span></button>
         <button class="theme-btn" id="btn-endgame" aria-label="Rallye beenden">🏁</button>
@@ -204,6 +205,26 @@
       </div>
     </div>
     <canvas id="ar-canvas" hidden></canvas>
+  </div>
+
+  <!-- ═══════════ OVERLAY: SÖR O'CLOCK (Barpause) ═══════════ -->
+  <div class="overlay pause" id="ov-pause">
+    <div class="pause-inner">
+      <div class="beer" aria-hidden="true">
+        <div class="beer-foam"><span></span><span></span><span></span></div>
+        <div class="beer-glass">
+          <span class="bubble b1"></span><span class="bubble b2"></span>
+          <span class="bubble b3"></span><span class="bubble b4"></span>
+          <span class="bubble b5"></span>
+        </div>
+        <div class="beer-handle"></div>
+      </div>
+      <h1 class="pause-title">SÖR O'CLOCK!</h1>
+      <p class="pause-sub">Die Rallye ist eingefroren. Die Barpause läuft –<br>die Sanduhr wartet, so lange ihr wollt.</p>
+      <div class="pause-clock" id="pause-clock">00:00</div>
+      <p class="pause-quote" id="pause-quote"></p>
+      <button class="btn primary big" id="btn-resume-game">▶ Weiter geht's!</button>
+    </div>
   </div>
 
   <!-- Stempel-Toast + Konfetti -->
