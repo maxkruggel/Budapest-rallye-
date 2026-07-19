@@ -1,10 +1,15 @@
 /* =========================================================
    BUDAPEST NACHT-RALLYE – Aufgaben-Datenbank
    Bezirk V (Belváros) + Ausflüge, alles kostenlos & nachts machbar.
-   verify: 'photo' | 'quiz' | 'gps' | 'ghost'
+   verify: 'photo' | 'quiz' | 'gps' | 'ghost' | 'video'
    free:true  => ortsunabhängig (kein Marker, überall lösbar)
    minMin     => erst ab dieser Spieldauer (Minuten) im Deck
    complicated:true => Bonus-Flag, gibt Extra-Punkte-Badge
+   time: 'day' | 'night'  => nur im passenden Spielmodus im Deck;
+     bei „Day n Night" zeitgesteuert freigeschaltet:
+     night + fromHour (Std., Default 17) => erst ab dieser Uhrzeit
+     day + openHours [von, bis] (Default [8,18]) => nur in diesem Fenster
+   video:true => Foto-Quest akzeptiert alternativ einen Video-Beweis
    ========================================================= */
 
 const RALLY_CENTER = { lat: 47.4979, lng: 19.0546 }; // Deák Ferenc tér – Fallback-Start
@@ -142,18 +147,19 @@ const TASKS = [
   },
   {
     id: 'panorama', cat: 'foto', title: 'Postkarte mit Silhouetten',
-    place: 'Donaukorzó',
+    place: 'Donaukorzó', time: 'night', fromHour: 18,
     lat: 47.4950, lng: 19.0487, points: 25, verify: 'photo',
     desc: 'Von der Promenade seht ihr die beleuchtete Burg und die Brücken. Baut die perfekte Nacht-Postkarte: Burg UND eine Brücke im Bild, davor eure vier Silhouetten als Scherenschnitt (Gegenlicht, keine Blitze!). Ordentliche Posen – ihr werdet gedruckt.'
   },
   {
     id: 'vaci', cat: 'foto', title: 'Schaufensterpuppen der Váci utca',
-    place: 'Váci utca',
+    place: 'Váci utca', time: 'night', fromHour: 18,
     lat: 47.4945, lng: 19.0512, points: 15, verify: 'photo',
     desc: 'Die Váci utca ist nachts leer und die Schaufenster hell. Sucht das schrägste Schaufenster und imitiert als Gruppe exakt die Posen der Schaufensterpuppen davor. Einer fotografiert so, dass man Puppen UND Kopien sieht.'
   },
   {
     id: 'neon', cat: 'foto', title: 'Neon-Porträt', free: true,
+    time: 'night', fromHour: 19,
     points: 20, verify: 'photo',
     desc: 'Findet das schrillste Neon- oder Leuchtschild in eurer Nähe und macht ein Porträt von einem von euch, das NUR vom Schild beleuchtet wird. Kein Blitz, keine Handylampe. Kunst!'
   },
@@ -206,6 +212,7 @@ const TASKS = [
   /* ---------- 🎭 GRUPPEN- & FUN-AUFGABEN ---------- */
   {
     id: 'cheers', cat: 'fun', title: 'Egészségedre!', free: true, complicated: true,
+    video: true,
     points: 35, verify: 'photo',
     desc: 'Das gefürchtetste Wort Ungarns: „Egészségedre!" (Prost / Gesundheit; ungefähr: Ägg-esch-ehh-gedre). Findet einen local aussehenden Menschen, der es euch beibringt, und sprecht es im Chor, bis euer Lehrer zufrieden nickt. Beweisfoto mit Lehrer (vorher freundlich fragen!).'
   },
@@ -221,8 +228,9 @@ const TASKS = [
   },
   {
     id: 'choir', cat: 'fun', title: 'Mitternachtschor an der Donau', free: true,
+    time: 'night', fromHour: 18, video: true,
     points: 25, verify: 'photo',
-    desc: 'Stellt euch ans Donauufer und singt 30 Sekunden lang gemeinsam ein Lied eurer Wahl – laut genug, dass die Burg drüben es hören könnte. Beweisfoto: mitten im Refrain, Münder weit offen. Applaus von Fremden = Ehrenrunde.'
+    desc: 'Stellt euch ans Donauufer und singt 30 Sekunden lang gemeinsam ein Lied eurer Wahl – laut genug, dass die Burg drüben es hören könnte. Beweis: Foto mitten im Refrain (Münder weit offen) oder gleich ein Video eures Auftritts. Applaus von Fremden = Ehrenrunde.'
   },
   {
     id: 'columbo', cat: 'fun', title: 'Übrigens … noch eine Frage', minMin: 90,
@@ -238,6 +246,7 @@ const TASKS = [
   },
   {
     id: 'gozsdu', cat: 'foto', title: 'Ausflug: Gozsdu-Passage', minMin: 150,
+    time: 'night', fromHour: 17,
     place: 'Gozsdu Udvar, Bezirk VII',
     lat: 47.4987, lng: 19.0587, points: 20, verify: 'photo',
     desc: 'Kurzer Grenzübertritt ins Jüdische Viertel: Die Gozsdu-Passage ist eine 200 Meter lange Schlucht aus Bars, Lichterketten und Lärm. Aufgabe: ein Gruppenfoto MITTEN im Getümmel, auf dem alle vier ernst wie ein Beerdigungsinstitut schauen. Umgebung: Party. Ihr: Steuerprüfung.'
@@ -256,9 +265,72 @@ const TASKS = [
   },
   {
     id: 'ruinpub', cat: 'pause', title: 'Ausflug: Ruinenbar-Pause', minMin: 150, pause: true,
+    time: 'night', fromHour: 16,
     place: 'Szimpla Kert, Kazinczy utca',
     lat: 47.4972, lng: 19.0631, points: 25, verify: 'photo',
     desc: 'Die Mutter aller Ruinenbars – kein Eintritt, einfach reingehen und staunen: ein verfallenes Haus voller Trabant-Hälften, Badewannen-Sofas und Glühbirnen-Wäldern. Ein Getränk, dann Beweisfoto im absurdesten Winkel, den ihr findet.'
+  },
+
+  /* ---------- ☀️ TAG-AUFGABEN (Daygame / Day n Night) ---------- */
+  {
+    id: 'day-markthalle', cat: 'kiosk', title: 'Bauch der Stadt: Große Markthalle',
+    time: 'day', openHours: [6, 18],
+    place: 'Große Markthalle, Fővám tér (Mo–Sa)',
+    lat: 47.4871, lng: 19.0587, points: 25, verify: 'photo',
+    desc: 'Tagsüber ist die Große Markthalle offen – drei Etagen unter dem bunten Zsolnay-Keramikdach, Paprikagirlanden bis zur Decke, oben brutzelt Lángos. Eintritt: null Forint. Aufgabe: Findet das absurdeste Souvenir der Halle (Paprika-Boxershorts? Salami-Plüschtier?) und macht ein Beweisfoto damit – kaufen müsst ihr nichts.'
+  },
+  {
+    id: 'day-bees', cat: 'history', title: 'Die Bienen des Sparkassen-Palasts',
+    time: 'day', openHours: [7, 19],
+    place: 'Ehem. Postsparkasse, Hold utca 4',
+    lat: 47.5030, lng: 19.0508, points: 30, verify: 'quiz',
+    desc: 'Hinter dem Freiheitsplatz steht Ödön Lechners Jugendstil-Meisterwerk von 1901: die ehemalige Postsparkasse mit einem Märchendach aus grün-gelber Zsolnay-Keramik. Nur bei Tageslicht erkennt man die Details – schaut ganz nach oben an die Dachkanten und Giebel!',
+    quiz: {
+      q: 'Welche Tiere klettern an den Giebeln zum Dach hinauf?',
+      accept: ['bienen', 'biene', 'bees'],
+      hint: 'Sie sammeln, was man zur Sparkasse trägt – fleißig zum Bienenstock.',
+      reveal: 'Bienen! Sie krabbeln zu keramischen Bienenstöcken hinauf – Lechners Symbol fürs fleißige Sparen.'
+    }
+  },
+  {
+    id: 'day-parisi', cat: 'foto', title: 'Kaleidoskop: Párisi Udvar',
+    time: 'day', openHours: [8, 20],
+    place: 'Párisi Udvar, Ferenciek tere',
+    lat: 47.4931, lng: 19.0546, points: 20, verify: 'photo',
+    desc: 'Die Párisi Udvar ist Budapests prunkvollste Passage – ein Glasdom aus 1913, halb maurisch, halb gotisch, komplett größenwahnsinnig. Tagsüber darf man frei hinein (heute Hotel-Lobby, freundlich gucken kostet nichts). Aufgabe: Legt euch in die Mitte auf den Rücken und fotografiert das Kuppeldach so, dass es wie ein Kaleidoskop aussieht.'
+  },
+  {
+    id: 'day-foldalatti', cat: 'history', title: 'Die Ur-U-Bahn',
+    time: 'day', openHours: [6, 22],
+    place: 'M1-Station Vörösmarty tér (Zugang)',
+    lat: 47.4962, lng: 19.0508, points: 25, verify: 'quiz',
+    desc: 'Unter euren Füßen fährt die „Földalatti" – die älteste U-Bahn Kontinentaleuropas, gebaut für die Millenniumsfeier Ungarns. Die gusseisernen Jugendstil-Eingänge mit den gelben Schildern stehen unter UNESCO-Schutz. Sucht am Eingang oder auf den Schildern nach der Jahreszahl der Eröffnung.',
+    quiz: {
+      q: 'In welchem Jahr eröffnete die Földalatti?',
+      accept: ['1896'],
+      hint: '1.000 Jahre nach der ungarischen Landnahme von 896.',
+      reveal: '1896 – pünktlich zur Millenniumsfeier, noch vor Paris und Berlin.'
+    }
+  },
+  {
+    id: 'day-rose', cat: 'kiosk', title: 'Die essbare Rose',
+    time: 'day', openHours: [10, 21],
+    place: 'Gelarto Rosa, Szent István tér',
+    lat: 47.5004, lng: 19.0536, points: 20, verify: 'photo',
+    desc: 'Direkt an der Basilika formt Gelarto Rosa Eiskugeln zu Rosenblüten – Blatt für Blatt mit dem Spatel. Eine Rose für die Gruppe reicht. Beweisfoto: die Eisrose im Vordergrund, dahinter eure allervornehmsten „Oh, wie reizend!"-Gesichter, Basilika im Hintergrund gibt Stilpunkte.'
+  },
+  {
+    id: 'day-shadow', cat: 'foto', title: 'Schatten-Theater', free: true, complicated: true,
+    time: 'day', openHours: [9, 17],
+    points: 30, verify: 'photo',
+    desc: 'Nur mit Sonne lösbar: Stellt euch so auf, dass eure vier Schatten zusammen ein TIER formen (Elefant, Vogel, Krokodil – Rüssel und Flügel aus Armen bauen). Fotografiert NUR die Schatten auf dem Pflaster. Ein Passant muss das Tier erraten können.'
+  },
+
+  /* ---------- 🎥 VIDEO-QUEST ---------- */
+  {
+    id: 'video-spot', cat: 'fun', title: 'Der Budapest-Werbespot', free: true, complicated: true,
+    points: 35, verify: 'video',
+    desc: 'Dreht einen 30-Sekunden-Werbespot für Budapest – so übertrieben wie ein Teleshopping-Kanal. Regeln: Jede Person ist mindestens einmal im Bild, mindestens ein ungarisches Wort fällt („Egészségedre!" zählt), und der Spot endet mit einem gemeinsamen Slogan in die Kamera. Der Beweis ist das Video selbst.'
   },
 
   /* ---------- 🕵️ AGENTENMISSION (Ketten-Aufgaben) ---------- */
@@ -434,7 +506,14 @@ const TASK_TIPS = {
   'ar-szechenyi': 'Vor dem Gresham-Palast Richtung Brücke schauen – der Graf inspiziert sein Lebenswerk.',
   'ar-1956':      'Mit dem Rücken zum Parlament Richtung Platz schauen und langsam drehen.',
   'ar-tram':      'An den Gleisen Richtung Süden blicken – die Ur-Tram kommt aus Richtung Vigadó.',
-  'ar-literat':   'Vor dem Gerbeaud Richtung Osten drehen – der Literat sitzt an seinem unsichtbaren Marmortisch.'
+  'ar-literat':   'Vor dem Gerbeaud Richtung Osten drehen – der Literat sitzt an seinem unsichtbaren Marmortisch.',
+  'day-markthalle': 'Souvenir-Stände sind auf der Galerie im 1. Stock – die Rolltreppe hoch und einmal die Runde machen.',
+  'day-bees':     'Stellt euch auf die gegenüberliegende Straßenseite der Hold utca und zoomt ans Dach – die Bienen sitzen an den geschwungenen Giebelkanten.',
+  'day-parisi':   'Haupteingang am Ferenciek tere. Mitte der Passage, Kamera senkrecht nach oben, Weitwinkel an.',
+  'day-foldalatti': 'Die Jahreszahl steht auf den historischen Emailschildern an den gelben Eingangshäuschen.',
+  'day-rose':     'Der Laden liegt an der linken Seite des Basilika-Vorplatzes. Die Rose formt das Personal – ihr müsst nur nett gucken.',
+  'day-shadow':   'Tiefe Nachmittagssonne macht die längsten Schatten. Elefant geht am leichtesten: ein Arm = Rüssel.',
+  'video-spot':   'Hochformat, eine Person filmt und dreht sich langsam. Slogan-Klassiker: „Budapest – kein Eintritt, keine Gnade!"'
 };
 
 /* ---------- Prüfkriterien für den Magischen Prüfmeister (KI-Fotoprüfung) ---------- */
@@ -471,7 +550,11 @@ const PHOTO_CHECKS = {
   'egg-radar':    'Nahaufnahme irgendeiner Mini-Bronzefigur oder eines versteckten kleinen Kunstwerks im Stadtraum.',
   'secret-oath':  'Foto zeigt eine Gruppe am Flussgeländer bei Nacht, Hände auf dem Geländer, feierliche/alberne Schwur-Pose.',
   sisibridge:  'Foto zeigt Personen in vornehmer/kaiserlicher Pose, im Hintergrund eine weiße Hängebrücke bei Nacht.',
-  parishchurch:'Foto zeigt Personen in Archäologen-Pose bei alten Steinen/Ruinen vor einer Kirche.'
+  parishchurch:'Foto zeigt Personen in Archäologen-Pose bei alten Steinen/Ruinen vor einer Kirche.',
+  'day-markthalle': 'Foto zeigt ein kurioses Souvenir/Produkt in einer Markthalle (Stände, Paprika, Marktatmosphäre).',
+  'day-parisi': 'Foto zeigt eine prunkvolle Glas-/Kuppeldecke einer historischen Passage von unten fotografiert.',
+  'day-rose': 'Foto zeigt ein Eis in Rosenform (Eiskugel als Blütenblätter), ggf. mit Personen.',
+  'day-shadow': 'Foto zeigt Schatten von Personen auf dem Boden, die zusammen eine Figur/ein Tier formen.'
 };
 
 /* Tipps + Prüfkriterien in die Aufgaben mergen */

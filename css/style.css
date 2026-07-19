@@ -482,13 +482,35 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
   transform: translate(-50%, -50%);
   height: min(58vh, 480px); width: auto; max-width: 88vw; object-fit: contain;
   opacity: 0; pointer-events: auto; touch-action: none;
-  filter: drop-shadow(0 0 24px rgba(255, 193, 69, .8)) drop-shadow(0 0 60px rgba(255, 193, 69, .35));
+  filter: drop-shadow(0 0 18px rgba(255, 210, 120, .65)) drop-shadow(0 0 60px rgba(255, 193, 69, .3)) blur(.2px);
   transition: opacity 1.2s ease;
 }
-#ar-ghost.appear { opacity: .88; animation: ghostfloat 4s ease-in-out infinite; }
+/* Hyper-real: Schweben + unruhiges Kerzenlicht-Flackern + Atmen */
+#ar-ghost.appear {
+  opacity: .9;
+  animation: ghostfloat 5s ease-in-out infinite,
+             ghostflicker 2.7s steps(1) infinite,
+             ghostbreathe 6.5s ease-in-out infinite;
+}
 @keyframes ghostfloat {
-  0%, 100% { transform: translate(-50%, -50%); }
-  50% { transform: translate(-50%, -53%); }
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -14px; }
+}
+@keyframes ghostflicker {
+  0%   { opacity: .9; }
+  7%   { opacity: .78; }
+  9%   { opacity: .92; }
+  23%  { opacity: .86; }
+  36%  { opacity: .94; }
+  41%  { opacity: .8; }
+  44%  { opacity: .9; }
+  67%  { opacity: .84; }
+  71%  { opacity: .95; }
+  86%  { opacity: .88; }
+}
+@keyframes ghostbreathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.025); }
 }
 .ar-close {
   position: absolute; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 5;
@@ -768,6 +790,94 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
   background: var(--surface-2); border: 1.5px solid var(--line);
   border-radius: 12px; padding: 9px 12px; min-width: 0;
 }
+
+/* ---------- Welle 10: Tag/Nacht-Quests, Stimmlage, Video, Hyper-AR ---------- */
+
+/* Tag-Quests leuchten hell, Nacht-Quests liegen im Dunkel – in jedem Theme */
+.ticket.time-day {
+  background: linear-gradient(120deg, #fff7e2, #ffedc2);
+  border-color: #e8c26a; color: #33280a;
+}
+.ticket.time-day .ticket-body h3 { color: #33280a; }
+.ticket.time-day .ticket-meta, .ticket.time-day .ticket-meta .place { color: #8a713d; }
+.ticket.time-day .ticket-side { background: rgba(217, 155, 23, .18); border-right-color: #e0c07a; }
+.ticket.time-day .ticket-pts { border-left-color: #e0c07a; }
+.ticket.time-day .ticket-pts .pts { color: #a86f00; }
+.ticket.time-day .badge { background: rgba(255,255,255,.65); border-color: #dabb6e; color: #6b5313; }
+.ticket.time-night {
+  background: linear-gradient(120deg, #0b0e24, #151936);
+  border-color: #3d437c; color: #e8ecff;
+}
+.ticket.time-night .ticket-side { background: rgba(80, 90, 190, .18); }
+.ticket.time-night .badge { background: rgba(10, 12, 31, .8); border-color: #3d437c; color: #aeb6e8; }
+.badge.tday { background: #ffefc7; border-color: #d99b17; color: #7a5500; }
+.badge.tnight { background: #171b3a; border-color: #5b63b8; color: #aeb6e8; }
+
+/* Stimmlage im Crew-Tab */
+.voice-style { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 6px; display: grid; gap: 8px; }
+.voice-style .chip small { text-transform: none; }
+.voice-picker .btn { justify-self: start; }
+
+/* Video-Beweis */
+video.proof-thumb { width: 100%; border-radius: 14px; border: 1px solid var(--line); background: #000; }
+.gallery video { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); background: #000; }
+
+/* ---------- Hyper-AR: Atmosphäre über dem Kamerabild ---------- */
+
+/* Feines animiertes Filmkorn (SVG-Turbulenz als Data-URI) */
+.ar-grain {
+  position: absolute; inset: -60px; pointer-events: none; opacity: .16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grainshift .45s steps(4) infinite;
+  mix-blend-mode: overlay;
+}
+@keyframes grainshift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-24px, 16px); }
+  50% { transform: translate(18px, -22px); }
+  75% { transform: translate(-12px, -14px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Goldene Staubpartikel, die im „Zeitfenster"-Licht schweben */
+.ar-dustfield { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.ar-dust {
+  position: absolute; width: 4px; height: 4px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,225,160,.95), rgba(255,193,69,0) 70%);
+  opacity: 0; animation: dustdrift 9s linear infinite;
+}
+.ar-dust:nth-child(1) { left: 22%; top: 78%; animation-delay: 0s; }
+.ar-dust:nth-child(2) { left: 38%; top: 85%; animation-delay: 1.2s; width: 3px; height: 3px; }
+.ar-dust:nth-child(3) { left: 52%; top: 80%; animation-delay: 2.4s; }
+.ar-dust:nth-child(4) { left: 64%; top: 88%; animation-delay: 3.1s; width: 6px; height: 6px; }
+.ar-dust:nth-child(5) { left: 74%; top: 76%; animation-delay: 4.3s; width: 3px; height: 3px; }
+.ar-dust:nth-child(6) { left: 30%; top: 90%; animation-delay: 5.2s; }
+.ar-dust:nth-child(7) { left: 46%; top: 92%; animation-delay: 6.4s; width: 5px; height: 5px; }
+.ar-dust:nth-child(8) { left: 58%; top: 82%; animation-delay: 7.1s; width: 3px; height: 3px; }
+.ar-dust:nth-child(9) { left: 70%; top: 94%; animation-delay: 7.9s; }
+@keyframes dustdrift {
+  0% { transform: translate(0, 0); opacity: 0; }
+  12% { opacity: .85; }
+  55% { opacity: .5; }
+  100% { transform: translate(26px, -58vh); opacity: 0; }
+}
+
+/* Weiche Lichtstrahlen aus dem Zeitfenster */
+.ar-rays {
+  position: absolute; left: 50%; top: 42%; width: 130vw; height: 130vw;
+  transform: translate(-50%, -50%);
+  pointer-events: none; opacity: .0;
+  background: conic-gradient(from 200deg at 50% 50%,
+    transparent 0deg, rgba(255, 205, 110, .10) 8deg, transparent 18deg,
+    transparent 40deg, rgba(255, 205, 110, .07) 50deg, transparent 62deg,
+    transparent 120deg, rgba(255, 205, 110, .09) 132deg, transparent 145deg,
+    transparent 240deg, rgba(255, 205, 110, .08) 252deg, transparent 266deg,
+    transparent 360deg);
+  animation: raysturn 26s linear infinite, raysfade 8s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+@keyframes raysturn { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes raysfade { 0%, 100% { opacity: .35; } 50% { opacity: .75; } }
 
 /* ---------- A11y & Motion ---------- */
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }

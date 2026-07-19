@@ -12,13 +12,15 @@ const DEFAULT_STATE = () => ({
   sound: true,     // Soundeffekte
   voice: true,     // magische Erzählerstimme
   voiceURI: null,  // vom User gewählte Gerätestimme
+  voiceStyle: 'wizard',  // Stimmlage: 'wizard' (Dumbledore) | 'fee' | 'neutral'
   apiKey: null,    // optional: Anthropic-API-Key für den Magischen Prüfmeister
   archive: [],     // Halle der Legenden: abgeschlossene Rallyes
   settings: {
     players: ['', '', '', ''],
     mode: 'coop',            // 'coop' | 'versus'
     teams: [[], []],         // Spieler-Indizes bei versus
-    durationMin: 120
+    durationMin: 120,
+    gamemode: 'night'        // 'day' | 'night' | 'daynight'
   },
   game: null                 // siehe newGame() in app.js
 });
@@ -35,8 +37,10 @@ function loadState() {
         if (s.sound === undefined) s.sound = true;
         if (s.voice === undefined) s.voice = true;
         if (s.voiceURI === undefined) s.voiceURI = null;
+        if (s.voiceStyle === undefined) s.voiceStyle = 'wizard';
         if (s.apiKey === undefined) s.apiKey = null;
         if (!Array.isArray(s.archive)) s.archive = [];
+        if (s.settings && s.settings.gamemode === undefined) s.settings.gamemode = 'night';
         return s;
       }
     }
@@ -72,18 +76,20 @@ function photoDB() {
   return _dbPromise;
 }
 
-async function savePhoto(id, dataUrl) {
+/* Speichert Foto-DataURLs UND Video-Blobs (id-Präfix 'vid_') */
+async function savePhoto(id, data) {
   try {
     const db = await photoDB();
     await new Promise((res, rej) => {
       const tx = db.transaction('photos', 'readwrite');
-      tx.objectStore('photos').put(dataUrl, id);
+      tx.objectStore('photos').put(data, id);
       tx.oncomplete = res; tx.onerror = () => rej(tx.error);
     });
     return true;
   } catch (e) {
-    // Fallback: localStorage (knapper Platz, aber besser als nichts)
-    try { localStorage.setItem('br_photo_' + id, dataUrl); return true; }
+    // Fallback: localStorage – nur für Strings (Videos passen dort nicht rein)
+    if (typeof data !== 'string') { console.warn('Video konnte nicht gespeichert werden', e); return false; }
+    try { localStorage.setItem('br_photo_' + id, data); return true; }
     catch (e2) { console.warn('Foto konnte nicht gespeichert werden', e2); return false; }
   }
 }

@@ -72,6 +72,16 @@
       </div>
 
       <div class="card">
+        <h3>🌗 Wann spielt ihr?</h3>
+        <div class="chip-row" id="gamemode-picker">
+          <button class="chip" data-gm="day">☀️ Daygame<small>Tag-Quests</small></button>
+          <button class="chip" data-gm="night">🌙 Nightgame<small>der Klassiker</small></button>
+          <button class="chip" data-gm="daynight">🌗 Day n Night<small>Uhr schaltet frei</small></button>
+        </div>
+        <p class="small muted" id="gm-info" style="margin-top:10px"></p>
+      </div>
+
+      <div class="card">
         <h3>⏱️ Wie lange habt ihr?</h3>
         <div class="chip-row wrap" id="dur-picker">
           <button class="chip" data-min="30">30 min</button>
@@ -205,7 +215,14 @@
     <div id="ar-live">
       <div id="ar-stage">
         <video id="ar-video" playsinline muted></video>
+        <div class="ar-rays" aria-hidden="true"></div>
         <img id="ar-ghost" alt="Geist aus der Vergangenheit" draggable="false">
+        <div class="ar-dustfield" aria-hidden="true">
+          <span class="ar-dust"></span><span class="ar-dust"></span><span class="ar-dust"></span>
+          <span class="ar-dust"></span><span class="ar-dust"></span><span class="ar-dust"></span>
+          <span class="ar-dust"></span><span class="ar-dust"></span><span class="ar-dust"></span>
+        </div>
+        <div class="ar-grain" aria-hidden="true"></div>
         <div class="ar-vignette"></div>
       </div>
       <button class="ar-close" aria-label="Schließen">✕</button>

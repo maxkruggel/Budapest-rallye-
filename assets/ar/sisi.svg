@@ -1,37 +1,97 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 440">
   <defs>
     <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fffdf4"/>
-      <stop offset=".55" stop-color="#ffe9b8"/>
-      <stop offset="1" stop-color="#ffc145"/>
+      <stop offset="0" stop-color="#fffef8"/>
+      <stop offset=".38" stop-color="#ffedc0"/>
+      <stop offset=".72" stop-color="#ffd063"/>
+      <stop offset="1" stop-color="#f0a92a"/>
     </linearGradient>
+    <radialGradient id="aura" cx=".5" cy=".4" r=".6">
+      <stop offset="0" stop-color="#ffe9b0" stop-opacity=".5"/>
+      <stop offset=".55" stop-color="#ffc145" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#ffc145" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx=".5" cy=".35" r=".55">
+      <stop offset="0" stop-color="#fff" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
     <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
       <stop offset=".62" stop-color="#fff"/>
       <stop offset=".97" stop-color="#fff" stop-opacity="0"/>
     </linearGradient>
     <mask id="m"><rect width="260" height="440" fill="url(#fade)"/></mask>
+    <!-- Ätherische Kante: die Silhouette wabert wie Kerzenrauch -->
+    <filter id="ether" x="-25%" y="-25%" width="150%" height="150%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.028" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7">
+        <animate attributeName="scale" values="4;10;4" dur="6s" repeatCount="indefinite"/>
+      </feDisplacementMap>
+    </filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
   </defs>
-  <g mask="url(#m)" fill="url(#body)">
-    <!-- Diadem-Sterne (Sisis berühmte Haarsterne) -->
-    <path d="M118 22l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" opacity=".95"/>
-    <path d="M148 34l2 5 6 1-4 4 1 6-5-3-5 3 1-6-4-4 6-1z" opacity=".8"/>
-    <!-- Hochgesteckte Frisur -->
-    <path d="M130 38c-24 0-36 14-36 30 0 7 2 12 5 16 3-22 14-30 31-30s28 8 31 30c3-4 5-9 5-16 0-16-12-30-36-30z"/>
-    <!-- Kopf & Hals -->
-    <ellipse cx="130" cy="78" rx="24" ry="28"/>
-    <path d="M122 102h16v18c8 2 14 5 14 5h-44s6-3 14-5z"/>
-    <!-- Schulterfreies Mieder -->
-    <path d="M92 128c10-8 66-8 76 0 8 6 12 26 8 44-3 14-9 22-9 22H93s-6-8-9-22c-4-18 0-38 8-44z"/>
-    <!-- Arme, Fächer rechts -->
-    <path d="M92 132c-12 8-20 28-22 48-1 12 4 18 10 18 5 0 8-5 9-14 2-16 6-34 10-44z"/>
-    <path d="M168 132c12 8 20 26 24 40l-12 10c-6-12-12-30-18-42z"/>
-    <path d="M186 168l30-24 4 5-28 27c-4 4-9 0-6-8z" opacity=".9"/>
-    <path d="M214 142l8 2-2 8-8-3z" opacity=".85"/>
-    <!-- Krinolinen-Rock -->
-    <path d="M93 194h74c20 30 34 78 38 130 1 18-6 26-16 30-30 12-88 12-118 0-10-4-17-12-16-30 4-52 18-100 38-130z"/>
-    <!-- Rocksaum-Wellen / Geisterschleier -->
-    <path d="M60 340c8 20 4 34-6 48 16-4 26-2 34 8 8-12 18-14 30-8 8-14 18-16 32-8 6-12 16-14 28-8-8-16-10-28-4-40z" opacity=".7"/>
-    <!-- Taillen-Detail -->
-    <path d="M100 190h60v8h-60z" opacity=".55"/>
+
+  <!-- Seelenlicht hinter der Figur -->
+  <ellipse cx="130" cy="200" rx="120" ry="200" fill="url(#aura)" filter="url(#soft)">
+    <animate attributeName="opacity" values=".8;1;.8" dur="4.5s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <g filter="url(#ether)" mask="url(#m)">
+    <g fill="url(#body)">
+      <!-- Diadem-Sterne (Sisis berühmte Haarsterne) -->
+      <path d="M118 22l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z"/>
+      <path d="M148 34l2 5 6 1-4 4 1 6-5-3-5 3 1-6-4-4 6-1z" opacity=".85"/>
+      <path d="M98 40l2 4 5 1-3 3 1 5-5-3-4 3 1-5-4-3 5-1z" opacity=".7"/>
+      <!-- Hochgesteckte Frisur mit Flechtkranz -->
+      <path d="M130 38c-24 0-36 14-36 30 0 7 2 12 5 16 3-22 14-30 31-30s28 8 31 30c3-4 5-9 5-16 0-16-12-30-36-30z"/>
+      <path d="M100 62c4-10 14-16 30-16s26 6 30 16c-8-6-18-9-30-9s-22 3-30 9z" opacity=".8"/>
+      <!-- Kopf & Hals -->
+      <ellipse cx="130" cy="78" rx="24" ry="28"/>
+      <path d="M122 102h16v18c8 2 14 5 14 5h-44s6-3 14-5z"/>
+      <!-- Schulterfreies Mieder -->
+      <path d="M92 128c10-8 66-8 76 0 8 6 12 26 8 44-3 14-9 22-9 22H93s-6-8-9-22c-4-18 0-38 8-44z"/>
+      <!-- Arme, Fächer rechts -->
+      <path d="M92 132c-12 8-20 28-22 48-1 12 4 18 10 18 5 0 8-5 9-14 2-16 6-34 10-44z"/>
+      <path d="M168 132c12 8 20 26 24 40l-12 10c-6-12-12-30-18-42z"/>
+      <path d="M186 168l30-24 4 5-28 27c-4 4-9 0-6-8z" opacity=".92"/>
+      <path d="M214 142l8 2-2 8-8-3z" opacity=".85"/>
+      <!-- Krinolinen-Rock -->
+      <path d="M93 194h74c20 30 34 78 38 130 1 18-6 26-16 30-30 12-88 12-118 0-10-4-17-12-16-30 4-52 18-100 38-130z"/>
+      <!-- Rocksaum-Wellen / Geisterschleier -->
+      <path d="M60 340c8 20 4 34-6 48 16-4 26-2 34 8 8-12 18-14 30-8 8-14 18-16 32-8 6-12 16-14 28-8-8-16-10-28-4-40z" opacity=".7"/>
+      <!-- Taillen-Detail -->
+      <path d="M100 190h60v8h-60z" opacity=".6"/>
+    </g>
+
+    <!-- Tiefe: Schattierung von Gesicht, Falten und Stoffbahnen -->
+    <g fill="#7a4c00" opacity=".2">
+      <path d="M120 66c2-3 6-5 10-5l-1 4c-3 0-6 1-9 4z"/>
+      <ellipse cx="121" cy="76" rx="3.4" ry="2.2"/>
+      <ellipse cx="140" cy="76" rx="3.4" ry="2.2"/>
+      <path d="M128 84l3 6-5 1z"/>
+      <path d="M124 94c4 2 9 2 13 0l-2 4c-3 1-6 1-9 0z"/>
+      <path d="M104 132c-3 16-3 34 1 50l-6 2c-5-18-4-38 0-52z"/>
+      <path d="M152 132c5 14 6 34 1 52l-6-2c4-16 4-34 1-50z"/>
+      <path d="M112 210c-6 40-8 78-6 118l-8-2c-3-40 0-78 6-116z"/>
+      <path d="M148 210c6 38 9 76 6 116l-8 2c2-40 0-78-6-118z"/>
+      <path d="M130 214c-2 44-2 88 0 132h-4c-3-44-3-88 0-132z"/>
+    </g>
+
+    <!-- Licht: Glanzkanten wie Mondlicht auf Seide -->
+    <g fill="#fff" opacity=".55">
+      <path d="M112 60c4-4 10-6 18-6l-1 4c-6 0-12 2-15 5z"/>
+      <path d="M100 136c-2 10-3 22-2 34l-4 1c-2-13-1-26 2-36z"/>
+      <path d="M104 200c-8 34-12 70-12 106l-5-1c-1-37 4-73 12-106z"/>
+      <path d="M120 70c1-2 3-3 5-3l0 2c-2 0-3 1-4 2z"/>
+    </g>
+
+    <!-- Inneres Leuchten -->
+    <ellipse cx="130" cy="150" rx="70" ry="120" fill="url(#core)" opacity=".4"/>
+  </g>
+
+  <!-- Funken, die von der Erscheinung aufsteigen -->
+  <g fill="#ffe9b0">
+    <circle cx="70" cy="180" r="2.4"><animate attributeName="opacity" values="0;1;0" dur="3.2s" repeatCount="indefinite"/><animate attributeName="cy" values="190;120" dur="3.2s" repeatCount="indefinite"/></circle>
+    <circle cx="196" cy="220" r="1.8"><animate attributeName="opacity" values="0;1;0" dur="4.1s" begin="1s" repeatCount="indefinite"/><animate attributeName="cy" values="230;150" dur="4.1s" begin="1s" repeatCount="indefinite"/></circle>
+    <circle cx="130" cy="300" r="2"><animate attributeName="opacity" values="0;.9;0" dur="3.7s" begin="2s" repeatCount="indefinite"/><animate attributeName="cy" values="310;240" dur="3.7s" begin="2s" repeatCount="indefinite"/></circle>
   </g>
 </svg>

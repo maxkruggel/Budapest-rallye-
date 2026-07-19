@@ -1,10 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 440">
   <defs>
     <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fffdf4"/>
-      <stop offset=".55" stop-color="#ffe9b8"/>
-      <stop offset="1" stop-color="#ffc145"/>
+      <stop offset="0" stop-color="#fffef8"/>
+      <stop offset=".38" stop-color="#ffedc0"/>
+      <stop offset=".72" stop-color="#ffd063"/>
+      <stop offset="1" stop-color="#f0a92a"/>
     </linearGradient>
+    <radialGradient id="aura" cx=".42" cy=".42" r=".62">
+      <stop offset="0" stop-color="#ffe9b0" stop-opacity=".5"/>
+      <stop offset=".55" stop-color="#ffc145" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#ffc145" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx=".4" cy=".38" r=".55">
+      <stop offset="0" stop-color="#fff" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
     <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
       <stop offset=".6" stop-color="#fff"/>
       <stop offset=".97" stop-color="#fff" stop-opacity="0"/>
@@ -15,8 +25,20 @@
       <rect width="320" height="440" fill="#fff"/>
       <circle cx="230" cy="78" r="26" fill="#000"/>
     </mask>
+    <filter id="ether" x="-25%" y="-25%" width="150%" height="150%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.028" numOctaves="2" seed="19" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7">
+        <animate attributeName="scale" values="4;11;4" dur="5.5s" repeatCount="indefinite"/>
+      </feDisplacementMap>
+    </filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
   </defs>
-  <g mask="url(#m)">
+
+  <ellipse cx="140" cy="210" rx="140" ry="205" fill="url(#aura)" filter="url(#soft)">
+    <animate attributeName="opacity" values=".8;1;.8" dur="4.2s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <g filter="url(#ether)" mask="url(#m)">
     <g fill="url(#body)">
       <!-- Fahnenmast -->
       <path d="M148 118L292 22l5 7-144 96z"/>
@@ -41,9 +63,41 @@
       <path d="M68 242l-6 100c8 12 18 14 26 4l8-72 8 0 6 72c8 10 18 8 26-4l-6-100z"/>
       <path d="M52 342c10 16 8 30-2 42 14-2 24 0 30 10 8-12 18-14 30-8 6-12 16-16 30-10-10-14-12-26-6-38z" opacity=".65"/>
     </g>
+
     <!-- Fahnenstreifen angedeutet -->
-    <g mask="url(#hole)" opacity=".45">
+    <g mask="url(#hole)" opacity=".5">
       <path d="M178 122L308 62l10 20-136 62z" fill="#e84855"/>
     </g>
+
+    <!-- Tiefe: entschlossenes Gesicht, Jackenfalten, Fahnentuch-Wellen -->
+    <g fill="#7a4c00" opacity=".22">
+      <path d="M90 80c4-2 8-2 11 0l-1 3c-3-1-6-1-9 0z"/>
+      <ellipse cx="95" cy="86" rx="3" ry="2"/>
+      <ellipse cx="110" cy="85" rx="3" ry="2"/>
+      <path d="M100 90l3 6-5 1z"/>
+      <path d="M94 101c4 2 9 2 13 0l-2 4c-3 1-6 1-9 0z"/>
+      <path d="M76 140c-5 18-9 40-10 60l-7-1c2-21 6-42 12-61z"/>
+      <path d="M128 140c6 18 10 40 12 60l-7 1c-2-20-6-42-11-59z"/>
+      <path d="M100 130c-2 30-2 60 0 90h-4c-3-30-3-60 0-90z"/>
+      <path d="M196 60l96-42 2 5-96 42z"/>
+      <path d="M186 96l110-50 2 5-110 50z"/>
+      <path d="M80 270l-5 70-6-1 6-70z"/>
+    </g>
+
+    <!-- Licht: Mützenschirm, Faustkante, Fahnenkante im Wind -->
+    <g fill="#fff" opacity=".55">
+      <path d="M70 64l58-7 0 3-58 7z"/>
+      <path d="M48 156a13 13 0 0 1 10-5l0 3a10 10 0 0 0-8 4z"/>
+      <path d="M172 100l122-82 2 3-122 82z"/>
+      <path d="M60 176c2-12 6-24 12-34l3 2c-6 10-10 21-12 33z"/>
+    </g>
+
+    <ellipse cx="110" cy="160" rx="80" ry="120" fill="url(#core)" opacity=".38"/>
+  </g>
+
+  <g fill="#ffe9b0">
+    <circle cx="46" cy="230" r="2.2"><animate attributeName="opacity" values="0;1;0" dur="3.1s" repeatCount="indefinite"/><animate attributeName="cy" values="240;170" dur="3.1s" repeatCount="indefinite"/></circle>
+    <circle cx="250" cy="150" r="1.8"><animate attributeName="opacity" values="0;1;0" dur="4.4s" begin="1s" repeatCount="indefinite"/><animate attributeName="cy" values="160;90" dur="4.4s" begin="1s" repeatCount="indefinite"/></circle>
+    <circle cx="140" cy="320" r="2"><animate attributeName="opacity" values="0;.9;0" dur="3.6s" begin="1.8s" repeatCount="indefinite"/><animate attributeName="cy" values="330;260" dur="3.6s" begin="1.8s" repeatCount="indefinite"/></circle>
   </g>
 </svg>

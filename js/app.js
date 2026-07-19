@@ -63,6 +63,15 @@ function bindStatic() {
 
   $('#ov-task .ov-close').onclick = closeTask;
   $('#ov-ar .ar-close').onclick = closeAR;
+  // Tap ins Nichts (auf den abgedunkelten Hintergrund) schließt das Quest-Popup
+  $('#ov-task').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeTask();
+  });
+
+  // Stimmenliste kann (v. a. auf iOS) nachträglich wachsen → Picker aktuell halten
+  document.addEventListener('br-voices', () => {
+    if (S.screen === 'game' && $('#tab-crew').classList.contains('active')) renderCrew();
+  });
 
   $('#btn-again').onclick = () => {
     // Ergebnis + Fotos liegen sicher in der Halle der Legenden
@@ -161,6 +170,17 @@ function renderSetup() {
     c.onclick = () => { st.mode = c.dataset.mode; saveState(); renderSetup(); };
   });
 
+  $$('#gamemode-picker .chip').forEach(c => {
+    c.classList.toggle('sel', c.dataset.gm === (st.gamemode || 'night'));
+    c.onclick = () => { st.gamemode = c.dataset.gm; saveState(); renderSetup(); };
+  });
+  const gmInfo = {
+    day:      '☀️ Nur Aufgaben, die tagsüber funktionieren – inklusive Markthalle, Passagen & Schatten-Kunst.',
+    night:    '🌙 Der Klassiker: alles, was nach Einbruch der Dunkelheit spielbar ist.',
+    daynight: '🌗 Alle Aufgaben im Deck. Tag-Quests (hell markiert) laufen nur tagsüber, Nacht-Quests (dunkel markiert) schalten erst ab ihrer Uhrzeit frei.'
+  };
+  $('#gm-info').textContent = gmInfo[st.gamemode || 'night'];
+
   const teamsBox = $('#teams-box');
   teamsBox.hidden = st.mode !== 'versus';
   if (st.mode === 'versus') renderTeamPicker();
@@ -205,11 +225,20 @@ function deckSizeFor(min) {
   return { 30: 5, 60: 8, 90: 11, 120: 13, 180: 17, 240: 21 }[min] || 10;
 }
 
-function buildDeck(durationMin, startPos) {
+/* Passt die Aufgabe zum Spielmodus? (Daygame ohne Nacht-Quests & umgekehrt) */
+function fitsGamemode(t, gamemode) {
+  const gm = gamemode || 'night';
+  if (gm === 'day') return t.time !== 'night';
+  if (gm === 'night') return t.time !== 'day';
+  return true;   // daynight: alles rein, die Uhr regelt den Rest
+}
+
+function buildDeck(durationMin, startPos, gamemode) {
   const origin = startPos || RALLY_CENTER;
   const pool = TASKS.filter(t =>
     (!t.minMin || t.minMin <= durationMin) &&
-    (!t.secret || S.secretUnlocked));
+    (!t.secret || S.secretUnlocked) &&
+    fitsGamemode(t, gamemode));
   const byDist = t => (t.free || t.lat == null) ? 0 : distMeters(origin, t);
 
   const size = deckSizeFor(durationMin);
@@ -293,6 +322,36 @@ function taskLocked(t) {
   return !!(t.requires && S.game && !S.game.completed[t.requires]);
 }
 
+/* ---------- Day n Night: Zeit-Freischaltung ---------- */
+
+function currentHour() {
+  return window.__testHour != null ? window.__testHour : new Date().getHours();
+}
+
+/* Nur im Modus „Day n Night" sperrt die Uhr:
+   Nacht-Quests öffnen ab fromHour (Default 17, nach Mitternacht bleiben sie offen),
+   Tag-Quests nur innerhalb ihrer openHours (Default 8–18). */
+function timeLocked(t) {
+  const gm = (S.game && S.game.gamemode) || S.settings.gamemode || 'night';
+  if (gm !== 'daynight') return false;
+  const h = currentHour();
+  if (t.time === 'night') {
+    const from = t.fromHour != null ? t.fromHour : 17;
+    return h >= 5 && h < from;
+  }
+  if (t.time === 'day') {
+    const [a, b] = t.openHours || [8, 18];
+    return !(h >= a && h < b);
+  }
+  return false;
+}
+
+function timeLockLabel(t) {
+  if (t.time === 'night') return '🌙 ab ' + (t.fromHour != null ? t.fromHour : 17) + ' Uhr';
+  const [a, b] = t.openHours || [8, 18];
+  return '☀️ nur ' + a + '–' + b + ' Uhr';
+}
+
 /* ---------------- Spiel starten / fortsetzen ---------------- */
 
 function startGame() {
@@ -312,13 +371,20 @@ function startGame() {
     startedAt: now,
     endsAt: now + st.durationMin * 60000,
     durationMin: st.durationMin,
-    taskIds: buildDeck(st.durationMin, lastPos),
+    gamemode: st.gamemode || 'night',
+    taskIds: buildDeck(st.durationMin, lastPos, st.gamemode),
     completed: {},
     jokersLeft: 2,
     scores: [0, 0],
     extraMin: 0,
     finished: false
   };
+  // Theme passend zum Spielmodus: Daygame hell, Nightgame dunkel,
+  // Day n Night nach der aktuellen Uhrzeit
+  const gm = st.gamemode || 'night';
+  const wantDay = gm === 'day' || (gm === 'daynight' && currentHour() >= 7 && currentHour() < 17);
+  S.theme = wantDay ? 'day' : 'night';
+  applyTheme(S.theme);
   saveState();
   // Näherungs-Benachrichtigungen: Erlaubnis im User-Gesten-Kontext anfragen
   if ('Notification' in window && Notification.permission === 'default') {
@@ -367,7 +433,7 @@ function sortedGameTasks() {
 
 function activeQuestId() {
   const g = S.game;
-  const t = sortedGameTasks().find(x => !g.completed[x.id] && !taskLocked(x));
+  const t = sortedGameTasks().find(x => !g.completed[x.id] && !taskLocked(x) && !timeLocked(x));
   return t ? t.id : null;
 }
 
@@ -558,8 +624,10 @@ function renderTaskList() {
   tasks.forEach((t, i) => {
     const done = g.completed[t.id];
     const locked = taskLocked(t);
+    const tlocked = !done && !locked && timeLocked(t);
+    const timeClass = t.time === 'day' ? 'time-day' : t.time === 'night' ? 'time-night' : '';
     const card = document.createElement('button');
-    card.className = `ticket cat-${t.cat} ${done ? 'done' : ''} ${locked ? 'locked' : ''} ${i === activeIdx ? 'active-quest' : ''}`;
+    card.className = `ticket cat-${t.cat} ${timeClass} ${done ? 'done' : ''} ${locked || tlocked ? 'locked' : ''} ${i === activeIdx ? 'active-quest' : ''}`;
     if (!listAnimated) {
       card.classList.add('anim-in');
       card.style.animationDelay = Math.min(i * 45, 600) + 'ms';
@@ -573,8 +641,11 @@ function renderTaskList() {
       <div class="ticket-body">
         <div class="ticket-top">
           <span class="badge">${CATS[t.cat].icon} ${CATS[t.cat].label}</span>
+          ${t.time === 'day' ? '<span class="badge tday">☀️ Tag</span>' : ''}
+          ${t.time === 'night' ? '<span class="badge tnight">🌙 Nacht</span>' : ''}
           ${t.complicated ? '<span class="badge hard">★ knifflig</span>' : ''}
           ${locked ? '<span class="badge lock">🔒 gesperrt</span>' : ''}
+          ${tlocked ? '<span class="badge lock">⏰ ' + timeLockLabel(t) + '</span>' : ''}
           ${!done && !locked && attemptsLocked(t) ? '<span class="badge lock">⛔ ' + lockCountdown(t) + '</span>' : ''}
           ${i === activeIdx ? '<span class="badge active">▶ aktive Quest</span>' : ''}
         </div>
@@ -622,7 +693,8 @@ function useJoker() {
   const inDeck = new Set(g.taskIds);
   const candidates = TASKS.filter(t =>
     !inDeck.has(t.id) && (!t.minMin || t.minMin <= g.durationMin) &&
-    t.cat !== 'pause' && !t.chain && !t.secret);
+    t.cat !== 'pause' && !t.chain && !t.secret &&
+    fitsGamemode(t, g.gamemode || S.settings.gamemode));
   if (!candidates.length) { alert('Keine Ersatzaufgaben mehr im Vorrat!'); return; }
   const origin = lastPos || RALLY_CENTER;
   candidates.sort((a, b) => {
@@ -657,6 +729,30 @@ function openTask(id) {
     $('#task-transit').hidden = true;
     $('#task-actions').innerHTML = '';
     $('#btn-speak').onclick = () => Narrator.speak('Geduld! Diese Quest ist gesperrt. Kommt in einer Stunde wieder.');
+    $('#ov-task').classList.add('open');
+    return;
+  }
+
+  // Day n Night: die Uhr hält diese Quest noch verschlossen
+  if (!done && timeLocked(t)) {
+    SFX.nope();
+    const night = t.time === 'night';
+    $('#task-badge').innerHTML = `<span class="badge lock">⏰ ${timeLockLabel(t)}</span>` +
+      (night ? '<span class="badge tnight">🌙 Nacht-Quest</span>' : '<span class="badge tday">☀️ Tag-Quest</span>');
+    $('#task-title').textContent = t.title;
+    $('#task-place').textContent = night
+      ? '🌙 Diese Quest gehört der Nacht.'
+      : '☀️ Diese Quest braucht Tageslicht (oder Öffnungszeiten).';
+    $('#task-desc').textContent = night
+      ? `Der Schleier öffnet sich erst ${timeLockLabel(t).replace('🌙 ', '')} – vorher hat die Dunkelheit schlicht noch nicht das richtige Licht. Nehmt euch bis dahin eine Tag-Quest vor!`
+      : `Dieses Fenster ist ${timeLockLabel(t).replace('☀️ ', '')} geöffnet. Danach schließen Tore, Läden oder schlicht die Sonne. Merkt sie euch für morgen – oder jagt jetzt eine Nacht-Quest!`;
+    $('#task-points').textContent = t.points + ' Punkte';
+    $('#task-gmaps').hidden = true;
+    $('#task-transit').hidden = true;
+    $('#task-actions').innerHTML = '';
+    $('#btn-speak').onclick = () => Narrator.speak(night
+      ? 'Geduld, Abenteurer. Diese Quest erwacht erst mit der Dunkelheit.'
+      : 'Diese Quest gehört dem Tageslicht. Kehrt zurück, wenn die Sonne wieder regiert.');
     $('#ov-task').classList.add('open');
     return;
   }
@@ -705,9 +801,9 @@ function openTask(id) {
     act.innerHTML = `<div class="done-note">✅ Erledigt um ${stampTime(done.at)}
       ${S.settings.mode === 'versus' ? ' – ' + TEAM_NAMES[done.team] : ''} (+${done.points} Pkt)</div>`;
     if (done.photoId) {
-      loadPhoto(done.photoId).then(url => {
-        if (url) act.insertAdjacentHTML('beforeend',
-          `<img class="proof-thumb" src="${url}" alt="Beweisfoto">`);
+      loadPhoto(done.photoId).then(val => {
+        if (!val) return;
+        act.insertAdjacentHTML('beforeend', proofMediaHtml(val, 'Beweis'));
       });
     }
     if (done.answer) act.insertAdjacentHTML('beforeend',
@@ -762,6 +858,35 @@ function renderTransitPanel(t, dist) {
 }
 
 function buildVerifyUI(t, act) {
+  // 🎥 Video-Beweis: eigener Quest-Typ ODER Zusatz-Option bei Foto-Quests
+  const bindVideoInput = inp => {
+    inp.onchange = async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 80 * 1024 * 1024) {
+        alert('🎬 Das Video ist zu groß (max. ~80 MB). Dreht einen kürzeren Take – der Regisseur in euch schafft das!');
+        e.target.value = '';
+        return;
+      }
+      const videoId = 'vid_' + t.id + '_' + Date.now();
+      const ok = await savePhoto(videoId, file);
+      if (!ok) alert('Das Video konnte nicht gespeichert werden – die Quest zählt trotzdem!');
+      completeTask(t, { photoId: ok ? videoId : null });
+      e.target.value = '';
+    };
+  };
+
+  if (t.verify === 'video') {
+    act.innerHTML = `
+      <label class="btn primary big" id="video-label">
+        🎥 Video-Beweis drehen
+        <input type="file" accept="video/*" capture="environment" hidden>
+      </label>
+      <p class="small muted">Das Video validiert die Quest. Es bleibt nur auf diesem Handy gespeichert.</p>`;
+    bindVideoInput(act.querySelector('input'));
+    return appendTipRow(t, act);
+  }
+
   if (t.verify === 'photo') {
     const a = attemptState(t);
     const triesLeft = MAX_ATTEMPTS - (a ? a.n : 0);
@@ -771,10 +896,16 @@ function buildVerifyUI(t, act) {
         <input type="file" accept="image/*" capture="environment" hidden>
       </label>
       <div class="verdict" id="photo-verdict" hidden></div>
+      ${t.video ? `
+      <label class="btn ghost" id="video-label">
+        🎥 Oder: Video-Beweis drehen
+        <input type="file" accept="video/*" capture="environment" hidden>
+      </label>` : ''}
       <p class="small muted">${S.apiKey && t.photoCheck
         ? '🧙 Der Magische Prüfmeister begutachtet jedes Foto – ' + triesLeft + ' von ' + MAX_ATTEMPTS + ' Versuchen übrig.'
-        : 'Das Foto validiert die Quest. Es bleibt nur auf diesem Handy gespeichert.'}</p>`;
-    act.querySelector('input').onchange = async e => {
+        : 'Der Beweis validiert die Quest. Er bleibt nur auf diesem Handy gespeichert.'}</p>`;
+    if (t.video) bindVideoInput(act.querySelector('#video-label input'));
+    act.querySelector('#photo-label input').onchange = async e => {
       const file = e.target.files[0];
       if (!file) return;
       const label = $('#photo-label');
@@ -899,28 +1030,31 @@ function buildVerifyUI(t, act) {
     if (force) force.onclick = () => { if (confirm('Ehrenwort?')) open(); };
   }
 
-  // 💡 Tipp: günstige Stufe vor dem Joker (−5 XP auf die Belohnung)
-  if (t.tip && t.verify !== 'quiz') {
-    const g = S.game;
-    const used = g.tips && g.tips[t.id];
-    const tipRow = document.createElement('div');
-    tipRow.className = 'tip-row';
-    tipRow.innerHTML = used
-      ? `<div class="tip-box">💡 ${escapeHtml(t.tip)}</div>`
-      : `<button class="btn ghost small-btn" id="btn-tip">💡 Tipp anzeigen (−5 XP)</button><div class="tip-box" id="tip-box" hidden></div>`;
-    act.appendChild(tipRow);
-    const btn = tipRow.querySelector('#btn-tip');
-    if (btn) btn.onclick = () => {
-      g.tips = g.tips || {};
-      g.tips[t.id] = true;
-      saveState();
-      btn.hidden = true;
-      const box = tipRow.querySelector('#tip-box');
-      box.hidden = false;
-      box.textContent = '💡 ' + t.tip;
-      Narrator.speak('Ein Tipp vom Prüfmeister: ' + t.tip);
-    };
-  }
+  appendTipRow(t, act);
+}
+
+/* 💡 Tipp: günstige Stufe vor dem Joker (−5 XP auf die Belohnung) */
+function appendTipRow(t, act) {
+  if (!t.tip || t.verify === 'quiz') return;
+  const g = S.game;
+  const used = g.tips && g.tips[t.id];
+  const tipRow = document.createElement('div');
+  tipRow.className = 'tip-row';
+  tipRow.innerHTML = used
+    ? `<div class="tip-box">💡 ${escapeHtml(t.tip)}</div>`
+    : `<button class="btn ghost small-btn" id="btn-tip">💡 Tipp anzeigen (−5 XP)</button><div class="tip-box" id="tip-box" hidden></div>`;
+  act.appendChild(tipRow);
+  const btn = tipRow.querySelector('#btn-tip');
+  if (btn) btn.onclick = () => {
+    g.tips = g.tips || {};
+    g.tips[t.id] = true;
+    saveState();
+    btn.hidden = true;
+    const box = tipRow.querySelector('#tip-box');
+    box.hidden = false;
+    box.textContent = '💡 ' + t.tip;
+    Narrator.speak('Ein Tipp vom Prüfmeister: ' + t.tip);
+  };
 }
 
 function normalize(s) {
@@ -1196,6 +1330,15 @@ function renderCrew() {
         <button class="tbtn a ${S.sound ? 'sel' : ''}" id="tog-sound">${S.sound ? 'an' : 'aus'}</button></label>
       <label class="toggle-row"><span>🔮 Magische Erzählerstimme</span>
         <button class="tbtn a ${S.voice ? 'sel' : ''}" id="tog-voice">${S.voice ? 'an' : 'aus'}</button></label>
+      <div class="voice-style">
+        <p class="small muted">Stimmlage des Erzählers</p>
+        <div class="chip-row" id="voicestyle-picker">
+          ${Object.entries(VOICE_STYLES).map(([key, st2]) => `
+            <button class="chip ${(S.voiceStyle || 'wizard') === key ? 'sel' : ''}" data-vs="${key}">
+              ${st2.label}<small>${st2.desc}</small>
+            </button>`).join('')}
+        </div>
+      </div>
       ${renderVoicePicker()}
     </div>`;
   html += `
@@ -1248,6 +1391,25 @@ function renderCrew() {
     Narrator.pickVoice();
     if (Narrator.voice) Narrator.preview(Narrator.voice.voiceURI);
   };
+  $$('#voicestyle-picker .chip').forEach(c => c.onclick = () => {
+    S.voiceStyle = c.dataset.vs;
+    saveState();
+    renderCrew();
+    const lines = {
+      wizard: 'Ah… willkommen, Abenteurer. Die Nacht hat auf euch gewartet.',
+      fee: 'Huiii! Auf gehts, ihr Nachtschwärmer!',
+      neutral: 'Erzählerstimme bereit. Die Rallye kann beginnen.'
+    };
+    Narrator.speak(lines[c.dataset.vs] || lines.wizard);
+  });
+  const reload = $('#voice-reload');
+  if (reload) reload.onclick = () => {
+    const n = Narrator.reloadVoices();
+    renderCrew();
+    Narrator.speak(n
+      ? `${n} deutsche ${n === 1 ? 'Stimme' : 'Stimmen'} gefunden. Die beste spricht zu euch.`
+      : 'Noch keine deutsche Stimme gefunden. Einmal tippen, kurz warten, nochmal laden.');
+  };
 }
 
 function renderVoicePicker() {
@@ -1256,23 +1418,34 @@ function renderVoicePicker() {
   }
   const voices = Narrator.germanVoices();
   if (!voices.length) {
-    return '<p class="small muted">Keine deutsche Stimme gefunden – die Stimmen laden manchmal erst nach dem ersten Tippen.</p>';
+    return `
+    <div class="voice-picker">
+      <p class="small muted">Noch keine deutsche Stimme gefunden – iPhones rücken die Liste oft erst nach dem ersten Tippen raus.</p>
+      <button class="btn ghost small-btn" id="voice-reload">🔄 Stimmen neu laden</button>
+    </div>`;
   }
   Narrator.pickVoice();
   const current = S.voiceURI || (Narrator.voice ? Narrator.voice.voiceURI : '');
   const sorted = voices.slice().sort((a, b) => Narrator.scoreVoice(b) - Narrator.scoreVoice(a));
   const opts = sorted.map(v => {
-    const nice = Narrator.scoreVoice(v) >= 25 ? ' ✨' : '';
-    return `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === current ? 'selected' : ''}>${escapeHtml(v.name)}${nice}</option>`;
+    const s = (v.name + ' ' + (v.voiceURI || '')).toLowerCase();
+    const mark = s.includes('siri') ? ' 🪄 Siri' : Narrator.scoreVoice(v) >= 25 ? ' ✨' : '';
+    return `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === current ? 'selected' : ''}>${escapeHtml(v.name)}${mark}</option>`;
   }).join('');
   return `
     <div class="voice-picker">
-      <label class="small muted" for="voice-select">Stimme wählen (✨ = beste Qualität auf diesem Gerät)</label>
+      <label class="small muted" for="voice-select">Stimme wählen (🪄 = eure installierte Siri-Stimme, ✨ = beste Qualität)</label>
       <div class="voice-row">
         <select id="voice-select">${opts}</select>
         <button class="btn ghost small-btn" id="voice-preview">▶ Hörprobe</button>
       </div>
-      <p class="small muted">📱 iPhone-Tipp: Unter <b>Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch</b> könnt ihr gratis eine „Premium"-Stimme laden – sie taucht danach hier in der Liste auf und klingt WESENTLICH magischer.</p>
+      <button class="btn ghost small-btn" id="voice-reload">🔄 Stimmen neu laden (${voices.length} gefunden)</button>
+      <p class="small muted">📱 <b>Eure Siri-/Premium-Stimme laden:</b> Stimmen, die ihr unter
+      <b>Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch</b> installiert habt,
+      tauchen hier automatisch auf und werden bevorzugt – notfalls „🔄 Stimmen neu laden" tippen.
+      Zeigt iOS eine installierte Siri-Stimme trotzdem nicht an, gibt Apple sie leider nicht für Browser frei –
+      dann ist die „Premium"-/„Enhanced"-Variante von Anna oder Helena die beste Wahl; mit der
+      🧙-Dumbledore-Stimmlage klingt sie tief und weise.</p>
     </div>`;
 }
 
@@ -1360,9 +1533,9 @@ async function showFinal(entry, fromArchive) {
   for (const t of entryTasks) {
     const c = g.completed[t.id];
     if (!c || !c.photoId) continue;
-    const url = await loadPhoto(c.photoId);
-    if (url) gal.insertAdjacentHTML('beforeend',
-      `<figure><img src="${url}" alt="${escapeHtml(t.title)}"><figcaption>${escapeHtml(t.title)}</figcaption></figure>`);
+    const val = await loadPhoto(c.photoId);
+    if (val) gal.insertAdjacentHTML('beforeend',
+      `<figure>${proofMediaHtml(val, t.title)}<figcaption>${escapeHtml(t.title)}</figcaption></figure>`);
   }
   $('#final-gallery-empty').hidden = gal.children.length > 0;
 }
@@ -1557,7 +1730,24 @@ function captureAR() {
     ctx.shadowBlur = 30;
     ctx.drawImage(img, ir.left - sr2.left, ir.top - sr2.top, ir.width, ir.height);
     ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
   }
+
+  // Hyper-real-Finish: warmes Zeitfenster-Licht, Vignette und feines Filmkorn –
+  // das gespeicherte Foto sieht aus wie eine Aufnahme aus einer anderen Zeit.
+  const warm = ctx.createRadialGradient(sw / 2, sh * 0.42, 10, sw / 2, sh * 0.42, Math.max(sw, sh) * 0.75);
+  warm.addColorStop(0, 'rgba(255, 205, 110, 0.10)');
+  warm.addColorStop(0.55, 'rgba(255, 193, 69, 0.03)');
+  warm.addColorStop(1, 'rgba(8, 4, 24, 0.38)');
+  ctx.fillStyle = warm;
+  ctx.fillRect(0, 0, sw, sh);
+  ctx.globalAlpha = 0.05;
+  for (let i = 0; i < 900; i++) {
+    const x = (i * 733) % sw, y = (i * 397 + (i % 13) * 41) % sh;
+    ctx.fillStyle = (i % 2) ? '#fff' : '#000';
+    ctx.fillRect(x, y, 1, 1);
+  }
+  ctx.globalAlpha = 1;
 
   const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
   $('#ar-photo').src = dataUrl;
@@ -1606,7 +1796,7 @@ function checkProximity() {
   if (!g || g.finished || g.pausedAt || !lastPos) return;
   g.notified = g.notified || {};
   gameTasks().forEach(t => {
-    if (t.free || t.lat == null || g.completed[t.id] || taskLocked(t) || g.notified[t.id]) return;
+    if (t.free || t.lat == null || g.completed[t.id] || taskLocked(t) || timeLocked(t) || g.notified[t.id]) return;
     const d = distMeters(lastPos, t);
     if (d <= NEAR_RADIUS) {
       g.notified[t.id] = Date.now();
@@ -1641,6 +1831,15 @@ function questNearbyAlert(t, d) {
       });
     } catch (e) { /* Benachrichtigungen sind optional */ }
   }
+}
+
+/* Beweis rendern: Foto-DataURL als <img>, Video-Blob als <video> */
+function proofMediaHtml(val, alt) {
+  if (val instanceof Blob) {
+    const url = URL.createObjectURL(val);
+    return `<video class="proof-thumb" src="${url}" controls playsinline preload="metadata"></video>`;
+  }
+  return `<img class="proof-thumb" src="${val}" alt="${escapeHtml(alt || 'Beweisfoto')}">`;
 }
 
 /* ---------------- Utils ---------------- */

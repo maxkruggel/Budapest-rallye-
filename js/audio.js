@@ -115,6 +115,19 @@ const PRAISE = [
   'So steht es geschrieben, so ward es vollbracht.'
 ];
 
+/* Stimmlagen: Die Erzählerstimme hat Charakter. Default: der alte, weise
+   Zauberer – tief und bedächtig (Pitch/Rate wirken als Multiplikator auf
+   jede Gerätestimme, auch auf installierte Siri-/Premium-Stimmen). */
+const VOICE_STYLES = {
+  wizard:  { label: '🧙 Dumbledore', desc: 'tief, warm, weise',      pitch: 0.72, rate: 0.88 },
+  fee:     { label: '🧚 Nachtfee',   desc: 'hell und verspielt',     pitch: 1.18, rate: 1.02 },
+  neutral: { label: '🎙️ Chronist',  desc: 'klar und unaufgeregt',   pitch: 1.0,  rate: 1.0 }
+};
+
+function voiceStyle() {
+  return VOICE_STYLES[S.voiceStyle] || VOICE_STYLES.wizard;
+}
+
 const Narrator = {
   voice: null,
   available: 'speechSynthesis' in window,
@@ -151,9 +164,9 @@ const Narrator = {
   scoreVoice(v) {
     const s = (v.name + ' ' + (v.voiceURI || '')).toLowerCase();
     let p = 0;
+    if (s.includes('siri')) p += 60;      // vom User installierte Siri-Stimme: immer Favorit
     if (s.includes('premium')) p += 40;
     if (s.includes('enhanced') || s.includes('erweitert')) p += 30;
-    if (s.includes('siri')) p += 25;
     if (s.includes('natural') || s.includes('neural')) p += 25;
     if (s.includes('eloquence') || s.includes('compact')) p -= 40;  // die Roboter
     if (/anna|petra|helena|katja|vicki|marlene|hedda|viktor|markus/.test(s)) p += 5;
@@ -171,6 +184,33 @@ const Narrator = {
     this.voice = de.slice().sort((a, b) => this.scoreVoice(b) - this.scoreVoice(a))[0];
   },
 
+  /* iOS lädt die Stimmenliste träge und oft erst nach einer User-Geste –
+     deshalb: hartnäckig nachfragen, bis die guten Stimmen da sind. */
+  _warmTries: 0,
+  _lastCount: -1,
+  warmupVoices() {
+    if (!this.available) return;
+    const n = (speechSynthesis.getVoices() || []).length;
+    if (n !== this._lastCount) {
+      this._lastCount = n;
+      this.pickVoice();
+      document.dispatchEvent(new CustomEvent('br-voices'));
+    }
+    if (++this._warmTries < 25 && (!n || !this.germanVoices().length)) {
+      setTimeout(() => this.warmupVoices(), 400);
+    }
+  },
+
+  /* Manuell neu laden (Button im Crew-Tab, läuft in der User-Geste) */
+  reloadVoices() {
+    if (!this.available) return 0;
+    const list = speechSynthesis.getVoices() || [];
+    this._lastCount = list.length;
+    this.pickVoice();
+    document.dispatchEvent(new CustomEvent('br-voices'));
+    return this.germanVoices().length;
+  },
+
   /* --- Sprechen: MP3 zuerst, sonst Geraetestimme (satzweise = bessere Kadenz) --- */
   say(key, text, opts = {}) {
     if (!S.voice) return;
@@ -184,13 +224,15 @@ const Narrator = {
         .replace(/\s+/g, ' ').trim();
       if (!clean) return;
       if (!this.voice) this.pickVoice();
+      const style = voiceStyle();
       const sentences = clean.match(/[^.!?\u2026]+[.!?\u2026]+["']?|[^.!?\u2026]+$/g) || [clean];
       sentences.forEach(sent => {
         const u = new SpeechSynthesisUtterance(sent.trim());
         if (this.voice) u.voice = this.voice;
         u.lang = 'de-DE';
-        u.rate = opts.rate != null ? opts.rate : 1.0;
-        u.pitch = opts.pitch != null ? opts.pitch : 1.12;
+        // opts wirken als Multiplikator auf die gewaehlte Stimmlage
+        u.rate = Math.min(2, Math.max(0.5, style.rate * (opts.rate != null ? opts.rate : 1)));
+        u.pitch = Math.min(2, Math.max(0.1, style.pitch * (opts.pitch != null ? opts.pitch : 1)));
         u.volume = 1;
         speechSynthesis.speak(u);   // Queue: Satz fuer Satz = natuerlichere Pausen
       });
@@ -216,8 +258,10 @@ const Narrator = {
     if (!v) return;
     this.stop();
     try {
+      const style = voiceStyle();
       const u = new SpeechSynthesisUtterance('Hoert, Abenteurer der Nacht! So klingt eure Erzaehlerstimme.');
-      u.voice = v; u.lang = 'de-DE'; u.pitch = 1.12;
+      u.voice = v; u.lang = 'de-DE';
+      u.pitch = style.pitch; u.rate = style.rate;
       speechSynthesis.speak(u);
     } catch (e) {}
   },
@@ -229,8 +273,14 @@ const Narrator = {
 };
 
 if (Narrator.available) {
-  speechSynthesis.onvoiceschanged = () => Narrator.pickVoice();
-  Narrator.pickVoice();
+  speechSynthesis.onvoiceschanged = () => {
+    Narrator._lastCount = -1;      // Liste hat sich geaendert: neu bewerten + UI informieren
+    Narrator.warmupVoices();
+  };
+  Narrator.warmupVoices();
+  // iOS gibt die volle Stimmenliste (inkl. installierter Premium-/Siri-Stimmen)
+  // teils erst nach der ersten Beruehrung frei – dann einmal nachladen.
+  document.addEventListener('pointerdown', () => Narrator.reloadVoices(), { once: true });
 }
 Narrator.loadClips();
 

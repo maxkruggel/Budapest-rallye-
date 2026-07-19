@@ -1,50 +1,117 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 320">
   <defs>
     <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fffdf4"/>
-      <stop offset=".55" stop-color="#ffe9b8"/>
-      <stop offset="1" stop-color="#ffc145"/>
+      <stop offset="0" stop-color="#fffef8"/>
+      <stop offset=".38" stop-color="#ffedc0"/>
+      <stop offset=".72" stop-color="#ffd063"/>
+      <stop offset="1" stop-color="#f0a92a"/>
     </linearGradient>
+    <radialGradient id="aura" cx=".5" cy=".5" r=".6">
+      <stop offset="0" stop-color="#ffe9b0" stop-opacity=".5"/>
+      <stop offset=".55" stop-color="#ffc145" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#ffc145" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx=".5" cy=".45" r=".55">
+      <stop offset="0" stop-color="#fff" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lamp" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fffef2" stop-opacity=".95"/>
+      <stop offset=".5" stop-color="#ffe9b0" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/>
+    </radialGradient>
     <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
       <stop offset=".55" stop-color="#fff"/>
       <stop offset=".96" stop-color="#fff" stop-opacity="0"/>
     </linearGradient>
     <mask id="m"><rect width="460" height="320" fill="url(#fade)"/></mask>
+    <filter id="ether" x="-25%" y="-25%" width="150%" height="150%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.009 0.024" numOctaves="2" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="6">
+        <animate attributeName="scale" values="3;9;3" dur="6s" repeatCount="indefinite"/>
+      </feDisplacementMap>
+    </filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>
-  <g mask="url(#m)" fill="url(#body)">
-    <!-- Stromabnehmer-Stange -->
-    <path d="M228 18l64 60-6 6-64-60z"/>
-    <circle cx="292" cy="80" r="7"/>
-    <path d="M214 12l22 10-4 8-22-10z"/>
-    <!-- Oberleitung -->
-    <rect x="10" y="14" width="440" height="3" rx="1.5" opacity=".5"/>
-    <!-- Wagenkasten -->
-    <rect x="60" y="86" width="340" height="130" rx="18"/>
-    <!-- Dachrundung -->
-    <path d="M70 86c20-14 300-14 320 0z"/>
-    <!-- Fenster (ausgespart durch dunklere Füllung) -->
-    <g fill="#3a2c08" opacity=".55">
-      <rect x="80" y="104" width="52" height="52" rx="8"/>
-      <rect x="144" y="104" width="52" height="52" rx="8"/>
-      <rect x="208" y="104" width="52" height="52" rx="8"/>
-      <rect x="272" y="104" width="52" height="52" rx="8"/>
-      <rect x="336" y="104" width="44" height="52" rx="8"/>
+
+  <ellipse cx="230" cy="180" rx="220" ry="130" fill="url(#aura)" filter="url(#soft)">
+    <animate attributeName="opacity" values=".8;1;.8" dur="4.8s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <g filter="url(#ether)" mask="url(#m)">
+    <g fill="url(#body)">
+      <!-- Stromabnehmer-Stange -->
+      <path d="M228 18l64 60-6 6-64-60z"/>
+      <circle cx="292" cy="80" r="7"/>
+      <path d="M214 12l22 10-4 8-22-10z"/>
+      <!-- Oberleitung -->
+      <rect x="10" y="14" width="440" height="3" rx="1.5" opacity=".5"/>
+      <!-- Wagenkasten -->
+      <rect x="60" y="86" width="340" height="130" rx="18"/>
+      <!-- Dachrundung + Holzlatten-Andeutung -->
+      <path d="M70 86c20-14 300-14 320 0z"/>
+      <!-- Fenster, warm erleuchtet wie 1887 -->
+      <g fill="#3a2c08" opacity=".55">
+        <rect x="80" y="104" width="52" height="52" rx="8"/>
+        <rect x="144" y="104" width="52" height="52" rx="8"/>
+        <rect x="208" y="104" width="52" height="52" rx="8"/>
+        <rect x="272" y="104" width="52" height="52" rx="8"/>
+        <rect x="336" y="104" width="44" height="52" rx="8"/>
+      </g>
+      <!-- Fahrgast-Geist im Fenster, mit Hut -->
+      <g opacity=".8">
+        <path d="M224 116h20l-2-5h-16z"/>
+        <circle cx="234" cy="124" r="8"/>
+        <path d="M222 156c0-10 5-16 12-16s12 6 12 16z"/>
+      </g>
+      <!-- Zierlinie + Liniennummer 2 -->
+      <rect x="72" y="168" width="316" height="6" rx="3" opacity=".6"/>
+      <circle cx="230" cy="192" r="15" opacity=".9"/>
+      <text x="230" y="199" text-anchor="middle" font-family="monospace" font-size="21" font-weight="bold" fill="#3a2c08">2</text>
+      <!-- Schürze & Räder mit Speichen -->
+      <path d="M66 216h328l-10 22H76z"/>
+      <circle cx="130" cy="248" r="22"/><circle cx="130" cy="248" r="9" fill="#3a2c08" opacity=".5"/>
+      <circle cx="330" cy="248" r="22"/><circle cx="330" cy="248" r="9" fill="#3a2c08" opacity=".5"/>
+      <!-- Schiene, die sich unten in Nebel auflöst -->
+      <rect x="30" y="274" width="400" height="6" rx="3" opacity=".7"/>
+      <path d="M40 288c30 10 60-6 90 4s60-8 90 2 60-8 90 2 50-6 80 0" stroke="url(#body)" stroke-width="8" fill="none" opacity=".4" stroke-linecap="round"/>
     </g>
-    <!-- Fahrgast-Geist im Fenster -->
-    <g opacity=".8">
-      <circle cx="234" cy="122" r="9"/>
-      <path d="M222 156c0-10 5-16 12-16s12 6 12 16z"/>
+
+    <!-- Warmes Licht aus den Fenstern (flackernde Gaslampen) -->
+    <g>
+      <rect x="82" y="106" width="48" height="48" rx="7" fill="url(#lamp)" opacity=".5">
+        <animate attributeName="opacity" values=".35;.6;.4;.55;.35" dur="3.4s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="210" y="106" width="48" height="48" rx="7" fill="url(#lamp)" opacity=".5">
+        <animate attributeName="opacity" values=".5;.35;.6;.4;.5" dur="4.1s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="338" y="106" width="40" height="48" rx="7" fill="url(#lamp)" opacity=".5">
+        <animate attributeName="opacity" values=".4;.55;.35;.6;.4" dur="3.8s" repeatCount="indefinite"/>
+      </rect>
     </g>
-    <!-- Zierlinie + Liniennummer 2 -->
-    <rect x="72" y="168" width="316" height="6" rx="3" opacity=".6"/>
-    <circle cx="230" cy="192" r="15" opacity=".9"/>
-    <text x="230" y="199" text-anchor="middle" font-family="monospace" font-size="21" font-weight="bold" fill="#3a2c08">2</text>
-    <!-- Schürze & Räder -->
-    <path d="M66 216h328l-10 22H76z"/>
-    <circle cx="130" cy="248" r="22"/><circle cx="130" cy="248" r="9" fill="#3a2c08" opacity=".5"/>
-    <circle cx="330" cy="248" r="22"/><circle cx="330" cy="248" r="9" fill="#3a2c08" opacity=".5"/>
-    <!-- Schiene, die sich unten in Nebel auflöst -->
-    <rect x="30" y="274" width="400" height="6" rx="3" opacity=".7"/>
-    <path d="M40 288c30 10 60-6 90 4s60-8 90 2 60-8 90 2 50-6 80 0" stroke="url(#body)" stroke-width="8" fill="none" opacity=".4" stroke-linecap="round"/>
+
+    <!-- Tiefe: Nieten, Radspeichen, Plankenfugen -->
+    <g fill="#7a4c08" opacity=".25">
+      <path d="M60 100h340v3H60z"/>
+      <path d="M124 232l12 32-4 1-12-32zM136 232l-12 32 4 1 12-32z"/>
+      <path d="M324 232l12 32-4 1-12-32zM336 232l-12 32 4 1 12-32z"/>
+      <circle cx="76" cy="94" r="2"/><circle cx="120" cy="94" r="2"/><circle cx="164" cy="94" r="2"/>
+      <circle cx="208" cy="94" r="2"/><circle cx="252" cy="94" r="2"/><circle cx="296" cy="94" r="2"/>
+      <circle cx="340" cy="94" r="2"/><circle cx="384" cy="94" r="2"/>
+    </g>
+
+    <!-- Licht: Dachkante und Wagenkasten-Glanz -->
+    <g fill="#fff" opacity=".55">
+      <path d="M74 88c20-10 292-10 312 0l-2 3c-24-9-284-9-308 0z"/>
+      <rect x="66" y="162" width="326" height="2" rx="1"/>
+    </g>
+
+    <ellipse cx="230" cy="160" rx="180" ry="90" fill="url(#core)" opacity=".35"/>
+  </g>
+
+  <g fill="#ffe9b0">
+    <circle cx="60" cy="180" r="2.2"><animate attributeName="opacity" values="0;1;0" dur="3.3s" repeatCount="indefinite"/><animate attributeName="cy" values="190;120" dur="3.3s" repeatCount="indefinite"/></circle>
+    <circle cx="410" cy="160" r="1.8"><animate attributeName="opacity" values="0;1;0" dur="4.3s" begin="1.4s" repeatCount="indefinite"/><animate attributeName="cy" values="170;100" dur="4.3s" begin="1.4s" repeatCount="indefinite"/></circle>
+    <circle cx="230" cy="250" r="2"><animate attributeName="opacity" values="0;.9;0" dur="3.8s" begin="2.4s" repeatCount="indefinite"/><animate attributeName="cy" values="260;190" dur="3.8s" begin="2.4s" repeatCount="indefinite"/></circle>
   </g>
 </svg>

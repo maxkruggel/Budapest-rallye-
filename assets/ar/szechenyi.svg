@@ -1,38 +1,93 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 440">
   <defs>
     <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fffdf4"/>
-      <stop offset=".55" stop-color="#ffe9b8"/>
-      <stop offset="1" stop-color="#ffc145"/>
+      <stop offset="0" stop-color="#fffef8"/>
+      <stop offset=".38" stop-color="#ffedc0"/>
+      <stop offset=".72" stop-color="#ffd063"/>
+      <stop offset="1" stop-color="#f0a92a"/>
     </linearGradient>
+    <radialGradient id="aura" cx=".5" cy=".4" r=".6">
+      <stop offset="0" stop-color="#ffe9b0" stop-opacity=".5"/>
+      <stop offset=".55" stop-color="#ffc145" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#ffc145" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx=".5" cy=".35" r=".55">
+      <stop offset="0" stop-color="#fff" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
     <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
       <stop offset=".6" stop-color="#fff"/>
       <stop offset=".97" stop-color="#fff" stop-opacity="0"/>
     </linearGradient>
     <mask id="m"><rect width="240" height="440" fill="url(#fade)"/></mask>
+    <filter id="ether" x="-25%" y="-25%" width="150%" height="150%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.028" numOctaves="2" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7">
+        <animate attributeName="scale" values="4;10;4" dur="6.5s" repeatCount="indefinite"/>
+      </feDisplacementMap>
+    </filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
   </defs>
-  <g mask="url(#m)" fill="url(#body)">
-    <!-- Volles Haar, Koteletten -->
-    <path d="M120 20c-22 0-34 14-34 32 0 10 3 16 6 20l4-4c2 8 6 12 6 12l-2-18c10-8 30-8 40 0l-2 18s4-4 6-12l4 4c3-4 6-10 6-20 0-18-12-32-34-32z"/>
-    <path d="M92 66c-4 10-4 22 0 30l8-4zM148 66c4 10 4 22 0 30l-8-4z"/>
-    <!-- Gesicht & Hals -->
-    <ellipse cx="120" cy="66" rx="22" ry="26"/>
-    <path d="M112 90h16v16h-16z"/>
-    <!-- Hoher Kragen + Halsbinde -->
-    <path d="M100 104c6-4 34-4 40 0l-6 10c-8-4-20-4-28 0z"/>
-    <path d="M112 112h16l-4 14h-8z"/>
-    <!-- Gehrock, Hand in der Weste (staatsmännisch) -->
-    <path d="M120 108c-26 0-42 16-46 44l-8 74c-2 16 4 22 12 22h84c8 0 14-6 12-22l-8-74c-4-28-20-44-46-44z"/>
-    <path d="M120 118l-14 20 8 60h12l8-60z" opacity=".5"/>
-    <path d="M104 150c8-6 24-6 32 0l-6 14c-7-3-13-3-20 0z" opacity=".6"/>
-    <!-- Arme -->
-    <path d="M76 150c-10 12-16 34-18 54-1 10 4 16 10 16s8-6 9-14c2-18 6-40 10-52z"/>
-    <path d="M164 150c10 12 16 34 18 54 1 10-4 16-10 16s-8-6-9-14c-2-18-6-40-10-52z"/>
-    <!-- Rockschöße + Beine, unten vergeistert -->
-    <path d="M84 248l-10 96c8 14 20 16 28 6l10-70 8 1 8 70c10 8 22 4 28-8l-10-95z"/>
-    <path d="M70 344c10 18 6 32-4 44 14-2 24 0 30 10 8-12 18-14 30-8 6-12 16-16 30-10-10-14-12-26-6-38z" opacity=".65"/>
-    <!-- Kettenglied in der Hand (die Kettenbrücke!) -->
-    <path d="M170 216a16 16 0 1 0 0.1 0zm0 8a8 8 0 1 1-.1 0z" opacity=".95"/>
-    <path d="M184 232a16 16 0 1 0 .1 0zm0 8a8 8 0 1 1-.1 0z" opacity=".8"/>
+
+  <ellipse cx="120" cy="200" rx="115" ry="200" fill="url(#aura)" filter="url(#soft)">
+    <animate attributeName="opacity" values=".8;1;.8" dur="5s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <g filter="url(#ether)" mask="url(#m)">
+    <g fill="url(#body)">
+      <!-- Volles Haar, Koteletten -->
+      <path d="M120 20c-22 0-34 14-34 32 0 10 3 16 6 20l4-4c2 8 6 12 6 12l-2-18c10-8 30-8 40 0l-2 18s4-4 6-12l4 4c3-4 6-10 6-20 0-18-12-32-34-32z"/>
+      <path d="M92 66c-4 10-4 22 0 30l8-4zM148 66c4 10 4 22 0 30l-8-4z"/>
+      <!-- Gesicht & Hals -->
+      <ellipse cx="120" cy="66" rx="22" ry="26"/>
+      <path d="M112 90h16v16h-16z"/>
+      <!-- Hoher Kragen + Halsbinde -->
+      <path d="M100 104c6-4 34-4 40 0l-6 10c-8-4-20-4-28 0z"/>
+      <path d="M112 112h16l-4 14h-8z"/>
+      <!-- Gehrock, Hand in der Weste (staatsmännisch) -->
+      <path d="M120 108c-26 0-42 16-46 44l-8 74c-2 16 4 22 12 22h84c8 0 14-6 12-22l-8-74c-4-28-20-44-46-44z"/>
+      <path d="M120 118l-14 20 8 60h12l8-60z" opacity=".5"/>
+      <path d="M104 150c8-6 24-6 32 0l-6 14c-7-3-13-3-20 0z" opacity=".6"/>
+      <!-- Arme -->
+      <path d="M76 150c-10 12-16 34-18 54-1 10 4 16 10 16s8-6 9-14c2-18 6-40 10-52z"/>
+      <path d="M164 150c10 12 16 34 18 54 1 10-4 16-10 16s-8-6-9-14c-2-18-6-40-10-52z"/>
+      <!-- Rockschöße + Beine, unten vergeistert -->
+      <path d="M84 248l-10 96c8 14 20 16 28 6l10-70 8 1 8 70c10 8 22 4 28-8l-10-95z"/>
+      <path d="M70 344c10 18 6 32-4 44 14-2 24 0 30 10 8-12 18-14 30-8 6-12 16-16 30-10-10-14-12-26-6-38z" opacity=".65"/>
+      <!-- Kettenglieder in der Hand (die Kettenbrücke!) -->
+      <path d="M170 216a16 16 0 1 0 0.1 0zm0 8a8 8 0 1 1-.1 0z"/>
+      <path d="M184 232a16 16 0 1 0 .1 0zm0 8a8 8 0 1 1-.1 0z" opacity=".85"/>
+    </g>
+
+    <!-- Tiefe: Brauen, Augen, Backenbart-Schatten, Rockfalten -->
+    <g fill="#7a4c00" opacity=".22">
+      <path d="M108 58c4-2 8-2 11 0l-1 3c-3-1-6-1-9 0z"/>
+      <path d="M124 58c4-2 8-2 11 0l-1 3c-3-1-6-1-9 0z"/>
+      <ellipse cx="113" cy="65" rx="3" ry="2"/>
+      <ellipse cx="129" cy="65" rx="3" ry="2"/>
+      <path d="M118 70l3 6-5 1z"/>
+      <path d="M112 82c5 3 12 3 17 0l-2 4c-4 2-9 2-13 0z"/>
+      <path d="M96 70c-2 8-2 16 0 22l-4 2c-3-8-3-18 0-26z"/>
+      <path d="M92 160c-4 24-7 50-8 76l-7-1c1-27 5-53 10-77z"/>
+      <path d="M150 160c5 24 9 50 10 76l-7 1c-1-26-4-52-8-76z"/>
+      <path d="M120 200c-1 30-1 60 0 90h-4c-2-30-2-60 0-90z"/>
+      <path d="M100 260l-6 80-6-1 7-80z"/>
+    </g>
+
+    <!-- Licht: Kragenkante, Ärmel, Kettenglanz -->
+    <g fill="#fff" opacity=".55">
+      <path d="M104 106c8-3 26-3 32 0l-1 3c-8-2-22-2-30 0z"/>
+      <path d="M80 156c-4 12-7 28-8 42l-4 0c1-15 4-31 9-44z"/>
+      <path d="M166 224a12 12 0 0 1 8-4l0 3a9 9 0 0 0-6 3z"/>
+      <path d="M110 30c4-3 10-5 16-5l0 3c-5 0-10 2-14 4z"/>
+    </g>
+
+    <ellipse cx="120" cy="150" rx="66" ry="115" fill="url(#core)" opacity=".4"/>
+  </g>
+
+  <g fill="#ffe9b0">
+    <circle cx="60" cy="200" r="2.2"><animate attributeName="opacity" values="0;1;0" dur="3.4s" repeatCount="indefinite"/><animate attributeName="cy" values="210;140" dur="3.4s" repeatCount="indefinite"/></circle>
+    <circle cx="186" cy="180" r="1.8"><animate attributeName="opacity" values="0;1;0" dur="4.2s" begin="1.2s" repeatCount="indefinite"/><animate attributeName="cy" values="190;120" dur="4.2s" begin="1.2s" repeatCount="indefinite"/></circle>
+    <circle cx="120" cy="310" r="2"><animate attributeName="opacity" values="0;.9;0" dur="3.9s" begin="2.2s" repeatCount="indefinite"/><animate attributeName="cy" values="320;250" dur="3.9s" begin="2.2s" repeatCount="indefinite"/></circle>
   </g>
 </svg>
