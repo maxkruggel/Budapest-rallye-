@@ -590,9 +590,47 @@ function switchTab(tab) {
 
 function refreshMapLayers() {
   if (!map) return;
-  const sorted = sortedGameTasks();
+  const sorted = decorateFreeTasks(sortedGameTasks());
   renderTaskMarkers(sorted, S.game.completed, openTask, activeQuestId());
   updateRouteLine(sorted.filter(t => !S.game.completed[t.id]));
+}
+
+/* „Überall lösbar"-Quests bekommen virtuelle Karten-Punkte AUF der Route:
+   jeweils auf halber Strecke zwischen zwei Routen-Ankern (Start = eigene
+   Position, dann die offenen Orts-Quests in Live-Reihenfolge), mit kleinem
+   seitlichen Versatz. So zeigt die Karte IMMER alle Quests des Decks. */
+function decorateFreeTasks(sorted) {
+  const anchors = [];
+  if (lastPos) anchors.push({ lat: lastPos.lat, lng: lastPos.lng });
+  sorted.forEach(t => {
+    if (!S.game.completed[t.id] && !t.free && t.lat != null) anchors.push({ lat: t.lat, lng: t.lng });
+  });
+  if (!anchors.length) anchors.push({ ...RALLY_CENTER });
+  let k = 0;
+  return sorted.map(t => {
+    if (!(t.free || t.lat == null)) return t;
+    const c = { ...t };
+    if (anchors.length >= 2) {
+      const segCount = anchors.length - 1;
+      const seg = k % segCount;
+      const a = anchors[seg], b = anchors[seg + 1];
+      let lat = (a.lat + b.lat) / 2, lng = (a.lng + b.lng) / 2;
+      // senkrecht zur Strecke versetzen, abwechselnd links/rechts
+      const dx = b.lng - a.lng, dy = b.lat - a.lat;
+      const len = Math.hypot(dx, dy) || 1;
+      const off = 0.0009 * (1 + Math.floor(k / segCount)) * (k % 2 ? 1 : -1);
+      lat += (-dx / len) * off;
+      lng += (dy / len) * off;
+      c._vlat = lat; c._vlng = lng;
+    } else {
+      // nur ein Anker (kein GPS / keine Orts-Quests): kleiner Ring drumherum
+      const ang = (k * 2 * Math.PI) / 6;
+      c._vlat = anchors[0].lat + 0.0012 * Math.cos(ang);
+      c._vlng = anchors[0].lng + 0.0018 * Math.sin(ang);
+    }
+    k++;
+    return c;
+  });
 }
 
 /* GPS-Alters-Chip auf der Karte: zeigt, wie frisch die Position ist */
@@ -1351,6 +1389,7 @@ function renderCrew() {
         <input type="password" id="apikey-input" placeholder="sk-ant-…" value="${S.apiKey ? '••••••••' : ''}" autocomplete="off">
         <button class="btn ghost small-btn" id="apikey-save">${S.apiKey ? 'Ändern' : 'Aktivieren'}</button>
       </div>
+      ${S.apiKey ? '<button class="btn ghost small-btn" id="apikey-test">🔍 Key testen</button>' : ''}
       <p class="small ${S.apiKey ? '' : 'muted'}" id="apikey-status">${S.apiKey ? '✅ Prüfmeister wacht – Fotos werden von der KI begutachtet.' : 'Prüfmeister schläft – Fotos zählen per Ehrenwort + Basis-Check.'}</p>
     </div>`;
   html += `<p class="small muted center">Spielstand wird automatisch gespeichert –
@@ -1367,6 +1406,43 @@ function renderCrew() {
     S.apiKey = val; saveState(); renderCrew();
     Narrator.speak('Der Magische Prüfmeister ist erwacht. Ab jetzt wird jedes Beweisfoto begutachtet!');
     SFX.unlock();
+  };
+  const testBtn = $('#apikey-test');
+  if (testBtn) testBtn.onclick = async () => {
+    const status = $('#apikey-status');
+    testBtn.disabled = true;
+    status.textContent = '🧙 Der Prüfmeister wird geweckt …';
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': S.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-opus-4-8',
+          max_tokens: 16,
+          messages: [{ role: 'user', content: 'Antworte nur mit: OK' }]
+        })
+      });
+      if (res.ok) {
+        status.textContent = '✅ Prüfmeister antwortet – der Key funktioniert!';
+        SFX.unlock();
+        Narrator.speak('Der Prüfmeister ist wach und bereit, eure Fotos zu begutachten.');
+      } else if (res.status === 401) {
+        status.textContent = '❌ Key ungültig (401) – bitte prüfen und neu einfügen.';
+        SFX.nope();
+      } else {
+        status.textContent = `⚠️ Prüfmeister meldet HTTP ${res.status} – Key oder Kontingent prüfen.`;
+        SFX.nope();
+      }
+    } catch (e) {
+      status.textContent = '⚠️ Keine Verbindung zur KI (offline?). Fotos zählen derweil per Ehrenwort.';
+    } finally {
+      testBtn.disabled = false;
+    }
   };
   $('#tog-sound').onclick = () => {
     S.sound = !S.sound; saveState(); applyAudioIcon(); renderCrew();
@@ -1410,42 +1486,55 @@ function renderCrew() {
       ? `${n} deutsche ${n === 1 ? 'Stimme' : 'Stimmen'} gefunden. Die beste spricht zu euch.`
       : 'Noch keine deutsche Stimme gefunden. Einmal tippen, kurz warten, nochmal laden.');
   };
+  const showAllBtn = $('#voice-showall');
+  if (showAllBtn) showAllBtn.onclick = () => {
+    S.voiceShowAll = !S.voiceShowAll;
+    saveState();
+    renderCrew();
+  };
 }
 
 function renderVoicePicker() {
   if (!Narrator.available) {
     return '<p class="small muted">Dieses Gerät stellt leider keine Vorlesestimme bereit.</p>';
   }
-  const voices = Narrator.germanVoices();
-  if (!voices.length) {
-    return `
-    <div class="voice-picker">
-      <p class="small muted">Noch keine deutsche Stimme gefunden – iPhones rücken die Liste oft erst nach dem ersten Tippen raus.</p>
-      <button class="btn ghost small-btn" id="voice-reload">🔄 Stimmen neu laden</button>
-    </div>`;
-  }
+  const all = Narrator.allVoices();
+  const de = Narrator.germanVoices();
+  const hasSiri = Narrator.hasSiriVoice();
+  const showAll = !!S.voiceShowAll;
+  const voices = showAll ? all : de;
   Narrator.pickVoice();
   const current = S.voiceURI || (Narrator.voice ? Narrator.voice.voiceURI : '');
   const sorted = voices.slice().sort((a, b) => Narrator.scoreVoice(b) - Narrator.scoreVoice(a));
   const opts = sorted.map(v => {
     const s = (v.name + ' ' + (v.voiceURI || '')).toLowerCase();
     const mark = s.includes('siri') ? ' 🪄 Siri' : Narrator.scoreVoice(v) >= 25 ? ' ✨' : '';
-    return `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === current ? 'selected' : ''}>${escapeHtml(v.name)}${mark}</option>`;
+    const lang = showAll ? ` [${escapeHtml(v.lang || '?')}]` : '';
+    return `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === current ? 'selected' : ''}>${escapeHtml(v.name)}${lang}${mark}</option>`;
   }).join('');
   return `
     <div class="voice-picker">
-      <label class="small muted" for="voice-select">Stimme wählen (🪄 = eure installierte Siri-Stimme, ✨ = beste Qualität)</label>
+      <p class="small muted" id="voice-diagnose">📡 Gerät meldet <b>${all.length}</b> ${all.length === 1 ? 'Stimme' : 'Stimmen'},
+        davon <b>${de.length}</b> deutsch · Siri-Stimme: <b>${hasSiri ? 'gefunden ✅' : 'vom iPhone nicht freigegeben'}</b></p>
+      ${voices.length ? `
+      <label class="small muted" for="voice-select">Stimme wählen (🪄 = Siri, ✨ = beste Qualität)</label>
       <div class="voice-row">
         <select id="voice-select">${opts}</select>
         <button class="btn ghost small-btn" id="voice-preview">▶ Hörprobe</button>
+      </div>` : `
+      <p class="small muted">Noch keine ${showAll ? '' : 'deutsche '}Stimme gemeldet – iPhones rücken die Liste oft erst nach dem ersten Tippen raus.</p>`}
+      <div class="voice-tools">
+        <button class="btn ghost small-btn" id="voice-showall">${showAll ? '🇩🇪 Nur deutsche Stimmen' : '🌍 Alle Stimmen anzeigen (' + all.length + ')'}</button>
+        <button class="btn ghost small-btn" id="voice-reload">🔄 Stimmen neu laden</button>
       </div>
-      <button class="btn ghost small-btn" id="voice-reload">🔄 Stimmen neu laden (${voices.length} gefunden)</button>
-      <p class="small muted">📱 <b>Eure Siri-/Premium-Stimme laden:</b> Stimmen, die ihr unter
-      <b>Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch</b> installiert habt,
-      tauchen hier automatisch auf und werden bevorzugt – notfalls „🔄 Stimmen neu laden" tippen.
-      Zeigt iOS eine installierte Siri-Stimme trotzdem nicht an, gibt Apple sie leider nicht für Browser frei –
-      dann ist die „Premium"-/„Enhanced"-Variante von Anna oder Helena die beste Wahl; mit der
-      🧙-Dumbledore-Stimmlage klingt sie tief und weise.</p>
+      ${hasSiri ? '' : `
+      <div class="tip-box small">🪄 <b>Warum fehlt eure Siri-Stimme?</b> Apple gibt Siri-Stimmen grundsätzlich
+      nicht an Browser und Web-Apps frei – keine Website kann sie abspielen, das ist eine iOS-Sperre und kein
+      Fehler der Rallye. Der beste Ersatz: Unter <b>Einstellungen → Bedienungshilfen → Gesprochene Inhalte →
+      Stimmen → Deutsch</b> die Stimme <b>„Anna (Premium)"</b> oder <b>„Helena (Premium)"</b> laden – die
+      erscheint danach hier in der Liste (notfalls „🔄 Stimmen neu laden") und klingt mit der
+      🧙-Dumbledore-Stimmlage fast so würdevoll. Über „🌍 Alle Stimmen anzeigen" seht ihr außerdem ALLES,
+      was euer iPhone wirklich meldet – falls eure Stimme unter anderem Namen läuft, wählt sie einfach dort.</div>`}
     </div>`;
 }
 

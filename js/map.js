@@ -132,12 +132,21 @@ function updateUserMarker() {
   if (followMe) map.panTo(ll, { animate: true });
 }
 
-/* Gestrichelte Gold-Route: eigene Position → offene Quests in Live-Reihenfolge */
+/* Koordinaten einer Quest auf der Karte: echter Ort oder virtueller
+   Routen-Punkt (freie „überall lösbar"-Quests, gesetzt in refreshMapLayers) */
+function taskLatLng(t) {
+  if (!t.free && t.lat != null) return [t.lat, t.lng];
+  if (t._vlat != null) return [t._vlat, t._vlng];
+  return null;
+}
+
+/* Gestrichelte Gold-Route: eigene Position → ALLE offenen Quests
+   in Live-Reihenfolge (inkl. virtueller Punkte der freien Quests) */
 function updateRouteLine(orderedTasks) {
   if (!map) return;
   const pts = [];
   if (lastPos) pts.push([lastPos.lat, lastPos.lng]);
-  orderedTasks.forEach(t => { if (!t.free && t.lat != null) pts.push([t.lat, t.lng]); });
+  orderedTasks.forEach(t => { const ll = taskLatLng(t); if (ll) pts.push(ll); });
   if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
   if (pts.length >= 2) {
     routeLine = L.polyline(pts, {
@@ -146,32 +155,52 @@ function updateRouteLine(orderedTasks) {
   }
 }
 
+/* Marker werden IN-PLACE aktualisiert (kein Zerstören/Neubauen) –
+   dadurch überlebt ein offenes Popup jeden GPS-/Render-Zyklus. */
 function renderTaskMarkers(tasks, completedMap, onOpen, activeId) {
   if (!map) return;
-  Object.values(taskMarkers).forEach(m => map.removeLayer(m));
-  taskMarkers = {};
+  const seen = new Set();
   tasks.forEach((t, i) => {
-    if (t.free || t.lat == null) return;
+    const ll = taskLatLng(t);
+    if (!ll) return;
+    seen.add(t.id);
     const done = !!completedMap[t.id];
-    const icon = L.divIcon({
-      className: 'task-pin-wrap',
-      html: `<div class="task-pin ${done ? 'done' : ''} cat-${t.cat} ${t.id === activeId ? 'pulse' : ''}">
+    const isFree = t.free || t.lat == null;
+    const html = `<div class="task-pin ${done ? 'done' : ''} cat-${t.cat} ${t.id === activeId ? 'pulse' : ''} ${isFree ? 'free' : ''}">
                <span class="pin-num">${done ? '✓' : i + 1}</span>
-             </div>`,
+             </div>`;
+    const icon = () => L.divIcon({
+      className: 'task-pin-wrap', html,
       iconSize: [34, 40], iconAnchor: [17, 38], popupAnchor: [0, -36]
     });
-    const mk = L.marker([t.lat, t.lng], { icon }).addTo(map);
-    mk.bindPopup(
-      `<div class="pin-pop">
-         <strong>${CATS[t.cat].icon} ${t.title}</strong>
-         <div class="pin-place">${t.place || ''}</div>
-         <button class="pin-open" data-task="${t.id}">Aufgabe öffnen</button>
-       </div>`);
-    mk.on('popupopen', e => {
-      const btn = e.popup.getElement().querySelector('.pin-open');
-      if (btn) btn.onclick = () => { map.closePopup(); onOpen(t.id); };
-    });
-    taskMarkers[t.id] = mk;
+    let mk = taskMarkers[t.id];
+    if (!mk) {
+      mk = L.marker(ll, { icon: icon() }).addTo(map);
+      mk.bindPopup(
+        `<div class="pin-pop">
+           <strong>${CATS[t.cat].icon} ${t.title}</strong>
+           <div class="pin-place">${isFree ? '🃏 überall lösbar – der Punkt liegt auf eurer Route' : (t.place || '')}</div>
+           <button class="pin-open" data-task="${t.id}">Aufgabe öffnen</button>
+         </div>`, { autoClose: true, closeOnClick: false });
+      mk.on('popupopen', e => {
+        const btn = e.popup.getElement().querySelector('.pin-open');
+        if (btn) btn.onclick = () => { map.closePopup(); onOpen(t.id); };
+      });
+      mk._iconHtml = html;
+      taskMarkers[t.id] = mk;
+    } else {
+      // Marker mit offenem Popup NICHT anfassen – sonst verschwindet das Popup
+      const popupOpen = map._popup && map._popup._source === mk;
+      if (!popupOpen) {
+        const cur = mk.getLatLng();
+        if (Math.abs(cur.lat - ll[0]) > 1e-9 || Math.abs(cur.lng - ll[1]) > 1e-9) mk.setLatLng(ll);
+        if (mk._iconHtml !== html) { mk.setIcon(icon()); mk._iconHtml = html; }
+      }
+    }
+  });
+  // Quests, die das Deck verlassen haben (Joker), aufräumen
+  Object.keys(taskMarkers).forEach(id => {
+    if (!seen.has(id)) { map.removeLayer(taskMarkers[id]); delete taskMarkers[id]; }
   });
 }
 

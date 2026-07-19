@@ -155,10 +155,19 @@ const Narrator = {
   },
 
   /* --- Geraetestimme: beste verfuegbare deutsche Stimme waehlen --- */
-  germanVoices() {
+  allVoices() {
     if (!this.available) return [];
-    return (speechSynthesis.getVoices() || [])
+    return speechSynthesis.getVoices() || [];
+  },
+
+  germanVoices() {
+    return this.allVoices()
       .filter(v => (v.lang || '').toLowerCase().startsWith('de'));
+  },
+
+  hasSiriVoice() {
+    return this.allVoices().some(v =>
+      ((v.name || '') + ' ' + (v.voiceURI || '')).toLowerCase().includes('siri'));
   },
 
   scoreVoice(v) {
@@ -175,12 +184,13 @@ const Narrator = {
   },
 
   pickVoice() {
-    const de = this.germanVoices();
-    if (!de.length) { this.voice = null; return; }
+    // Vom User gewaehlte Stimme darf JEDE Sprache haben (Alle-Stimmen-Picker)
     if (S.voiceURI) {
-      const chosen = de.find(v => v.voiceURI === S.voiceURI);
+      const chosen = this.allVoices().find(v => v.voiceURI === S.voiceURI);
       if (chosen) { this.voice = chosen; return; }
     }
+    const de = this.germanVoices();
+    if (!de.length) { this.voice = null; return; }
     this.voice = de.slice().sort((a, b) => this.scoreVoice(b) - this.scoreVoice(a))[0];
   },
 
@@ -229,7 +239,8 @@ const Narrator = {
       sentences.forEach(sent => {
         const u = new SpeechSynthesisUtterance(sent.trim());
         if (this.voice) u.voice = this.voice;
-        u.lang = 'de-DE';
+        // Fremdsprachige Wunsch-Stimme? Dann ihre Sprache setzen, sonst Deutsch
+        u.lang = (this.voice && this.voice.lang) || 'de-DE';
         // opts wirken als Multiplikator auf die gewaehlte Stimmlage
         u.rate = Math.min(2, Math.max(0.5, style.rate * (opts.rate != null ? opts.rate : 1)));
         u.pitch = Math.min(2, Math.max(0.1, style.pitch * (opts.pitch != null ? opts.pitch : 1)));
@@ -254,13 +265,13 @@ const Narrator = {
   },
 
   preview(voiceURI) {
-    const v = this.germanVoices().find(x => x.voiceURI === voiceURI);
+    const v = this.allVoices().find(x => x.voiceURI === voiceURI);
     if (!v) return;
     this.stop();
     try {
       const style = voiceStyle();
       const u = new SpeechSynthesisUtterance('Hoert, Abenteurer der Nacht! So klingt eure Erzaehlerstimme.');
-      u.voice = v; u.lang = 'de-DE';
+      u.voice = v; u.lang = v.lang || 'de-DE';
       u.pitch = style.pitch; u.rate = style.rate;
       speechSynthesis.speak(u);
     } catch (e) {}
@@ -278,9 +289,14 @@ if (Narrator.available) {
     Narrator.warmupVoices();
   };
   Narrator.warmupVoices();
-  // iOS gibt die volle Stimmenliste (inkl. installierter Premium-/Siri-Stimmen)
+  // iOS gibt die volle Stimmenliste (inkl. installierter Premium-Stimmen)
   // teils erst nach der ersten Beruehrung frei – dann einmal nachladen.
   document.addEventListener('pointerdown', () => Narrator.reloadVoices(), { once: true });
+  // App kommt aus dem Hintergrund (z. B. nach Stimmen-Download in den
+  // iOS-Einstellungen): Liste erneut abfragen.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') Narrator.reloadVoices();
+  });
 }
 Narrator.loadClips();
 

@@ -13,6 +13,7 @@ const DEFAULT_STATE = () => ({
   voice: true,     // magische Erzählerstimme
   voiceURI: null,  // vom User gewählte Gerätestimme
   voiceStyle: 'wizard',  // Stimmlage: 'wizard' (Dumbledore) | 'fee' | 'neutral'
+  voiceShowAll: false,   // Stimmen-Picker: alle Sprachen statt nur Deutsch zeigen
   apiKey: null,    // optional: Anthropic-API-Key für den Magischen Prüfmeister
   archive: [],     // Halle der Legenden: abgeschlossene Rallyes
   settings: {
@@ -38,6 +39,7 @@ function loadState() {
         if (s.voice === undefined) s.voice = true;
         if (s.voiceURI === undefined) s.voiceURI = null;
         if (s.voiceStyle === undefined) s.voiceStyle = 'wizard';
+        if (s.voiceShowAll === undefined) s.voiceShowAll = false;
         if (s.apiKey === undefined) s.apiKey = null;
         if (!Array.isArray(s.archive)) s.archive = [];
         if (s.settings && s.settings.gamemode === undefined) s.settings.gamemode = 'night';
