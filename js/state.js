@@ -9,6 +9,8 @@ const DEFAULT_STATE = () => ({
   theme: 'night',
   screen: 'splash',
   secretUnlocked: false,
+  sound: true,   // Soundeffekte
+  voice: true,   // magische Erzählerstimme
   settings: {
     players: ['', '', '', ''],
     mode: 'coop',            // 'coop' | 'versus'
@@ -25,7 +27,12 @@ function loadState() {
     const raw = localStorage.getItem(STATE_KEY);
     if (raw) {
       const s = JSON.parse(raw);
-      if (s && s.version === 1) return s;
+      if (s && s.version === 1) {
+        // Migration: neue Audio-Flags für ältere Spielstände
+        if (s.sound === undefined) s.sound = true;
+        if (s.voice === undefined) s.voice = true;
+        return s;
+      }
     }
   } catch (e) { console.warn('State kaputt, starte frisch', e); }
   return DEFAULT_STATE();

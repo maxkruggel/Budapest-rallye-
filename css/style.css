@@ -526,6 +526,75 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .ar-preview-actions .btn { flex: 1; }
 .ar-preview-actions .btn.ghost { border-color: #555; color: #fff; }
 
+/* ---------- Quest-Layer: Animationen ---------- */
+
+/* Glühwürmchen auf dem Splash */
+#fireflies { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.firefly {
+  position: absolute; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px 2px rgba(255, 193, 69, .65);
+  opacity: 0;
+  animation: fly 8s ease-in-out infinite, glowblink 3s ease-in-out infinite;
+}
+:root[data-theme="day"] .firefly { opacity: 0 !important; animation: none; }
+@keyframes fly {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(24px, -30px); }
+  50% { transform: translate(-16px, -54px); }
+  75% { transform: translate(12px, -20px); }
+}
+@keyframes glowblink { 0%, 100% { opacity: 0; } 50% { opacity: .9; } }
+
+/* Quest-Karten fliegen gestaffelt ein */
+.ticket.anim-in { animation: ticketIn .45s cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes ticketIn {
+  from { opacity: 0; transform: translateY(22px) scale(.96); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Aktive Quest glüht */
+.ticket.active-quest {
+  border-color: var(--gold);
+  animation: questglow 2.4s ease-in-out infinite;
+}
+@keyframes questglow {
+  0%, 100% { box-shadow: var(--shadow), 0 0 0 0 rgba(255, 193, 69, .0); }
+  50% { box-shadow: var(--shadow), 0 0 22px 2px rgba(255, 193, 69, .4); }
+}
+.badge.active { background: var(--gold-soft); border-color: var(--gold); color: var(--gold); }
+:root[data-theme="day"] .badge.active { color: #7a5500; }
+
+/* Konfetti */
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 95; overflow: hidden; }
+.confetti-piece {
+  position: absolute; width: 9px; height: 13px; border-radius: 2px;
+  animation: confetti 1.55s cubic-bezier(.2, .6, .4, 1) forwards;
+}
+@keyframes confetti {
+  0% { transform: translate(-50%, -50%) rotate(0); opacity: 1; }
+  60% { opacity: 1; }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 240px)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+/* Rang-Karte & Audio-Einstellungen im Crew-Tab */
+.rank-card {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(120deg, var(--gold-soft), transparent 70%), var(--surface);
+  border: 1.5px solid var(--gold); border-radius: var(--r);
+  padding: 14px 18px; box-shadow: var(--shadow);
+}
+.rank-icon { font-size: 2rem; filter: drop-shadow(0 0 10px rgba(255,193,69,.6)); }
+.rank-name { font-family: var(--font-d); font-weight: 800; font-size: 1.15rem; }
+.audio-card .toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; gap: 10px; cursor: pointer;
+}
+.foot-btns { display: flex; gap: 8px; }
+
 /* ---------- A11y & Motion ---------- */
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {

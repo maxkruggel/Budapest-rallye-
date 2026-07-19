@@ -14,6 +14,8 @@ let wakeLock = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(S.theme);
+  applyAudioIcon();
+  spawnFireflies();
   bindStatic();
   startGeo(onGeoUpdate);
   if (S.game && !S.game.finished) {
@@ -35,6 +37,12 @@ function bindStatic() {
   };
   $('#btn-theme').onclick = toggleTheme;
   $('#btn-theme-splash').onclick = toggleTheme;
+  $('#btn-audio').onclick = () => {
+    const anyOn = S.sound || S.voice;
+    S.sound = !anyOn; S.voice = !anyOn;
+    if (!anyOn) SFX.chime(); else Narrator.stop();
+    saveState(); applyAudioIcon();
+  };
 
   $$('.navbtn').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
@@ -97,6 +105,11 @@ function applyTheme(theme) {
   if (meta) meta.content = theme === 'day' ? '#f6efdf' : '#10132b';
   $$('.theme-icon').forEach(el => el.textContent = theme === 'night' ? '☀️' : '🌙');
   if (map) setMapTheme(theme);
+}
+
+function applyAudioIcon() {
+  const el = $('#audio-icon');
+  if (el) el.textContent = (S.sound || S.voice) ? '🔊' : '🔇';
 }
 
 async function requestWakeLock() {
@@ -297,11 +310,14 @@ function startGame() {
   };
   saveState();
   enterGame();
+  SFX.chime();
+  Narrator.speak('Willkommen, Abenteurer der Nacht! Budapest liegt euch zu Füßen. Euer Quest-Log ist geschrieben – möge die Laterne euch leuchten!');
 }
 
 function enterGame() {
   showScreen('game');
   renderHud();
+  listAnimated = false;
   renderTaskList();
   switchTab('tasks');
   if (tickInterval) clearInterval(tickInterval);
@@ -345,8 +361,15 @@ function tick() {
   el.textContent = (left < 0 ? '−' : '') + str;
   el.classList.toggle('overtime', left < 0);
   el.classList.toggle('lastmins', left >= 0 && left < 5 * 60000);
+  if (left >= 0 && left < 5 * 60000 && !g.warned5) {
+    g.warned5 = true; saveState();
+    SFX.gong();
+    Narrator.speak('Die Sanduhr rinnt, Abenteurer – nur noch fünf Minuten!');
+  }
   if (left < 0 && $('#time-up-banner').hidden) {
     $('#time-up-banner').hidden = false;
+    SFX.gong();
+    Narrator.speak('Die Stunde ist gekommen! Eure Zeit ist abgelaufen.');
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   }
 }
@@ -373,15 +396,23 @@ function switchTab(tab) {
 
 /* ---------------- Aufgabenliste ---------------- */
 
+let listAnimated = false;
+
 function renderTaskList() {
   const g = S.game;
   const list = $('#task-list');
   list.innerHTML = '';
-  gameTasks().forEach((t, i) => {
+  const tasks = gameTasks();
+  const activeIdx = tasks.findIndex(t => !g.completed[t.id] && !taskLocked(t));
+  tasks.forEach((t, i) => {
     const done = g.completed[t.id];
     const locked = taskLocked(t);
     const card = document.createElement('button');
-    card.className = `ticket cat-${t.cat} ${done ? 'done' : ''} ${locked ? 'locked' : ''}`;
+    card.className = `ticket cat-${t.cat} ${done ? 'done' : ''} ${locked ? 'locked' : ''} ${i === activeIdx ? 'active-quest' : ''}`;
+    if (!listAnimated) {
+      card.classList.add('anim-in');
+      card.style.animationDelay = Math.min(i * 45, 600) + 'ms';
+    }
     card.dataset.task = t.id;
     const dist = (!t.free && t.lat != null && lastPos) ? fmtDist(distMeters(lastPos, t)) : '';
     const reqTitle = locked ? (TASKS.find(x => x.id === t.requires) || {}).title : '';
@@ -392,6 +423,7 @@ function renderTaskList() {
           <span class="badge">${CATS[t.cat].icon} ${CATS[t.cat].label}</span>
           ${t.complicated ? '<span class="badge hard">★ knifflig</span>' : ''}
           ${locked ? '<span class="badge lock">🔒 gesperrt</span>' : ''}
+          ${i === activeIdx ? '<span class="badge active">▶ aktive Quest</span>' : ''}
         </div>
         <h3>${locked ? 'Agentenmission ' + t.step + '/3: ???' : t.title}</h3>
         <div class="ticket-meta">
@@ -408,6 +440,7 @@ function renderTaskList() {
     card.onclick = () => openTask(t.id);
     list.appendChild(card);
   });
+  listAnimated = true;
   updateScores();
   $('#joker-count').textContent = g.jokersLeft;
   $('#btn-joker').disabled = g.jokersLeft <= 0;
@@ -460,6 +493,7 @@ function openTask(id) {
   const done = g.completed[id];
 
   if (taskLocked(t) && !done) {
+    SFX.nope();
     const req = TASKS.find(x => x.id === t.requires);
     $('#task-badge').innerHTML = `<span class="badge lock">🔒 Agentenmission – Teil ${t.step}</span>`;
     $('#task-title').textContent = 'Streng geheim';
@@ -468,6 +502,7 @@ function openTask(id) {
     $('#task-points').textContent = t.points + ' Punkte';
     $('#task-gmaps').hidden = true;
     $('#task-actions').innerHTML = '';
+    $('#btn-speak').onclick = () => Narrator.speak('Diese Akte ist versiegelt. Erfüllt erst den vorherigen Teil der Mission.');
     $('#ov-task').classList.add('open');
     return;
   }
@@ -504,9 +539,21 @@ function openTask(id) {
     buildVerifyUI(t, act);
   }
   ov.classList.add('open');
+
+  // Quest-Sound + magische Erzählerstimme
+  SFX.quest();
+  if (!done) Narrator.speakQuest(t);
+  $('#btn-speak').onclick = () => {
+    if (Narrator.available && speechSynthesis.speaking) Narrator.stop();
+    else Narrator.speakQuest(t);
+  };
 }
 
-function closeTask() { $('#ov-task').classList.remove('open'); currentTaskId = null; }
+function closeTask() {
+  $('#ov-task').classList.remove('open');
+  currentTaskId = null;
+  Narrator.stop();
+}
 
 function buildVerifyUI(t, act) {
   if (t.verify === 'photo') {
@@ -550,6 +597,7 @@ function buildVerifyUI(t, act) {
         const fb = $('#quiz-fb');
         fb.textContent = '❌ Leider nein – schaut nochmal genau hin!';
         fb.classList.remove('shake'); void fb.offsetWidth; fb.classList.add('shake');
+        SFX.nope();
         if (navigator.vibrate) navigator.vibrate(120);
       }
     };
@@ -624,6 +672,7 @@ function completeTask(t, extra) {
   const points = extra.points != null ? extra.points : t.points;
 
   const finish = team => {
+    const rankBefore = rankFor(g.scores[0] + g.scores[1]);
     g.completed[t.id] = { at: Date.now(), points, team, photoId: extra.photoId || null, answer: extra.answer || null };
     g.scores[team] += points;
     saveState();
@@ -632,6 +681,22 @@ function completeTask(t, extra) {
     if (map) renderTaskMarkers(gameTasks(), g.completed, openTask);
     if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
     showStampToast(t, points);
+    SFX.stamp();
+    setTimeout(() => SFX.coins(), 250);
+    confettiBurst();
+    Narrator.praise(points);
+    const rankAfter = rankFor(g.scores[0] + g.scores[1]);
+    if (rankAfter !== rankBefore) {
+      setTimeout(() => {
+        SFX.fanfare();
+        Narrator.speak(`Rangaufstieg! Ihr seid nun ${rankAfter.name}!`, { pitch: 1.25 });
+        const el = $('#stamp-toast');
+        el.innerHTML = `<div class="stamp-inner secret">${rankAfter.icon} RANGAUFSTIEG<br><b>${rankAfter.name}</b></div>`;
+        el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2600);
+        confettiBurst(40);
+      }, 2400);
+    }
     if (Object.keys(g.completed).length === g.taskIds.length) {
       setTimeout(() => {
         if (confirm('🎉 ALLE Aufgaben erledigt! Rallye beenden und zur Siegerehrung?')) finishGame();
@@ -664,7 +729,18 @@ function renderCrew() {
   const box = $('#crew-box');
   const done = Object.keys(g.completed).length;
   const elapsed = Math.round((Date.now() - g.startedAt) / 60000);
+  const total = g.scores[0] + g.scores[1];
+  const rank = rankFor(total);
+  const next = RANKS.find(r => r.min > total);
   let html = `
+    <div class="rank-card">
+      <span class="rank-icon">${rank.icon}</span>
+      <div>
+        <div class="rank-name">${rank.name}</div>
+        <div class="small muted">${next ? `Noch ${next.min - total} XP bis „${next.name}"` : 'Höchster Rang erreicht – Legenden!'}</div>
+      </div>
+    </div>`;
+  html += `
     <div class="crew-stats">
       <div class="stat"><b>${done}</b><span>erledigt</span></div>
       <div class="stat"><b>${g.taskIds.length - done}</b><span>offen</span></div>
@@ -685,9 +761,27 @@ function renderCrew() {
       <p>${st.players.map(escapeHtml).join(', ')}</p>
       <div class="crew-score">${g.scores[0] + g.scores[1]} Pkt gemeinsam</div></div>`;
   }
+  html += `
+    <div class="card audio-card">
+      <h3>🎚️ Klang der Nacht</h3>
+      <label class="toggle-row"><span>🔔 Soundeffekte</span>
+        <button class="tbtn a ${S.sound ? 'sel' : ''}" id="tog-sound">${S.sound ? 'an' : 'aus'}</button></label>
+      <label class="toggle-row"><span>🔮 Magische Erzählerstimme</span>
+        <button class="tbtn a ${S.voice ? 'sel' : ''}" id="tog-voice">${S.voice ? 'an' : 'aus'}</button></label>
+      ${Narrator.available ? '' : '<p class="small muted">Dieses Gerät stellt leider keine Vorlesestimme bereit.</p>'}
+    </div>`;
   html += `<p class="small muted center">Spielstand wird automatisch gespeichert –
     ihr könnt die App jederzeit schließen und weiterspielen.</p>`;
   box.innerHTML = html;
+  $('#tog-sound').onclick = () => {
+    S.sound = !S.sound; saveState(); applyAudioIcon(); renderCrew();
+    if (S.sound) SFX.chime();
+  };
+  $('#tog-voice').onclick = () => {
+    S.voice = !S.voice; saveState(); applyAudioIcon(); renderCrew();
+    if (S.voice) Narrator.speak('Die Stimme der Nacht ist erwacht.');
+    else Narrator.stop();
+  };
 }
 
 /* ---------------- Finale ---------------- */
@@ -698,6 +792,9 @@ function finishGame() {
   saveState();
   if (tickInterval) clearInterval(tickInterval);
   showFinal();
+  SFX.fanfare();
+  confettiBurst(48);
+  setTimeout(() => confettiBurst(32), 900);
 }
 
 async function showFinal() {
@@ -721,8 +818,10 @@ async function showFinal() {
     headline = total >= 200 ? '🏆 Legendäre Nacht!' : total >= 100 ? '🌟 Starke Runde!' : '🌙 Guter Anfang!';
     sub = `${total} Punkte, ${done} von ${g.taskIds.length} Aufgaben in ${mins} Minuten.`;
   }
+  const rank = rankFor(total);
   $('#final-headline').textContent = headline;
-  $('#final-sub').textContent = sub;
+  $('#final-sub').textContent = sub + ` Euer Rang: ${rank.icon} ${rank.name}.`;
+  Narrator.speak(`${headline.replace(/[^\wäöüÄÖÜß !:.,-]/g, '')} ${sub} Ihr tragt fortan den Rang: ${rank.name}. Die Nacht wird sich an euch erinnern.`);
 
   const list = $('#final-list');
   list.innerHTML = '';
@@ -762,6 +861,7 @@ async function openAR(t) {
   ov.classList.add('open');
   $('#ar-story h3').textContent = ghost.name;
   $('#ar-story p').textContent = t.story;
+  Narrator.speak(`Der Schleier öffnet sich. ${ghost.name}. ${t.story}`);
   $('#ar-hint').textContent = 'Kamera startet …';
   $('#ar-preview').hidden = true;
   $('#ar-live').hidden = false;
@@ -826,6 +926,7 @@ function onHeading(ev, target) {
       arGhostVisible = true;
       img.classList.add('appear');
       $('#ar-hint').textContent = '👻 Da! Haltet drauf und drückt den Auslöser!';
+      SFX.ghost();
       if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
     }
   } else {
@@ -840,6 +941,7 @@ function showGhostFree() {
   arGhostVisible = true;
   const img = $('#ar-ghost');
   img.classList.add('appear');
+  SFX.ghost();
   $('#ar-hint').textContent = '👻 Der Geist ist da! Verschiebt ihn mit dem Finger, dann Auslöser drücken.';
 }
 

@@ -23,6 +23,7 @@
     <button class="theme-btn corner" id="btn-theme-splash" aria-label="Tag/Nacht wechseln"><span class="theme-icon">☀️</span></button>
     <div class="splash-inner">
       <div class="splash-lamp"></div>
+      <div id="fireflies" aria-hidden="true"></div>
       <p class="eyebrow">Bezirk V · Pest · nach Einbruch der Dunkelheit</p>
       <h1 class="splash-title">BUDAPEST<br><span>NACHT-RALLYE</span></h1>
       <p class="splash-sub">Eine Schnitzeljagd durch 150 Jahre Stadtgeschichte.<br>
@@ -100,6 +101,7 @@
           <span class="score-chip a">🏮 <b id="scoreA">0</b></span>
           <span class="score-chip b">🌶️ <b id="scoreB">0</b></span>
         </span>
+        <button class="theme-btn" id="btn-audio" aria-label="Ton an/aus"><span id="audio-icon">🔊</span></button>
         <button class="theme-btn" id="btn-theme" aria-label="Tag/Nacht wechseln"><span class="theme-icon">☀️</span></button>
         <button class="theme-btn" id="btn-endgame" aria-label="Rallye beenden">🏁</button>
       </div>
@@ -114,7 +116,7 @@
     <main class="game-body">
       <div class="tab active" id="tab-tasks">
         <div class="joker-bar">
-          <span class="small muted">Eure Aufgaben-Tickets – antippen zum Lösen</span>
+          <span class="small muted">⚔️ Euer Quest-Log – Quest antippen</span>
           <button class="btn ghost small-btn" id="btn-joker">🃏 Joker (<span id="joker-count">2</span>)</button>
         </div>
         <div id="task-list"></div>
@@ -128,7 +130,7 @@
     </main>
 
     <nav class="bottom-nav">
-      <button class="navbtn sel" data-tab="tasks">🎟️<span>Tickets</span></button>
+      <button class="navbtn sel" data-tab="tasks">🎟️<span>Quests</span></button>
       <button class="navbtn" data-tab="map">🗺️<span>Karte</span></button>
       <button class="navbtn" data-tab="crew">👥<span>Crew</span></button>
     </nav>
@@ -163,7 +165,10 @@
       <p class="task-desc" id="task-desc"></p>
       <div class="task-foot">
         <span class="points-pill" id="task-points"></span>
-        <a class="btn ghost small-btn" id="task-gmaps" target="_blank" rel="noopener">🧭 Google Maps</a>
+        <span class="foot-btns">
+          <button class="btn ghost small-btn" id="btn-speak" aria-label="Quest vorlesen">🔮 Vorlesen</button>
+          <a class="btn ghost small-btn" id="task-gmaps" target="_blank" rel="noopener">🧭 Maps</a>
+        </span>
       </div>
       <div id="task-actions" class="task-actions"></div>
     </div>
@@ -201,12 +206,14 @@
     <canvas id="ar-canvas" hidden></canvas>
   </div>
 
-  <!-- Stempel-Toast -->
+  <!-- Stempel-Toast + Konfetti -->
   <div id="stamp-toast" aria-live="polite"></div>
+  <div id="confetti" aria-hidden="true"></div>
 
   <script src="vendor/leaflet.js"></script>
   <script src="js/tasks.js"></script>
   <script src="js/state.js"></script>
+  <script src="js/audio.js"></script>
   <script src="js/map.js"></script>
   <script src="js/app.js"></script>
 </body>
