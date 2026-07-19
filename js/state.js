@@ -8,6 +8,7 @@ const DEFAULT_STATE = () => ({
   version: 1,
   theme: 'night',
   screen: 'splash',
+  secretUnlocked: false,
   settings: {
     players: ['', '', '', ''],
     mode: 'coop',            // 'coop' | 'versus'

@@ -261,6 +261,78 @@ const TASKS = [
     desc: 'Die Mutter aller Ruinenbars – kein Eintritt, einfach reingehen und staunen: ein verfallenes Haus voller Trabant-Hälften, Badewannen-Sofas und Glühbirnen-Wäldern. Ein Getränk, dann Beweisfoto im absurdesten Winkel, den ihr findet.'
   },
 
+  /* ---------- 🕵️ AGENTENMISSION (Ketten-Aufgaben) ---------- */
+  {
+    id: 'spy1', cat: 'fun', title: 'Agentenmission 1/3: Das Briefing',
+    chain: 'spy', step: 1,
+    place: 'Szabadság tér, beim spazierenden Präsidenten',
+    lat: 47.5041, lng: 19.0500, points: 20, verify: 'photo',
+    desc: 'Budapest war im Kalten Krieg DIE Spionage-Hauptstadt Europas – zwischen US-Botschaft und Sowjet-Denkmal liegen hier 50 Meter. Eure Mission beginnt: Trefft euch mit „Agent R." (der Bronzeherr, der über den Platz spaziert) zum geheimen Briefing. Beweisfoto: konspiratives Gespräch, alle mit hochgeschlagenem Kragen.\n\n🎯 MERKT EUCH FÜR TEIL 2: Das Codewort ist der VORNAME des Präsidenten.'
+  },
+  {
+    id: 'spy2', cat: 'fun', title: 'Agentenmission 2/3: Der tote Briefkasten',
+    chain: 'spy', step: 2, requires: 'spy1',
+    place: 'Beim dicken Polizisten, Zrínyi utca',
+    lat: 47.5006, lng: 19.0510, points: 25, verify: 'quiz',
+    desc: 'Der dickste Informant der Stadt wartet auf der Zrínyi utca. Er rückt seine Information nur raus, wenn ihr das Losungswort aus dem Briefing kennt. Flüstert es ihm zu (wirklich! Passanten-Irritation ist Teil der Mission) und gebt es dann hier ein.',
+    quiz: {
+      q: 'Wie lautet das Losungswort? (Teil 1 der Mission verrät es.)',
+      accept: ['ronald'],
+      hint: 'Der Vorname des Präsidenten vom Freiheitsplatz. R…',
+      reveal: 'RONALD – wie Ronald Reagan, der 50 Meter vom letzten Sowjet-Denkmal entfernt spaziert.'
+    }
+  },
+  {
+    id: 'spy3', cat: 'fun', title: 'Agentenmission 3/3: Die Übergabe', complicated: true,
+    chain: 'spy', step: 3, requires: 'spy2',
+    place: 'Unterm Löwen der Kettenbrücke, Pester Seite',
+    lat: 47.4989, lng: 19.0455, points: 45, verify: 'photo',
+    desc: 'Finale der Mission: die Übergabe. Unterm steinernen Löwen wechselt ein unauffälliges Päckchen (Snack, Zettel, was auch immer) den Besitzer. Beweisfoto: der Übergabemoment – zwei tauschen das Päckchen mit todernster Miene, die anderen sichern in VERSCHIEDENE Richtungen wie sehr, sehr schlechte Spione. Zeitungsloch zum Durchgucken gibt Stilpunkte.'
+  },
+
+  /* ---------- 🥚 EASTER EGGS: Die Mini-Statuen & Co. ---------- */
+  {
+    id: 'egg-squirrel', cat: 'egg', title: 'Kolodko-Mini: Das tote Eichhörnchen',
+    place: 'Szabadság tér, Nähe US-Botschaft (niedrig suchen!)',
+    lat: 47.5048, lng: 19.0508, points: 35, verify: 'photo',
+    desc: 'Der Guerilla-Bildhauer Mihály Kolodko versteckt seit Jahren winzige Bronze-Figuren in der Stadt – ohne Genehmigung, über Nacht montiert. Auf dem Freiheitsplatz liegt sein berüchtigtstes Werk: ein totes Eichhörnchen mit Revolver (eine Anspielung auf einen absurden US-Diplomaten-Witz). Es ist ~10 cm klein und sitzt auf einem Poller – Handylampe an, tief bücken, suchen! Beweisfoto: das Eichhörnchen in Großaufnahme.'
+  },
+  {
+    id: 'egg-kermit', cat: 'egg', title: 'Kolodko-Mini: Der Frosch',
+    place: 'Szabadság tér, am Geländer Richtung Park',
+    lat: 47.5040, lng: 19.0506, points: 35, verify: 'photo',
+    desc: 'Noch ein Kolodko: Ein sehr bekannter grüner Frosch (ihr kennt ihn aus dem Fernsehen) sitzt in Miniatur auf einem Geländer am Freiheitsplatz und schaut melancholisch ins Grüne. Findet ihn und macht ein Foto, auf dem einer von euch GENAU seinen Gesichtsausdruck imitiert.'
+  },
+  {
+    id: 'egg-rubik', cat: 'egg', title: 'Kolodko-Mini: Der schmelzende Würfel', minMin: 60,
+    place: 'Unteres Donauufer bei der Akademie der Wissenschaften',
+    lat: 47.5008, lng: 19.0450, points: 35, verify: 'photo',
+    desc: 'Der Zauberwürfel ist eine ungarische Erfindung (Ernő Rubik, 1974!) – und Kolodko hat ihm ein Denkmal gesetzt: ein kleiner Würfel, der wie Dalís Uhren über die Kaimauer am unteren Donauufer schmilzt. Runter zur Wasserkante (Treppen bei der Akademie), Mauer absuchen. Beweisfoto: der Würfel + im Hintergrund die beleuchtete Kettenbrücke. Vorsicht an der Kante!'
+  },
+  {
+    id: 'egg-peacock', cat: 'egg', title: 'Die Pfauen im Tor', minMin: 60,
+    place: 'Gresham-Palast, Széchenyi tér',
+    lat: 47.4993, lng: 19.0477, points: 25, verify: 'quiz',
+    desc: 'Der Gresham-Palast ist Budapests Jugendstil-Juwel. Kaum jemand schaut genau hin: In den schmiedeeisernen Toren stecken kunstvolle Pfauen – das heimliche Wahrzeichen des Hauses. Findet die Tore und zählt genau.',
+    quiz: {
+      q: 'Wie viele Pfauen stecken in EINEM der schmiedeeisernen Torflügel-Paare? (Zählt an einem Tor!)',
+      accept: ['2', 'zwei', '1', 'ein', 'einen', '4', 'vier'],
+      hint: 'Symmetrie ist die halbe Antwort – Hauptsache, ihr habt wirklich hingeschaut und euch geeinigt.',
+      reveal: 'Je nach Zählweise 1 Pfau pro Flügel bzw. 2 pro Tor – die Diskussion darüber IST die Aufgabe.'
+    }
+  },
+  {
+    id: 'egg-radar', cat: 'egg', title: 'Kolodko-Radar', free: true, complicated: true, minMin: 90,
+    points: 40, verify: 'photo',
+    desc: 'Die Königsdisziplin für Nischen-Nerds: Findet auf eurem Weg IRGENDEINE Mini-Bronze oder ein verstecktes Kunstwerk, das NICHT in dieser Rallye vorkommt und in keinem Standard-Reiseführer steht (Mini-Statue, seltsame Plakette, Straßenkunst mit Geschichte). Beweisfoto + einer von euch erklärt den anderen in 20 Sekunden eine frei erfundene, aber überzeugende Entstehungsgeschichte.'
+  },
+  {
+    id: 'secret-oath', cat: 'egg', title: '⭐ Geheimauftrag: Der Budapester Schwur',
+    free: true, secret: true, complicated: true,
+    points: 50, verify: 'photo',
+    desc: 'Ihr habt das versteckte Easter Egg gefunden – respekt! Der Geheimauftrag: Geht ans Donauufer, legt alle eine Hand aufs Geländer, blickt zur Burg und schwört feierlich im Chor den Budapester Schwur: „Wir schwören bei Sisi, beim Paprika und beim heiligen Túró Rudi: Wir kommen wieder!" Beweisfoto vom Schwur-Moment. Niemand darf dabei lachen. (Unmöglich.)'
+  },
+
   /* ---------- 📍 GPS-CHECKPOINTS ---------- */
   {
     id: 'cp-vorosmarty', cat: 'gps', title: 'Checkpoint: Vörösmarty tér',
@@ -329,7 +401,8 @@ const CATS = {
   pause:   { label: 'Pause', icon: '☕' },
   fun:     { label: 'Gruppen-Gaudi', icon: '🎭' },
   gps:     { label: 'GPS-Checkpoint', icon: '📍' },
-  ar:      { label: 'Zeitfenster (AR)', icon: '👻' }
+  ar:      { label: 'Zeitfenster (AR)', icon: '👻' },
+  egg:     { label: 'Easter Egg', icon: '🥚' }
 };
 
 /* AR-Geister: Bilddatei + Blickrichtung (Kompass-Grad, in die man das Handy drehen soll) */

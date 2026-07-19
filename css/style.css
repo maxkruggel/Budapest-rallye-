@@ -296,6 +296,13 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .ticket-pts .pts { font-family: var(--font-m); font-weight: 700; font-size: 1.15rem; color: var(--gold); }
 .ticket-pts .pts-label { font-size: .62rem; color: var(--muted); letter-spacing: .1em; }
 
+.ticket.locked { opacity: .55; }
+.ticket.locked .ticket-side { background: var(--surface-2); }
+.badge.lock { background: var(--surface-2); border-color: var(--muted); color: var(--muted); }
+.stamp-inner.secret { color: var(--gold); border-color: var(--gold); box-shadow: 0 0 40px rgba(255, 193, 69, .4); }
+.stamp-inner.secret b { color: var(--paprika); }
+.task-pin.cat-egg { background: #7bd88f; }
+
 .ticket.done { opacity: .82; }
 .ticket.done .ticket-body h3 { text-decoration: line-through; text-decoration-color: var(--paprika); }
 .ticket .stamp {

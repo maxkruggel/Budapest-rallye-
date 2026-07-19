@@ -59,6 +59,23 @@ function bindStatic() {
     S.game = null; saveState();
     renderSetup(); showScreen('setup');
   };
+
+  // 🥚 Verstecktes Easter Egg: 5× auf den Splash-Titel tippen
+  let secretTaps = 0;
+  $('.splash-title').addEventListener('click', () => {
+    if (S.secretUnlocked) return;
+    if (++secretTaps < 5) return;
+    S.secretUnlocked = true;
+    if (S.game && !S.game.finished && !S.game.taskIds.includes('secret-oath')) {
+      S.game.taskIds.push('secret-oath');
+    }
+    saveState();
+    const el = $('#stamp-toast');
+    el.innerHTML = `<div class="stamp-inner secret">🥚 GEHEIMAUFTRAG<br><b>freigeschaltet!</b><span>Der Budapester Schwur wartet in eurem Deck (+50 Pkt)</span></div>`;
+    el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+    if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]);
+  });
 }
 
 /* ---------------- Screens & Theme ---------------- */
@@ -166,13 +183,16 @@ function deckSizeFor(min) {
 
 function buildDeck(durationMin, startPos) {
   const origin = startPos || RALLY_CENTER;
-  const pool = TASKS.filter(t => !t.minMin || t.minMin <= durationMin);
+  const pool = TASKS.filter(t =>
+    (!t.minMin || t.minMin <= durationMin) &&
+    (!t.secret || S.secretUnlocked));
   const byDist = t => (t.free || t.lat == null) ? 0 : distMeters(origin, t);
 
   const size = deckSizeFor(durationMin);
   const nPause = Math.max(1, Math.min(4, Math.floor(durationMin / 60) || 1));
   const nAr    = durationMin >= 180 ? 3 : durationMin >= 90 ? 2 : 1;
   const nKiosk = durationMin >= 120 ? 2 : 1;
+  const nEgg   = durationMin >= 150 ? 2 : durationMin >= 60 ? 1 : 0;
 
   const take = (arr, n) => arr.slice(0, n);
   const shuffle = arr => arr.map(v => [v, Math.sin(v.id.length * 7 + arr.indexOf(v) * 13 + Date.now() % 97)])
@@ -181,18 +201,27 @@ function buildDeck(durationMin, startPos) {
   const pauses = take(shuffle(pool.filter(t => t.cat === 'pause')), nPause);
   const ars    = take(pool.filter(t => t.cat === 'ar').sort((a, b) => byDist(a) - byDist(b)), nAr);
   const kiosks = take(shuffle(pool.filter(t => t.cat === 'kiosk')), nKiosk);
+  const eggs   = take(shuffle(pool.filter(t => t.cat === 'egg' && !t.secret)), nEgg);
+  const secret = pool.filter(t => t.secret);
+  // Ketten-Aufgaben (Agentenmission) ab 1,5 h – immer komplett, nie einzeln
+  const chain  = durationMin >= 90
+    ? pool.filter(t => t.chain === 'spy').sort((a, b) => a.step - b.step) : [];
 
-  const used = new Set([...pauses, ...ars, ...kiosks].map(t => t.id));
-  const rest = pool.filter(t => !used.has(t.id) && !['pause', 'ar', 'kiosk'].includes(t.cat));
+  const fixed = [...ars, ...kiosks, ...eggs, ...chain, ...secret];
+  const used = new Set([...pauses, ...fixed].map(t => t.id));
+  const rest = pool.filter(t =>
+    !used.has(t.id) && !t.chain && !t.secret &&
+    !['pause', 'ar', 'kiosk', 'egg'].includes(t.cat));
   const located = rest.filter(t => !t.free && t.lat != null).sort((a, b) => byDist(a) - byDist(b));
   const freeTasks = shuffle(rest.filter(t => t.free || t.lat == null));
 
-  const needed = Math.max(0, size - pauses.length - ars.length - kiosks.length);
+  const needed = Math.max(0, size - pauses.length - fixed.length);
   const nFree = Math.min(freeTasks.length, Math.max(1, Math.round(needed / 4)));
-  const picked = [...take(located, needed - nFree), ...take(freeTasks, nFree)];
+  const picked = [...take(located, Math.max(0, needed - nFree)), ...take(freeTasks, nFree)];
 
-  // Route: nearest-neighbor über alle ortsgebundenen Aufgaben (inkl. AR)
-  let routePool = [...picked.filter(t => !t.free && t.lat != null), ...ars];
+  // Route: nearest-neighbor über alle ortsgebundenen Aufgaben (inkl. AR, Eggs, Kette)
+  const all = [...picked, ...fixed];
+  let routePool = all.filter(t => !t.free && t.lat != null);
   const route = [];
   let cur = origin;
   while (routePool.length) {
@@ -201,8 +230,8 @@ function buildDeck(durationMin, startPos) {
     route.push(next); cur = next;
   }
 
-  // Freie Aufgaben + Kioske gleichmäßig einstreuen, Pausen in regelmäßigen Abständen
-  const floaters = [...picked.filter(t => t.free || t.lat == null), ...kiosks];
+  // Freie Aufgaben gleichmäßig einstreuen, Pausen in regelmäßigen Abständen
+  const floaters = all.filter(t => t.free || t.lat == null);
   const deck = [...route];
   floaters.forEach((t, i) => {
     const pos = Math.min(deck.length, Math.round((i + 1) * deck.length / (floaters.length + 1)) + 1);
@@ -212,7 +241,32 @@ function buildDeck(durationMin, startPos) {
     const pos = Math.min(deck.length, Math.round((i + 1) * deck.length / (pauses.length + 1)));
     deck.splice(pos, 0, t);
   });
-  return deck.map(t => t.id);
+  return enforceChainOrder(deck.map(t => t.id));
+}
+
+/* Ketten-Aufgaben behalten ihre Plätze im Deck, aber die Schritte
+   werden in die richtige Reihenfolge (1 → 2 → 3) gebracht. */
+function enforceChainOrder(ids) {
+  const chains = {};
+  ids.forEach(id => {
+    const t = TASKS.find(x => x.id === id);
+    if (t && t.chain) (chains[t.chain] = chains[t.chain] || []).push(t);
+  });
+  Object.values(chains).forEach(members => {
+    const pos = ids
+      .map((id, i) => ({ id, i }))
+      .filter(o => members.some(m => m.id === o.id))
+      .map(o => o.i)
+      .sort((a, b) => a - b);
+    members.sort((a, b) => a.step - b.step);
+    pos.forEach((p, k) => { ids[p] = members[k].id; });
+  });
+  return ids;
+}
+
+/* Gesperrt, solange der vorherige Ketten-Schritt offen ist */
+function taskLocked(t) {
+  return !!(t.requires && S.game && !S.game.completed[t.requires]);
 }
 
 /* ---------------- Spiel starten / fortsetzen ---------------- */
@@ -325,21 +379,26 @@ function renderTaskList() {
   list.innerHTML = '';
   gameTasks().forEach((t, i) => {
     const done = g.completed[t.id];
+    const locked = taskLocked(t);
     const card = document.createElement('button');
-    card.className = `ticket cat-${t.cat} ${done ? 'done' : ''}`;
+    card.className = `ticket cat-${t.cat} ${done ? 'done' : ''} ${locked ? 'locked' : ''}`;
     card.dataset.task = t.id;
     const dist = (!t.free && t.lat != null && lastPos) ? fmtDist(distMeters(lastPos, t)) : '';
+    const reqTitle = locked ? (TASKS.find(x => x.id === t.requires) || {}).title : '';
     card.innerHTML = `
       <div class="ticket-side"><span class="ticket-num">${String(i + 1).padStart(2, '0')}</span></div>
       <div class="ticket-body">
         <div class="ticket-top">
           <span class="badge">${CATS[t.cat].icon} ${CATS[t.cat].label}</span>
           ${t.complicated ? '<span class="badge hard">★ knifflig</span>' : ''}
+          ${locked ? '<span class="badge lock">🔒 gesperrt</span>' : ''}
         </div>
-        <h3>${t.title}</h3>
+        <h3>${locked ? 'Agentenmission ' + t.step + '/3: ???' : t.title}</h3>
         <div class="ticket-meta">
-          ${t.place ? `<span class="place">📍 ${t.place}</span>` : '<span class="place">🃏 überall lösbar</span>'}
-          ${dist ? `<span class="dist">${dist}</span>` : ''}
+          ${locked
+            ? `<span class="place">🔒 erst „${reqTitle}" lösen</span>`
+            : t.place ? `<span class="place">📍 ${t.place}</span>` : '<span class="place">🃏 überall lösbar</span>'}
+          ${dist && !locked ? `<span class="dist">${dist}</span>` : ''}
         </div>
       </div>
       <div class="ticket-pts">
@@ -370,9 +429,14 @@ function useJoker() {
   const idx = parseInt(pick, 10) - 1;
   if (isNaN(idx) || !open[idx]) return;
   const oldTask = open[idx];
+  if (oldTask.chain) {
+    alert('🕵️ Agentenmissionen lassen sich nicht abbrechen – der Geheimdienst besteht darauf.');
+    return;
+  }
   const inDeck = new Set(g.taskIds);
   const candidates = TASKS.filter(t =>
-    !inDeck.has(t.id) && (!t.minMin || t.minMin <= g.durationMin) && t.cat !== 'pause');
+    !inDeck.has(t.id) && (!t.minMin || t.minMin <= g.durationMin) &&
+    t.cat !== 'pause' && !t.chain && !t.secret);
   if (!candidates.length) { alert('Keine Ersatzaufgaben mehr im Vorrat!'); return; }
   const origin = lastPos || RALLY_CENTER;
   candidates.sort((a, b) => {
@@ -394,6 +458,19 @@ function openTask(id) {
   const t = TASKS.find(x => x.id === id);
   const g = S.game;
   const done = g.completed[id];
+
+  if (taskLocked(t) && !done) {
+    const req = TASKS.find(x => x.id === t.requires);
+    $('#task-badge').innerHTML = `<span class="badge lock">🔒 Agentenmission – Teil ${t.step}</span>`;
+    $('#task-title').textContent = 'Streng geheim';
+    $('#task-place').textContent = '📁 Diese Akte ist noch versiegelt.';
+    $('#task-desc').textContent = `Erst wenn „${req.title}" erledigt ist, wird dieser Auftrag freigeschaltet. Eine Mission nach der anderen, Agenten!`;
+    $('#task-points').textContent = t.points + ' Punkte';
+    $('#task-gmaps').hidden = true;
+    $('#task-actions').innerHTML = '';
+    $('#ov-task').classList.add('open');
+    return;
+  }
   const ov = $('#ov-task');
   const dist = (!t.free && t.lat != null && lastPos) ? distMeters(lastPos, t) : null;
 
