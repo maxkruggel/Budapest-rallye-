@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 440">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf4"/>
+      <stop offset=".55" stop-color="#ffe9b8"/>
+      <stop offset="1" stop-color="#ffc145"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset=".6" stop-color="#fff"/>
+      <stop offset=".97" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="m"><rect width="240" height="440" fill="url(#fade)"/></mask>
+  </defs>
+  <g mask="url(#m)" fill="url(#body)">
+    <!-- Volles Haar, Koteletten -->
+    <path d="M120 20c-22 0-34 14-34 32 0 10 3 16 6 20l4-4c2 8 6 12 6 12l-2-18c10-8 30-8 40 0l-2 18s4-4 6-12l4 4c3-4 6-10 6-20 0-18-12-32-34-32z"/>
+    <path d="M92 66c-4 10-4 22 0 30l8-4zM148 66c4 10 4 22 0 30l-8-4z"/>
+    <!-- Gesicht & Hals -->
+    <ellipse cx="120" cy="66" rx="22" ry="26"/>
+    <path d="M112 90h16v16h-16z"/>
+    <!-- Hoher Kragen + Halsbinde -->
+    <path d="M100 104c6-4 34-4 40 0l-6 10c-8-4-20-4-28 0z"/>
+    <path d="M112 112h16l-4 14h-8z"/>
+    <!-- Gehrock, Hand in der Weste (staatsmännisch) -->
+    <path d="M120 108c-26 0-42 16-46 44l-8 74c-2 16 4 22 12 22h84c8 0 14-6 12-22l-8-74c-4-28-20-44-46-44z"/>
+    <path d="M120 118l-14 20 8 60h12l8-60z" opacity=".5"/>
+    <path d="M104 150c8-6 24-6 32 0l-6 14c-7-3-13-3-20 0z" opacity=".6"/>
+    <!-- Arme -->
+    <path d="M76 150c-10 12-16 34-18 54-1 10 4 16 10 16s8-6 9-14c2-18 6-40 10-52z"/>
+    <path d="M164 150c10 12 16 34 18 54 1 10-4 16-10 16s-8-6-9-14c-2-18-6-40-10-52z"/>
+    <!-- Rockschöße + Beine, unten vergeistert -->
+    <path d="M84 248l-10 96c8 14 20 16 28 6l10-70 8 1 8 70c10 8 22 4 28-8l-10-95z"/>
+    <path d="M70 344c10 18 6 32-4 44 14-2 24 0 30 10 8-12 18-14 30-8 6-12 16-16 30-10-10-14-12-26-6-38z" opacity=".65"/>
+    <!-- Kettenglied in der Hand (die Kettenbrücke!) -->
+    <path d="M170 216a16 16 0 1 0 0.1 0zm0 8a8 8 0 1 1-.1 0z" opacity=".95"/>
+    <path d="M184 232a16 16 0 1 0 .1 0zm0 8a8 8 0 1 1-.1 0z" opacity=".8"/>
+  </g>
+</svg>

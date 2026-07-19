@@ -1,0 +1,14 @@
+{
+  "name": "Budapest Nacht-Rallye",
+  "short_name": "BP Rallye",
+  "description": "Schnitzeljagd durch Budapests Bezirk V – mit Foto-Beweisen, GPS-Checkpoints und AR-Zeitfenstern.",
+  "lang": "de",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#10132b",
+  "theme_color": "#10132b",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

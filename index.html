@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="night">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#10132b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Budapest Nacht-Rallye</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════ SPLASH ═══════════ -->
+  <section class="screen active" id="s-splash">
+    <button class="theme-btn corner" id="btn-theme-splash" aria-label="Tag/Nacht wechseln"><span class="theme-icon">☀️</span></button>
+    <div class="splash-inner">
+      <div class="splash-lamp"></div>
+      <p class="eyebrow">Bezirk V · Pest · nach Einbruch der Dunkelheit</p>
+      <h1 class="splash-title">BUDAPEST<br><span>NACHT-RALLYE</span></h1>
+      <p class="splash-sub">Eine Schnitzeljagd durch 150 Jahre Stadtgeschichte.<br>
+        Fotobeweise, Geister, Kioske, kein Eintritt, keine Gnade.</p>
+      <div class="splash-actions">
+        <button class="btn primary big" id="btn-new">Neue Rallye starten</button>
+        <button class="btn ghost big" id="btn-resume" hidden>▶ Weiterspielen</button>
+      </div>
+      <details class="rules">
+        <summary>Wie funktioniert's?</summary>
+        <ol>
+          <li><b>Route:</b> Die App stellt euch je nach Spieldauer ein Deck aus Aufgaben-Tickets zusammen – Geschichte, Foto-Challenges, Kiosk-Missionen, Pausen und AR-Zeitfenster.</li>
+          <li><b>Beweise:</b> Fotos, Antworten von Infotafeln oder GPS-Check-ins entwerten ein Ticket – wie am alten Tram-Entwerter.</li>
+          <li><b>Zeitfenster:</b> An besonderen Orten öffnet die Kamera ein Fenster in die Vergangenheit. 👻</li>
+          <li><b>Punkte:</b> Knifflige Aufgaben bringen mehr. 2 Joker tauschen ungeliebte Aufgaben.</li>
+          <li><b>Speicher:</b> Alles wird automatisch auf dem Handy gespeichert – App zu, Bier auf, weiterspielen.</li>
+        </ol>
+      </details>
+    </div>
+  </section>
+
+  <!-- ═══════════ SETUP ═══════════ -->
+  <section class="screen" id="s-setup">
+    <header class="page-head">
+      <button class="btn ghost small-btn" id="btn-setup-back">← Zurück</button>
+      <h2>Rallye einstellen</h2>
+    </header>
+    <div class="setup-body">
+      <div class="card">
+        <h3>👥 Wer spielt mit? <span class="muted small">(1–8)</span></h3>
+        <div id="player-list"></div>
+        <button class="btn ghost" id="btn-add-player">+ Person hinzufügen</button>
+      </div>
+
+      <div class="card">
+        <h3>⚔️ Modus</h3>
+        <div class="chip-row" id="mode-picker">
+          <button class="chip" data-mode="coop">🤝 Kooperativ<small>alle zusammen</small></button>
+          <button class="chip" data-mode="versus">⚔️ Versus<small>2 Teams</small></button>
+        </div>
+        <div id="teams-box" hidden>
+          <p class="small muted">Teilt euch auf: 🏮 Team Laterne gegen 🌶️ Team Paprika</p>
+          <div class="team-grid"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⏱️ Wie lange habt ihr?</h3>
+        <div class="chip-row wrap" id="dur-picker">
+          <button class="chip" data-min="30">30 min</button>
+          <button class="chip" data-min="60">1 h</button>
+          <button class="chip" data-min="90">1,5 h</button>
+          <button class="chip" data-min="120">2 h</button>
+          <button class="chip" data-min="180">3 h</button>
+          <button class="chip" data-min="240">4 h</button>
+        </div>
+        <p class="small muted" id="dur-info"></p>
+      </div>
+
+      <button class="btn primary big" id="btn-start">🌃 Los geht's!</button>
+      <p class="small muted center">Tipp: Standort-Freigabe erlauben – die Route startet dann genau dort, wo ihr steht.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════ SPIEL ═══════════ -->
+  <section class="screen" id="s-game">
+    <header class="hud">
+      <div class="hud-left">
+        <span class="hud-timer" id="hud-timer">--:--</span>
+        <span class="hud-progress" id="hud-progress"></span>
+      </div>
+      <div class="hud-right">
+        <span id="hud-score-coop" class="score-chip">⭐ <b id="score-total">0</b></span>
+        <span id="hud-score-versus" hidden>
+          <span class="score-chip a">🏮 <b id="scoreA">0</b></span>
+          <span class="score-chip b">🌶️ <b id="scoreB">0</b></span>
+        </span>
+        <button class="theme-btn" id="btn-theme" aria-label="Tag/Nacht wechseln"><span class="theme-icon">☀️</span></button>
+        <button class="theme-btn" id="btn-endgame" aria-label="Rallye beenden">🏁</button>
+      </div>
+    </header>
+
+    <div class="time-up" id="time-up-banner" hidden>
+      ⏰ Zeit abgelaufen!
+      <button class="btn small-btn primary" id="btn-extend">+15 min</button>
+      <button class="btn small-btn ghost" id="btn-finish-now">Auswertung</button>
+    </div>
+
+    <main class="game-body">
+      <div class="tab active" id="tab-tasks">
+        <div class="joker-bar">
+          <span class="small muted">Eure Aufgaben-Tickets – antippen zum Lösen</span>
+          <button class="btn ghost small-btn" id="btn-joker">🃏 Joker (<span id="joker-count">2</span>)</button>
+        </div>
+        <div id="task-list"></div>
+      </div>
+      <div class="tab" id="tab-map">
+        <div id="map"></div>
+      </div>
+      <div class="tab" id="tab-crew">
+        <div id="crew-box"></div>
+      </div>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="navbtn sel" data-tab="tasks">🎟️<span>Tickets</span></button>
+      <button class="navbtn" data-tab="map">🗺️<span>Karte</span></button>
+      <button class="navbtn" data-tab="crew">👥<span>Crew</span></button>
+    </nav>
+  </section>
+
+  <!-- ═══════════ FINALE ═══════════ -->
+  <section class="screen" id="s-final">
+    <div class="final-body">
+      <div class="final-fireworks">🎆</div>
+      <h1 id="final-headline"></h1>
+      <p class="final-sub" id="final-sub"></p>
+      <div class="card">
+        <h3>🎟️ Ticket-Bilanz</h3>
+        <div id="final-list"></div>
+      </div>
+      <div class="card">
+        <h3>📸 Eure Beweisfotos</h3>
+        <div class="gallery" id="final-gallery"></div>
+        <p class="small muted" id="final-gallery-empty" hidden>Keine Fotos aufgenommen – nächstes Mal!</p>
+      </div>
+      <button class="btn primary big" id="btn-again">🔄 Neue Rallye</button>
+    </div>
+  </section>
+
+  <!-- ═══════════ OVERLAY: AUFGABE ═══════════ -->
+  <div class="overlay" id="ov-task">
+    <div class="sheet">
+      <button class="ov-close" aria-label="Schließen">✕</button>
+      <div id="task-badge" class="badge-row"></div>
+      <h2 id="task-title"></h2>
+      <p class="task-place" id="task-place"></p>
+      <p class="task-desc" id="task-desc"></p>
+      <div class="task-foot">
+        <span class="points-pill" id="task-points"></span>
+        <a class="btn ghost small-btn" id="task-gmaps" target="_blank" rel="noopener">🧭 Google Maps</a>
+      </div>
+      <div id="task-actions" class="task-actions"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ OVERLAY: TEAM-WAHL ═══════════ -->
+  <div class="overlay center-modal" id="ov-team">
+    <div class="modal">
+      <h3 class="team-q"></h3>
+      <button class="btn team-a big" id="team-pick-a">🏮 Team Laterne</button>
+      <button class="btn team-b big" id="team-pick-b">🌶️ Team Paprika</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ OVERLAY: AR-ZEITFENSTER ═══════════ -->
+  <div class="overlay ar" id="ov-ar">
+    <div id="ar-live">
+      <div id="ar-stage">
+        <video id="ar-video" playsinline muted></video>
+        <img id="ar-ghost" alt="Geist aus der Vergangenheit" draggable="false">
+        <div class="ar-vignette"></div>
+      </div>
+      <button class="ar-close" aria-label="Schließen">✕</button>
+      <div class="ar-hint" id="ar-hint"></div>
+      <div class="ar-story" id="ar-story"><h3></h3><p></p></div>
+      <button class="ar-shutter" id="ar-capture" aria-label="Geisterfoto aufnehmen"></button>
+    </div>
+    <div id="ar-preview" hidden>
+      <img id="ar-photo" alt="Geisterfoto">
+      <div class="ar-preview-actions">
+        <button class="btn ghost big" id="ar-retry">↺ Nochmal</button>
+        <button class="btn primary big" id="ar-keep">✓ Foto behalten</button>
+      </div>
+    </div>
+    <canvas id="ar-canvas" hidden></canvas>
+  </div>
+
+  <!-- Stempel-Toast -->
+  <div id="stamp-toast" aria-live="polite"></div>
+
+  <script src="vendor/leaflet.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

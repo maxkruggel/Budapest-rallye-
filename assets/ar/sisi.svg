@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 440">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf4"/>
+      <stop offset=".55" stop-color="#ffe9b8"/>
+      <stop offset="1" stop-color="#ffc145"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset=".62" stop-color="#fff"/>
+      <stop offset=".97" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="m"><rect width="260" height="440" fill="url(#fade)"/></mask>
+  </defs>
+  <g mask="url(#m)" fill="url(#body)">
+    <!-- Diadem-Sterne (Sisis berühmte Haarsterne) -->
+    <path d="M118 22l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z" opacity=".95"/>
+    <path d="M148 34l2 5 6 1-4 4 1 6-5-3-5 3 1-6-4-4 6-1z" opacity=".8"/>
+    <!-- Hochgesteckte Frisur -->
+    <path d="M130 38c-24 0-36 14-36 30 0 7 2 12 5 16 3-22 14-30 31-30s28 8 31 30c3-4 5-9 5-16 0-16-12-30-36-30z"/>
+    <!-- Kopf & Hals -->
+    <ellipse cx="130" cy="78" rx="24" ry="28"/>
+    <path d="M122 102h16v18c8 2 14 5 14 5h-44s6-3 14-5z"/>
+    <!-- Schulterfreies Mieder -->
+    <path d="M92 128c10-8 66-8 76 0 8 6 12 26 8 44-3 14-9 22-9 22H93s-6-8-9-22c-4-18 0-38 8-44z"/>
+    <!-- Arme, Fächer rechts -->
+    <path d="M92 132c-12 8-20 28-22 48-1 12 4 18 10 18 5 0 8-5 9-14 2-16 6-34 10-44z"/>
+    <path d="M168 132c12 8 20 26 24 40l-12 10c-6-12-12-30-18-42z"/>
+    <path d="M186 168l30-24 4 5-28 27c-4 4-9 0-6-8z" opacity=".9"/>
+    <path d="M214 142l8 2-2 8-8-3z" opacity=".85"/>
+    <!-- Krinolinen-Rock -->
+    <path d="M93 194h74c20 30 34 78 38 130 1 18-6 26-16 30-30 12-88 12-118 0-10-4-17-12-16-30 4-52 18-100 38-130z"/>
+    <!-- Rocksaum-Wellen / Geisterschleier -->
+    <path d="M60 340c8 20 4 34-6 48 16-4 26-2 34 8 8-12 18-14 30-8 8-14 18-16 32-8 6-12 16-14 28-8-8-16-10-28-4-40z" opacity=".7"/>
+    <!-- Taillen-Detail -->
+    <path d="M100 190h60v8h-60z" opacity=".55"/>
+  </g>
+</svg>

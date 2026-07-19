@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 320">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf4"/>
+      <stop offset=".55" stop-color="#ffe9b8"/>
+      <stop offset="1" stop-color="#ffc145"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset=".55" stop-color="#fff"/>
+      <stop offset=".96" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="m"><rect width="460" height="320" fill="url(#fade)"/></mask>
+  </defs>
+  <g mask="url(#m)" fill="url(#body)">
+    <!-- Stromabnehmer-Stange -->
+    <path d="M228 18l64 60-6 6-64-60z"/>
+    <circle cx="292" cy="80" r="7"/>
+    <path d="M214 12l22 10-4 8-22-10z"/>
+    <!-- Oberleitung -->
+    <rect x="10" y="14" width="440" height="3" rx="1.5" opacity=".5"/>
+    <!-- Wagenkasten -->
+    <rect x="60" y="86" width="340" height="130" rx="18"/>
+    <!-- Dachrundung -->
+    <path d="M70 86c20-14 300-14 320 0z"/>
+    <!-- Fenster (ausgespart durch dunklere Füllung) -->
+    <g fill="#3a2c08" opacity=".55">
+      <rect x="80" y="104" width="52" height="52" rx="8"/>
+      <rect x="144" y="104" width="52" height="52" rx="8"/>
+      <rect x="208" y="104" width="52" height="52" rx="8"/>
+      <rect x="272" y="104" width="52" height="52" rx="8"/>
+      <rect x="336" y="104" width="44" height="52" rx="8"/>
+    </g>
+    <!-- Fahrgast-Geist im Fenster -->
+    <g opacity=".8">
+      <circle cx="234" cy="122" r="9"/>
+      <path d="M222 156c0-10 5-16 12-16s12 6 12 16z"/>
+    </g>
+    <!-- Zierlinie + Liniennummer 2 -->
+    <rect x="72" y="168" width="316" height="6" rx="3" opacity=".6"/>
+    <circle cx="230" cy="192" r="15" opacity=".9"/>
+    <text x="230" y="199" text-anchor="middle" font-family="monospace" font-size="21" font-weight="bold" fill="#3a2c08">2</text>
+    <!-- Schürze & Räder -->
+    <path d="M66 216h328l-10 22H76z"/>
+    <circle cx="130" cy="248" r="22"/><circle cx="130" cy="248" r="9" fill="#3a2c08" opacity=".5"/>
+    <circle cx="330" cy="248" r="22"/><circle cx="330" cy="248" r="9" fill="#3a2c08" opacity=".5"/>
+    <!-- Schiene, die sich unten in Nebel auflöst -->
+    <rect x="30" y="274" width="400" height="6" rx="3" opacity=".7"/>
+    <path d="M40 288c30 10 60-6 90 4s60-8 90 2 60-8 90 2 50-6 80 0" stroke="url(#body)" stroke-width="8" fill="none" opacity=".4" stroke-linecap="round"/>
+  </g>
+</svg>

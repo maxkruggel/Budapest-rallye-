@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 440">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf4"/>
+      <stop offset=".55" stop-color="#ffe9b8"/>
+      <stop offset="1" stop-color="#ffc145"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset=".6" stop-color="#fff"/>
+      <stop offset=".97" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="m"><rect width="320" height="440" fill="url(#fade)"/></mask>
+    <!-- Loch in der Fahne: das Symbol von 1956 -->
+    <mask id="hole">
+      <rect width="320" height="440" fill="#fff"/>
+      <circle cx="230" cy="78" r="26" fill="#000"/>
+    </mask>
+  </defs>
+  <g mask="url(#m)">
+    <g fill="url(#body)">
+      <!-- Fahnenmast -->
+      <path d="M148 118L292 22l5 7-144 96z"/>
+      <!-- Fahne mit herausgeschnittenem Wappen -->
+      <g mask="url(#hole)">
+        <path d="M170 100L296 16l22 66-136 62z" opacity=".9"/>
+      </g>
+      <!-- Schiebermütze -->
+      <path d="M96 44c-16 2-26 12-26 24l56-6c0-12-14-20-30-18z"/>
+      <path d="M66 66l62-7 2 8-64 7z"/>
+      <!-- Kopf, entschlossen nach oben blickend -->
+      <ellipse cx="100" cy="86" rx="21" ry="24"/>
+      <path d="M92 108h16v14h-16z"/>
+      <!-- Jacke mit hochgekrempeltem Kragen -->
+      <path d="M100 118c-24 0-40 16-44 42l-8 62c-2 14 4 20 12 20h80c8 0 14-6 12-20l-8-62c-4-26-20-42-44-42z"/>
+      <!-- Rechter Arm hält den Mast hoch -->
+      <path d="M126 128l28-20 12 12-26 24c-8 7-20-6-14-16z"/>
+      <!-- Linke Faust erhoben -->
+      <path d="M74 128c-14 8-24 24-28 40-2 10 2 16 9 17 6 1 9-4 11-12 4-16 8-32 8-45z"/>
+      <path d="M46 158a13 13 0 1 0 26 4 13 13 0 0 0-26-4z"/>
+      <!-- Beine, unten vergeistert -->
+      <path d="M68 242l-6 100c8 12 18 14 26 4l8-72 8 0 6 72c8 10 18 8 26-4l-6-100z"/>
+      <path d="M52 342c10 16 8 30-2 42 14-2 24 0 30 10 8-12 18-14 30-8 6-12 16-16 30-10-10-14-12-26-6-38z" opacity=".65"/>
+    </g>
+    <!-- Fahnenstreifen angedeutet -->
+    <g mask="url(#hole)" opacity=".45">
+      <path d="M178 122L308 62l10 20-136 62z" fill="#e84855"/>
+    </g>
+  </g>
+</svg>
