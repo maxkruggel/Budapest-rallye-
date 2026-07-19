@@ -8,6 +8,8 @@ let userAccCircle = null;
 let taskMarkers = {};
 let lastPos = null;          // {lat, lng, acc, at}
 let geoWatchId = null;
+let routeLine = null;
+let followMe = false;
 
 const TILE_NIGHT = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const TILE_DAY   = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
@@ -47,6 +49,30 @@ function initMap(theme) {
   if (map) return map;
   map = L.map('map', { zoomControl: false, attributionControl: true });
   L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  // „Folge mir"-Button: zentriert auf die eigene Position und bleibt dran
+  const Locate = L.Control.extend({
+    options: { position: 'bottomright' },
+    onAdd() {
+      const btn = L.DomUtil.create('button', 'locate-btn');
+      btn.innerHTML = '🧭';
+      btn.title = 'Meiner Position folgen';
+      L.DomEvent.on(btn, 'click', e => {
+        L.DomEvent.stop(e);
+        followMe = !followMe;
+        btn.classList.toggle('on', followMe);
+        if (followMe && lastPos) map.setView([lastPos.lat, lastPos.lng], Math.max(map.getZoom(), 16));
+      });
+      return btn;
+    }
+  });
+  map.addControl(new Locate());
+  map.on('dragstart', () => {
+    followMe = false;
+    const b = document.querySelector('.locate-btn');
+    if (b) b.classList.remove('on');
+  });
+
   setMapTheme(theme);
   const c = lastPos || RALLY_CENTER;
   map.setView([c.lat, c.lng], 15);
@@ -72,9 +98,24 @@ function updateUserMarker() {
     userMarker.setLatLng(ll);
     userAccCircle.setLatLng(ll).setRadius(lastPos.acc || 30);
   }
+  if (followMe) map.panTo(ll, { animate: true });
 }
 
-function renderTaskMarkers(tasks, completedMap, onOpen) {
+/* Gestrichelte Gold-Route: eigene Position → offene Quests in Live-Reihenfolge */
+function updateRouteLine(orderedTasks) {
+  if (!map) return;
+  const pts = [];
+  if (lastPos) pts.push([lastPos.lat, lastPos.lng]);
+  orderedTasks.forEach(t => { if (!t.free && t.lat != null) pts.push([t.lat, t.lng]); });
+  if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+  if (pts.length >= 2) {
+    routeLine = L.polyline(pts, {
+      color: '#ffc145', weight: 3, opacity: .75, dashArray: '6 8', lineJoin: 'round'
+    }).addTo(map);
+  }
+}
+
+function renderTaskMarkers(tasks, completedMap, onOpen, activeId) {
   if (!map) return;
   Object.values(taskMarkers).forEach(m => map.removeLayer(m));
   taskMarkers = {};
@@ -83,7 +124,7 @@ function renderTaskMarkers(tasks, completedMap, onOpen) {
     const done = !!completedMap[t.id];
     const icon = L.divIcon({
       className: 'task-pin-wrap',
-      html: `<div class="task-pin ${done ? 'done' : ''} cat-${t.cat}">
+      html: `<div class="task-pin ${done ? 'done' : ''} cat-${t.cat} ${t.id === activeId ? 'pulse' : ''}">
                <span class="pin-num">${done ? '✓' : i + 1}</span>
              </div>`,
       iconSize: [34, 40], iconAnchor: [17, 38], popupAnchor: [0, -36]

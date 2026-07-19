@@ -595,6 +595,53 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 }
 .foot-btns { display: flex; gap: 8px; }
 
+/* ---------- GPS-Live: Näherungs-Alarm, ÖPNV, Karte ---------- */
+
+#near-toast {
+  position: fixed; left: 12px; right: 12px; z-index: 96;
+  top: calc(env(safe-area-inset-top) + 8px);
+  transform: translateY(-130%); transition: transform .35s cubic-bezier(.2,.9,.3,1.15);
+  pointer-events: none;
+}
+#near-toast.show { transform: translateY(0); pointer-events: auto; }
+.near-inner {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  background: var(--surface); border: 2px solid var(--gold);
+  border-radius: 18px; padding: 12px 14px; text-align: left;
+  box-shadow: 0 10px 40px rgba(0,0,0,.6), 0 0 24px rgba(255,193,69,.35);
+  color: var(--ink); font-size: .9rem; line-height: 1.35;
+  animation: nearpulse 1.2s ease-in-out 3;
+}
+@keyframes nearpulse { 50% { box-shadow: 0 10px 40px rgba(0,0,0,.6), 0 0 44px rgba(255,193,69,.7); } }
+.near-icon { font-size: 1.6rem; flex-shrink: 0; }
+.near-text { flex: 1; min-width: 0; }
+.near-go { color: var(--gold); font-weight: 800; white-space: nowrap; }
+
+.transit-panel {
+  background: var(--surface-2); border: 1.5px dashed var(--gold);
+  border-radius: 16px; padding: 14px; margin-bottom: 16px;
+  display: grid; gap: 8px; font-size: .88rem;
+}
+.transit-head { font-weight: 700; }
+.transit-row { color: var(--muted); line-height: 1.4; }
+.transit-row b { color: var(--ink); }
+.transit-row.night-note { color: var(--gold); }
+.transit-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+.locate-btn {
+  width: 40px; height: 40px; border-radius: 12px; font-size: 1.2rem;
+  background: var(--surface); border: 1.5px solid var(--line) !important;
+  cursor: pointer; display: grid; place-items: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,.4); margin-bottom: 8px !important;
+}
+.locate-btn.on { border-color: var(--gold) !important; background: var(--gold-soft); box-shadow: 0 0 14px rgba(255,193,69,.5); }
+
+.task-pin.pulse { animation: pinpulse 1.6s ease-in-out infinite; }
+@keyframes pinpulse {
+  0%, 100% { box-shadow: 0 3px 8px rgba(0,0,0,.5); }
+  50% { box-shadow: 0 3px 8px rgba(0,0,0,.5), 0 0 0 10px rgba(255,193,69,.25); }
+}
+
 /* ---------- Sör o'clock: Barpause ---------- */
 .overlay.pause {
   background: rgba(6, 8, 22, .9); backdrop-filter: blur(8px);

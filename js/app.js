@@ -311,6 +311,10 @@ function startGame() {
     finished: false
   };
   saveState();
+  // Näherungs-Benachrichtigungen: Erlaubnis im User-Gesten-Kontext anfragen
+  if ('Notification' in window && Notification.permission === 'default') {
+    try { Notification.requestPermission(); } catch (e) {}
+  }
   enterGame();
   SFX.chime();
   Narrator.speak('Willkommen, Abenteurer der Nacht! Budapest liegt euch zu Füßen. Euer Quest-Log ist geschrieben – möge die Laterne euch leuchten!');
@@ -331,6 +335,31 @@ function enterGame() {
 
 function gameTasks() {
   return S.game.taskIds.map(id => TASKS.find(t => t.id === id)).filter(Boolean);
+}
+
+/* Realistische Gehzeit: Luftlinie × 1,3 Stadt-Umwegfaktor, 4,5 km/h */
+function walkMinutes(meters) {
+  return Math.max(1, Math.round(meters * 1.3 / 75));
+}
+
+/* Live-Reihenfolge: offene Orts-Quests nach aktueller GPS-Entfernung,
+   dann „überall lösbar", dann Erledigtes. Agentenkette bleibt in Reihenfolge. */
+function sortedGameTasks() {
+  const g = S.game;
+  const origin = lastPos || RALLY_CENTER;
+  const all = gameTasks();
+  const openLoc = all.filter(t => !g.completed[t.id] && !t.free && t.lat != null)
+    .sort((a, b) => distMeters(origin, a) - distMeters(origin, b));
+  const openFree = all.filter(t => !g.completed[t.id] && (t.free || t.lat == null));
+  const done = all.filter(t => g.completed[t.id]);
+  const ids = enforceChainOrder([...openLoc, ...openFree, ...done].map(t => t.id));
+  return ids.map(id => TASKS.find(t => t.id === id));
+}
+
+function activeQuestId() {
+  const g = S.game;
+  const t = sortedGameTasks().find(x => !g.completed[x.id] && !taskLocked(x));
+  return t ? t.id : null;
 }
 
 /* ---------------- Sör o'clock: Barpause ---------------- */
@@ -463,11 +492,18 @@ function switchTab(tab) {
     initMap(S.theme);
     setTimeout(() => {
       map.invalidateSize();
-      renderTaskMarkers(gameTasks(), S.game.completed, openTask);
+      refreshMapLayers();
       fitToGame(gameTasks());
     }, 60);
   }
   if (tab === 'crew') renderCrew();
+}
+
+function refreshMapLayers() {
+  if (!map) return;
+  const sorted = sortedGameTasks();
+  renderTaskMarkers(sorted, S.game.completed, openTask, activeQuestId());
+  updateRouteLine(sorted.filter(t => !S.game.completed[t.id]));
 }
 
 /* ---------------- Aufgabenliste ---------------- */
@@ -478,7 +514,7 @@ function renderTaskList() {
   const g = S.game;
   const list = $('#task-list');
   list.innerHTML = '';
-  const tasks = gameTasks();
+  const tasks = sortedGameTasks();
   const activeIdx = tasks.findIndex(t => !g.completed[t.id] && !taskLocked(t));
   tasks.forEach((t, i) => {
     const done = g.completed[t.id];
@@ -490,7 +526,8 @@ function renderTaskList() {
       card.style.animationDelay = Math.min(i * 45, 600) + 'ms';
     }
     card.dataset.task = t.id;
-    const dist = (!t.free && t.lat != null && lastPos) ? fmtDist(distMeters(lastPos, t)) : '';
+    const dMeters = (!t.free && t.lat != null && lastPos) ? distMeters(lastPos, t) : null;
+    const dist = dMeters != null ? `${fmtDist(dMeters)} · 🚶${walkMinutes(dMeters)}′` : '';
     const reqTitle = locked ? (TASKS.find(x => x.id === t.requires) || {}).title : '';
     card.innerHTML = `
       <div class="ticket-side"><span class="ticket-num">${String(i + 1).padStart(2, '0')}</span></div>
@@ -578,6 +615,7 @@ function openTask(id) {
     $('#task-points').textContent = t.points + ' Punkte';
     $('#task-gmaps').hidden = true;
     $('#task-actions').innerHTML = '';
+    $('#task-transit').hidden = true;
     $('#btn-speak').onclick = () => Narrator.speak('Diese Akte ist versiegelt. Erfüllt erst den vorherigen Teil der Mission.');
     $('#ov-task').classList.add('open');
     return;
@@ -590,10 +628,11 @@ function openTask(id) {
     (t.complicated ? '<span class="badge hard">★ knifflig – Bonuswürdig</span>' : '');
   $('#task-title').textContent = t.title;
   $('#task-place').innerHTML = t.place
-    ? `📍 ${t.place}${dist != null ? ` · <b>${fmtDist(dist)}</b> entfernt` : ''}`
+    ? `📍 ${t.place}${dist != null ? ` · <b>${fmtDist(dist)}</b> · 🚶 ~${walkMinutes(dist)} min zu Fuß` : ''}`
     : '🃏 Überall lösbar – wo ihr gerade steht.';
   $('#task-desc').textContent = t.desc;
   $('#task-points').textContent = t.points + ' Punkte';
+  renderTransitPanel(t, done ? null : dist);
 
   $('#task-gmaps').hidden = !(t.lat != null && !t.free);
   if (t.lat != null && !t.free) $('#task-gmaps').href = gmapsLink(t);
@@ -629,6 +668,35 @@ function closeTask() {
   $('#ov-task').classList.remove('open');
   currentTaskId = null;
   Narrator.stop();
+}
+
+/* ÖPNV-Panel: erscheint, wenn die Quest weiter als 30 min zu Fuß entfernt ist */
+function renderTransitPanel(t, dist) {
+  const tr = $('#task-transit');
+  tr.hidden = true; tr.innerHTML = '';
+  if (dist == null || t.free || t.lat == null) return;
+  const wm = walkMinutes(dist);
+  if (wm <= 30) return;
+
+  const from = lastPos || RALLY_CENTER;
+  const sFrom = nearestStop(from);
+  const sTo = nearestStop(t);
+  const hour = new Date().getHours();
+  const isNight = hour >= 23 || hour < 5;   // Metro-Betriebsschluss ~23:30
+  const gmTransit = `https://www.google.com/maps/dir/?api=1&origin=${from.lat},${from.lng}&destination=${t.lat},${t.lng}&travelmode=transit`;
+
+  tr.hidden = false;
+  tr.innerHTML = `
+    <div class="transit-head">🚌 Weiter Weg: <b>~${wm} min zu Fuß</b> – nehmt was Schnelleres!</div>
+    ${sFrom ? `<div class="transit-row">🅰️ Einstieg bei euch: <b>${sFrom.name}</b> (${sFrom.lines}) · ${fmtDist(sFrom.dist)}</div>` : ''}
+    ${sTo ? `<div class="transit-row">🅱️ Ausstieg am Ziel: <b>${sTo.name}</b> (${sTo.lines}) · ${fmtDist(sTo.dist)} bis zur Quest</div>` : ''}
+    ${isNight ? '<div class="transit-row night-note">🌙 Nachtbetrieb: Die Metro schläft (~ab 23:30) – Tram 4/6 und die 9xx-Nachtbusse fahren durch.</div>' : ''}
+    <div class="transit-btns">
+      <a class="btn primary small-btn" target="_blank" rel="noopener" href="${gmTransit}">🚇 Live-Verbindung (ÖPNV)</a>
+      <a class="btn ghost small-btn" target="_blank" rel="noopener" href="https://bkk.hu/budapestgo">🎫 Ticket: BudapestGO</a>
+      <a class="btn ghost small-btn" target="_blank" rel="noopener" href="https://bolt.eu">🚗 Bolt bestellen</a>
+      <a class="btn ghost small-btn" href="tel:+3612222222">📞 Főtaxi rufen</a>
+    </div>`;
 }
 
 function buildVerifyUI(t, act) {
@@ -754,7 +822,7 @@ function completeTask(t, extra) {
     saveState();
     closeTask();
     renderTaskList();
-    if (map) renderTaskMarkers(gameTasks(), g.completed, openTask);
+    if (map) refreshMapLayers();
     if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
     showStampToast(t, points);
     SFX.stamp();
@@ -1142,12 +1210,60 @@ function closeAR() {
   arTask = null;
 }
 
-/* ---------------- GPS-Update-Hook ---------------- */
+/* ---------------- GPS-Update-Hook + Näherungs-Alarm ---------------- */
+
+const NEAR_RADIUS = 60;   // Meter bis zum Alarm
 
 function onGeoUpdate() {
+  if (S.game && !S.game.finished) checkProximity();
   if (S.screen === 'game' && $('#tab-tasks').classList.contains('active')) {
-    // Distanzen in der Liste sanft aktualisieren (ohne komplettes Re-Render bei offenem Overlay)
+    // Liste live nach Entfernung umsortieren (nicht bei offenem Overlay)
     if (!$('#ov-task').classList.contains('open')) renderTaskList();
+  }
+  if (S.screen === 'game' && $('#tab-map').classList.contains('active')) {
+    refreshMapLayers();
+  }
+}
+
+function checkProximity() {
+  const g = S.game;
+  if (!g || g.finished || g.pausedAt || !lastPos) return;
+  g.notified = g.notified || {};
+  gameTasks().forEach(t => {
+    if (t.free || t.lat == null || g.completed[t.id] || taskLocked(t) || g.notified[t.id]) return;
+    const d = distMeters(lastPos, t);
+    if (d <= NEAR_RADIUS) {
+      g.notified[t.id] = Date.now();
+      saveState();
+      questNearbyAlert(t, d);
+    }
+  });
+}
+
+function questNearbyAlert(t, d) {
+  SFX.ring();
+  if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 600]);
+  Narrator.say('near_' + t.cat, `Haltet ein, Abenteurer! Eine Quest ist zum Greifen nah: ${t.title}.`);
+
+  const el = $('#near-toast');
+  el.innerHTML = `
+    <button class="near-inner" type="button">
+      <span class="near-icon">${CATS[t.cat].icon}</span>
+      <span class="near-text"><b>Quest in Reichweite!</b><br>${escapeHtml(t.title)} · ${fmtDist(d)}</span>
+      <span class="near-go">Öffnen ›</span>
+    </button>`;
+  el.querySelector('.near-inner').onclick = () => { el.classList.remove('show'); openTask(t.id); };
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 9000);
+
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification('🌃 Quest in Reichweite!', {
+        body: `${t.title} – nur noch ${fmtDist(d)}. ${t.points} XP warten auf euch.`,
+        icon: 'assets/icon.svg',
+        tag: 'br-near-' + t.id
+      });
+    } catch (e) { /* Benachrichtigungen sind optional */ }
   }
 }
 

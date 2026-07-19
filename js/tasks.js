@@ -405,6 +405,34 @@ const CATS = {
   egg:     { label: 'Easter Egg', icon: '🥚' }
 };
 
+/* ÖPNV-Haltestellen rund um Bezirk V (kuratiert) – für Weit-Weg-Quests.
+   night: fährt nachts durch (Tram 4/6, Nachtbusse 9xx); Metro bis ca. 23:30. */
+const TRANSIT_STOPS = [
+  { name: 'Deák Ferenc tér',      lat: 47.4979, lng: 19.0546, lines: 'M1 · M2 · M3 · Nachtbus 914/950', night: true },
+  { name: 'Vörösmarty tér',       lat: 47.4962, lng: 19.0510, lines: 'M1', night: false },
+  { name: 'Vigadó tér',           lat: 47.4959, lng: 19.0488, lines: 'Tram 2', night: false },
+  { name: 'Széchenyi István tér', lat: 47.4993, lng: 19.0464, lines: 'Tram 2 · Bus 16', night: false },
+  { name: 'Kossuth Lajos tér',    lat: 47.5073, lng: 19.0455, lines: 'M2 · Tram 2', night: false },
+  { name: 'Arany János utca',     lat: 47.5040, lng: 19.0521, lines: 'M3', night: false },
+  { name: 'Bajcsy-Zsilinszky út', lat: 47.5007, lng: 19.0555, lines: 'M1 · Nachtbus 914/950', night: true },
+  { name: 'Ferenciek tere',       lat: 47.4932, lng: 19.0537, lines: 'M3 · Bus 5/7 · Nachtbus 908/914', night: true },
+  { name: 'Astoria',              lat: 47.4924, lng: 19.0598, lines: 'M2 · Tram 47/49 · Nachtbus 908/956', night: true },
+  { name: 'Fővám tér',            lat: 47.4877, lng: 19.0589, lines: 'M4 · Tram 2/47/49', night: false },
+  { name: 'Jászai Mari tér',      lat: 47.5133, lng: 19.0461, lines: 'Tram 4/6 (fährt die ganze Nacht!)', night: true },
+  { name: 'Oktogon',              lat: 47.5052, lng: 19.0629, lines: 'M1 · Tram 4/6 (nachts!)', night: true },
+  { name: 'Blaha Lujza tér',      lat: 47.4966, lng: 19.0703, lines: 'M2 · Tram 4/6 (nachts!) · Nachtbusse', night: true }
+];
+
+function nearestStop(pos, nightOnly = false) {
+  const pool = nightOnly ? TRANSIT_STOPS.filter(s => s.night) : TRANSIT_STOPS;
+  let best = null, bestD = Infinity;
+  pool.forEach(s => {
+    const d = distMeters(pos, s);
+    if (d < bestD) { bestD = d; best = s; }
+  });
+  return best ? { ...best, dist: bestD } : null;
+}
+
 /* AR-Geister: Bilddatei + Blickrichtung (Kompass-Grad, in die man das Handy drehen soll) */
 const GHOSTS = {
   sisi:        { img: 'assets/ar/sisi.svg',        name: 'Kaiserin Elisabeth „Sisi"', heading: 250 },

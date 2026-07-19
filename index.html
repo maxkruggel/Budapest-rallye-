@@ -164,6 +164,7 @@
       <h2 id="task-title"></h2>
       <p class="task-place" id="task-place"></p>
       <p class="task-desc" id="task-desc"></p>
+      <div class="transit-panel" id="task-transit" hidden></div>
       <div class="task-foot">
         <span class="points-pill" id="task-points"></span>
         <span class="foot-btns">
@@ -227,9 +228,10 @@
     </div>
   </div>
 
-  <!-- Stempel-Toast + Konfetti -->
+  <!-- Stempel-Toast + Konfetti + Näherungs-Alarm -->
   <div id="stamp-toast" aria-live="polite"></div>
   <div id="confetti" aria-hidden="true"></div>
+  <div id="near-toast" aria-live="assertive"></div>
 
   <script src="vendor/leaflet.js"></script>
   <script src="js/tasks.js"></script>

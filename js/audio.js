@@ -79,6 +79,14 @@ const SFX = {
       .forEach(([f, t]) => tone(f, t, 0.4, { type: 'triangle', gain: 0.1 }));
     tone(1318.5, 1.1, 0.9, { gain: 0.06 });
   },
+  /* Näherungs-Alarm: helles Doppel-Klingeln, zweimal */
+  ring() {
+    [0, 0.5].forEach(off => {
+      tone(1567.98, off, 0.35, { gain: 0.16 });
+      tone(1975.53, off + 0.18, 0.45, { gain: 0.14 });
+      tone(2637, off + 0.18, 0.3, { gain: 0.06 });
+    });
+  },
   /* Fehlversuch beim Quiz */
   nope() {
     tone(233, 0, 0.18, { type: 'sawtooth', gain: 0.06 });
