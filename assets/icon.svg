@@ -1,22 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
   <defs>
-    <radialGradient id="sky" cx="50%" cy="35%" r="80%">
-      <stop offset="0%" stop-color="#232852"/>
+    <!-- Voller Verlauf ohne harte Kanten: Himmel läuft weich in die Ecken aus -->
+    <radialGradient id="sky" cx="50%" cy="38%" r="95%">
+      <stop offset="0%" stop-color="#2a3060"/>
+      <stop offset="45%" stop-color="#1a1e3d"/>
+      <stop offset="80%" stop-color="#10132b"/>
       <stop offset="100%" stop-color="#0a0c1f"/>
     </radialGradient>
     <radialGradient id="glow" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#ffc145" stop-opacity=".9"/>
+      <stop offset="60%" stop-color="#ffc145" stop-opacity=".25"/>
+      <stop offset="100%" stop-color="#ffc145" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bridgeglow" cx="50%" cy="70%" r="60%">
+      <stop offset="0%" stop-color="#ffc145" stop-opacity=".22"/>
       <stop offset="100%" stop-color="#ffc145" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="120" height="120" rx="26" fill="url(#sky)"/>
-  <circle cx="86" cy="30" r="22" fill="url(#glow)"/>
-  <circle cx="86" cy="30" r="9" fill="#ffe9b8"/>
+  <!-- randlos: der Verlauf füllt die komplette Fläche, keine Kachel-Kante -->
+  <rect width="120" height="120" fill="url(#sky)"/>
+  <circle cx="60" cy="78" r="58" fill="url(#bridgeglow)"/>
+  <!-- Sterne -->
+  <circle cx="18" cy="20" r="1.4" fill="#fdf3da" opacity=".85"/>
+  <circle cx="40" cy="12" r="1" fill="#fdf3da" opacity=".6"/>
+  <circle cx="103" cy="58" r="1.2" fill="#fdf3da" opacity=".7"/>
+  <circle cx="12" cy="48" r="1" fill="#fdf3da" opacity=".55"/>
+  <circle cx="64" cy="26" r="1.1" fill="#fdf3da" opacity=".65"/>
+  <!-- Mond mit weichem Hof -->
+  <circle cx="86" cy="28" r="24" fill="url(#glow)"/>
+  <circle cx="86" cy="28" r="9" fill="#ffe9b8"/>
   <!-- Kettenbrücke: Bogen + Pylone -->
-  <path d="M8 84 Q34 56 60 84 Q86 56 112 84" fill="none" stroke="#ffc145" stroke-width="4" stroke-linecap="round"/>
-  <rect x="30" y="62" width="8" height="30" rx="2" fill="#ffc145"/>
-  <rect x="82" y="62" width="8" height="30" rx="2" fill="#ffc145"/>
-  <rect x="4" y="88" width="112" height="5" rx="2.5" fill="#ffe9b8"/>
-  <!-- Donau -->
-  <path d="M10 103 q10 -4 20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#4db8ff" stroke-width="3.5" stroke-linecap="round" opacity=".8"/>
+  <path d="M6 84 Q33 55 60 84 Q87 55 114 84" fill="none" stroke="#ffc145" stroke-width="4" stroke-linecap="round"/>
+  <rect x="30" y="61" width="8" height="31" rx="2" fill="#ffc145"/>
+  <rect x="82" y="61" width="8" height="31" rx="2" fill="#ffc145"/>
+  <rect x="0" y="88" width="120" height="5" fill="#ffe9b8"/>
+  <!-- Donau mit Mondspur -->
+  <path d="M6 103 q10 -4 20 0 t20 0 t20 0 t20 0 t20 0 t14 0" fill="none" stroke="#4db8ff" stroke-width="3.5" stroke-linecap="round" opacity=".8"/>
 </svg>

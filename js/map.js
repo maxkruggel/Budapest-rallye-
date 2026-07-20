@@ -104,6 +104,16 @@ function initMap(theme) {
     if (b) b.classList.remove('on');
   });
 
+  // Tap auf die freie Karte schließt auch die Legende
+  map.on('click', () => {
+    const lg = document.querySelector('#map-legend');
+    if (lg && !lg.hidden) {
+      lg.hidden = true;
+      const t = document.querySelector('#legend-toggle');
+      if (t) t.textContent = '❔ Legende';
+    }
+  });
+
   setMapTheme(theme);
   const c = lastPos || RALLY_CENTER;
   map.setView([c.lat, c.lng], 15);
@@ -190,7 +200,7 @@ function renderTaskMarkers(tasks, completedMap, onOpen, activeId) {
            <div class="pin-place">${isFree ? '🃏 überall lösbar – der Punkt liegt auf eurer Route' : (t.place || '')}</div>
            ${timeLine}
            <button class="pin-open" data-task="${t.id}">Aufgabe öffnen</button>
-         </div>`, { autoClose: true, closeOnClick: false });
+         </div>`, { autoClose: true, closeOnClick: true });
       mk.on('popupopen', e => {
         const btn = e.popup.getElement().querySelector('.pin-open');
         if (btn) btn.onclick = () => { map.closePopup(); onOpen(t.id); };

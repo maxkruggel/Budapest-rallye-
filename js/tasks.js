@@ -326,6 +326,160 @@ const TASKS = [
     desc: 'Nur mit Sonne lösbar: Stellt euch so auf, dass eure vier Schatten zusammen ein TIER formen (Elefant, Vogel, Krokodil – Rüssel und Flügel aus Armen bauen). Fotografiert NUR die Schatten auf dem Pflaster. Ein Passant muss das Tier erraten können.'
   },
 
+  /* ---------- 🏰 BUDA-SEITE (links der Donau) ---------- */
+  {
+    id: 'buda-bastion', cat: 'history', title: 'Die sieben Türme', minMin: 120,
+    place: 'Fischerbastei, Burgviertel (Buda)',
+    lat: 47.5022, lng: 19.0347, points: 35, verify: 'quiz',
+    desc: 'Über die Kettenbrücke und hinauf ins Burgviertel: Die Fischerbastei ist nachts frei zugänglich und märchenhaft beleuchtet. Ihre Türme sind kein Zufall – zählt sie und überlegt, wofür sie stehen (die Infotafeln vor Ort verraten es).',
+    quiz: {
+      q: 'Wie viele Türme hat die Fischerbastei – und damit: für wie viele Magyarenstämme stehen sie?',
+      accept: ['7', 'sieben'],
+      hint: 'So viele Stämme nahmen 896 das Land in Besitz.',
+      reveal: '7 Türme – einer für jeden der sieben ungarischen Stämme der Landnahme.'
+    }
+  },
+  {
+    id: 'buda-matthias', cat: 'history', title: 'Der Vogel auf der Spitze', minMin: 120,
+    place: 'Matthiaskirche, Szentháromság tér (Buda)',
+    lat: 47.5019, lng: 19.0339, points: 30, verify: 'quiz',
+    desc: 'Direkt neben der Fischerbastei glänzt die Matthiaskirche mit ihrem bunten Zsolnay-Keramikdach. Schaut ganz hinauf zur höchsten Turmspitze: Dort sitzt ein Tier mit einem goldenen Ring im Schnabel – das Wappentier von König Matthias Corvinus.',
+    quiz: {
+      q: 'Welches Tier sitzt mit dem Ring im Schnabel auf der Turmspitze?',
+      accept: ['rabe', 'ein rabe', 'der rabe', 'corvus'],
+      hint: 'Corvinus kommt von „corvus" – Latein für diesen schwarzen Vogel.',
+      reveal: 'Ein Rabe mit goldenem Ring – daher „Corvinus": der Rabenkönig Matthias.'
+    }
+  },
+  {
+    id: 'buda-turul', cat: 'history', title: 'Der Sagenvogel der Magyaren', minMin: 120,
+    place: 'Burgpalast, Habsburg-Treppe (Buda)',
+    lat: 47.4962, lng: 19.0398, points: 30, verify: 'quiz',
+    desc: 'Am Aufgang zum Burgpalast breitet ein gewaltiger Bronzevogel mit Schwert in den Krallen die Flügel aus. Er ist DER Sagenvogel der ungarischen Mythologie – sein Name steht auf dem Sockel.',
+    quiz: {
+      q: 'Wie heißt der mythische Vogel am Burgaufgang?',
+      accept: ['turul', 'turulvogel', 'turul vogel'],
+      hint: 'Beginnt mit T, klingt türkisch – ist er auch.',
+      reveal: 'Der Turul – laut Sage führte er die Magyaren ins Karpatenbecken.'
+    }
+  },
+  {
+    id: 'buda-batthyany', cat: 'foto', title: 'Parlament in Gold', minMin: 120,
+    place: 'Batthyány tér, Donauufer (Buda)',
+    lat: 47.5059, lng: 19.0392, points: 25, verify: 'photo',
+    desc: 'Vom Batthyány tér habt ihr DEN Blick: das golden angestrahlte Parlament direkt gegenüber, gespiegelt in der Donau. Foto-Beweis: das Parlament im Hintergrund, ihr vier davor in eurer besten „Wir regieren jetzt"-Pose.'
+  },
+  {
+    id: 'buda-gellert', cat: 'foto', title: 'Expedition: Der Bischof über der Stadt', minMin: 240, complicated: true,
+    place: 'Gellért-Denkmal, Fuß des Gellértbergs (Buda)',
+    lat: 47.4893, lng: 19.0464, points: 45, verify: 'photo',
+    desc: 'Für Ausdauernde: Über die Elisabethbrücke zum Fuß des Gellértbergs. Oben segnet Bischof Gellért mit erhobenem Kreuz die Stadt – der Legende nach wurde er 1046 genau hier in einem Fass den Berg hinuntergestürzt. Foto: einer segnet in Gellért-Pose, die anderen stellen das entsetzte Publikum. Der Aufstieg zur Statue lohnt, das Foto geht aber auch von unten mit Zoom.'
+  },
+
+  /* ---------- 🌇 OST-PEST (rechts vom Zentrum) ---------- */
+  {
+    id: 'pest-opera', cat: 'history', title: 'Die Wächter der Oper', minMin: 120,
+    place: 'Ungarische Staatsoper, Andrássy út 22',
+    lat: 47.5030, lng: 19.0585, points: 30, verify: 'quiz',
+    desc: 'Die Staatsoper an der Prachtstraße Andrássy út ist nachts hell angestrahlt. Links und rechts des Haupteingangs sitzen zwei ungarische Komponisten als Marmorstatuen – die Namen stehen an den Sockeln. Lest nach!',
+    quiz: {
+      q: 'Welche zwei Komponisten flankieren den Eingang? (Ein Nachname reicht.)',
+      accept: ['liszt', 'erkel', 'franz liszt', 'ferenc erkel', 'liszt und erkel'],
+      hint: 'Einer schrieb die Ungarischen Rhapsodien, der andere die Nationalhymne.',
+      reveal: 'Franz Liszt und Ferenc Erkel – Letzterer komponierte die ungarische Hymne und war erster Direktor der Oper.'
+    }
+  },
+  {
+    id: 'pest-liszt', cat: 'foto', title: 'Der wilde Maestro', minMin: 150,
+    place: 'Liszt-Ferenc-Statue, Liszt Ferenc tér',
+    lat: 47.5046, lng: 19.0644, points: 20, verify: 'photo',
+    desc: 'Auf dem Kneipenplatz Liszt Ferenc tér sitzt Franz Liszt als Statue – wilde Mähne, dramatisch aufgerissene Klavierhände, mitten im unsichtbaren Fortissimo. Stellt euch dazu und dirigiert/klimpert GENAUSO dramatisch. Beweisfoto im Moment der größten Ekstase.'
+  },
+  {
+    id: 'pest-newyork', cat: 'foto', title: 'Das schönste Café der Welt', minMin: 180,
+    place: 'New York Café, Erzsébet körút',
+    lat: 47.4985, lng: 19.0706, points: 25, verify: 'photo',
+    desc: 'Das New York Café wird gern „das schönste Café der Welt" genannt – Marmor, Gold und Fresken wie in einem Opernhaus. Der Blick durch die großen Fenster oder ein Schritt ins Foyer kostet nichts. Beweisfoto: eure allerfeinste Adelspose vor oder im Eingang. Monokel aus Daumen und Zeigefinger: Pflicht.'
+  },
+  {
+    id: 'pest-heroes', cat: 'history', title: 'Expedition: Der Erzengel', minMin: 240, complicated: true,
+    place: 'Heldenplatz (Hősök tere)',
+    lat: 47.5150, lng: 19.0779, points: 45, verify: 'quiz',
+    desc: 'Die Königsetappe Richtung Osten: Der Heldenplatz am Ende der Andrássy út – mit der M1, der ältesten U-Bahn des Kontinents, seid ihr in Minuten dort. In der Mitte ragt eine 36-Meter-Säule auf, ganz oben steht eine geflügelte Gestalt mit Krone und Kreuz. Die Infotafeln am Platz verraten, wer das ist.',
+    quiz: {
+      q: 'Welcher Erzengel steht auf der Mittelsäule des Heldenplatzes?',
+      accept: ['gabriel', 'erzengel gabriel'],
+      hint: 'Derselbe, der Maria die frohe Botschaft brachte.',
+      reveal: 'Erzengel Gabriel – der Sage nach bot er König Stephan die Krone Ungarns an.'
+    }
+  },
+  {
+    id: 'pest-karavan', cat: 'kiosk', title: 'Street-Food-Basar', minMin: 150,
+    time: 'night', fromHour: 16,
+    place: 'Karavan Street Food, Kazinczy utca',
+    lat: 47.4971, lng: 19.0628, points: 25, verify: 'photo',
+    desc: 'Direkt neben der Ruinenbar Szimpla liegt der Karavan-Hof: Foodtrucks unter Lichterketten, vom Lángos-Burger bis Kürtőskalács-Eis. Auftrag: EIN Gericht, das keiner von euch kennt, gemeinsam bestellen und probieren. Beweisfoto: das Gericht + eure ersten Probier-Gesichter.'
+  },
+
+  /* ---------- 🏝️ MARGARETENINSEL (die erste kleine Insel) ---------- */
+  {
+    id: 'margit-fountain', cat: 'gps', title: 'Insel-Etappe: Der singende Brunnen', minMin: 240,
+    place: 'Musikbrunnen, Margareteninsel (Südspitze)',
+    lat: 47.5170, lng: 19.0455, points: 30, verify: 'gps',
+    desc: 'Ab auf die Margareteninsel! Über die Margaretenbrücke (Tram 4/6 hält mitten auf der Brücke) erreicht ihr die Südspitze mit dem Musikbrunnen – er spielt tagsüber stündlich Musik, abends leuchtet er. Check-in per GPS am Brunnenrand.'
+  },
+  {
+    id: 'margit-ruins', cat: 'history', title: 'Insel-Etappe: Die Königstochter', minMin: 240,
+    place: 'Klosterruinen, Margareteninsel (Mitte)',
+    lat: 47.5243, lng: 19.0468, points: 35, verify: 'quiz',
+    desc: 'Mitten auf der Insel liegen die Ruinen eines Dominikanerinnenklosters. Hier lebte im 13. Jahrhundert eine Königstochter, die ihr Vater Béla IV. als Dank für die Rettung des Landes vor den Mongolen Gott versprach – die Insel trägt heute ihren Namen. Die Infotafeln an den Ruinen erzählen ihre Geschichte.',
+    quiz: {
+      q: 'Wie hieß die Königstochter, nach der die Insel benannt ist?',
+      accept: ['margit', 'margarete', 'margaret', 'margareta', 'sankt margit'],
+      hint: 'Der Inselname ist der Vorname.',
+      reveal: 'Margit (Margarete) – sie lebte hier ab ihrem 9. Lebensjahr im Kloster und wurde heiliggesprochen.'
+    }
+  },
+  {
+    id: 'margit-watertower', cat: 'foto', title: 'Insel-Etappe: Der Wasserturm', minMin: 240,
+    place: 'Wasserturm, Margareteninsel (Nordteil)',
+    lat: 47.5262, lng: 19.0480, points: 30, verify: 'photo',
+    desc: 'Der 57 Meter hohe Jugendstil-Wasserturm von 1911 ist das Wahrzeichen der Insel und UNESCO-geschützt. Beweisfoto: Ihr vier baut den Turm nach – einer ist das Fundament, die anderen staffeln sich dahinter der Größe nach zur „Turmspitze". Der echte Turm muss mit aufs Bild.'
+  },
+  {
+    id: 'margit-track', cat: 'fun', title: 'Insel-Etappe: Die Gummibahn', minMin: 240,
+    video: true,
+    place: 'Laufbahn, Margareteninsel (Westufer)',
+    lat: 47.5200, lng: 19.0440, points: 30, verify: 'photo',
+    desc: 'Rund um die Insel führt die berühmte 5,35 km lange Gummi-Laufbahn – der Lieblingsort aller Budapester Läufer. Auftrag: eine 20-Meter-Staffel, jeder läuft eine Etappe, Übergabe-Objekt ist irgendwas Absurdes (Kürtőskalács? Bierdose? Schuh?). Beweis: Foto vom Zieleinlauf oder gleich ein Video der Staffel.'
+  },
+
+  /* ---------- 🔎 LESE-QUESTS IM ZENTRUM ---------- */
+  {
+    id: 'quiz-chainbridge', cat: 'history', title: 'Der Name auf der Tafel', minMin: 60,
+    place: 'Kettenbrücke, Pester Widerlager',
+    lat: 47.4988, lng: 19.0450, points: 30, verify: 'quiz',
+    desc: 'Am Pester Brückenkopf der Kettenbrücke sind Gedenktafeln eingelassen. Eine nennt den englischen Ingenieur, der die Brücke entworfen hat (sein Namensvetter Adam Clark hat sie gebaut – der Platz drüben heißt nach ihm). Lest die Tafel!',
+    quiz: {
+      q: 'Wie lautet der Nachname des englischen Ingenieurs, der die Kettenbrücke entwarf?',
+      accept: ['clark', 'william tierney clark', 'tierney clark'],
+      hint: 'Gleicher Nachname wie der schottische Erbauer – aber nicht verwandt.',
+      reveal: 'William Tierney Clark – gebaut hat sie Adam Clark, nicht verwandt, nur namensgleich.'
+    }
+  },
+  {
+    id: 'quiz-danubius', cat: 'history', title: 'Die Flüsse im Brunnen', minMin: 30,
+    place: 'Danubius-Brunnen, Erzsébet tér',
+    lat: 47.4980, lng: 19.0521, points: 25, verify: 'quiz',
+    desc: 'Mitten auf dem Erzsébet tér steht der Danubius-Brunnen: Oben thront Vater Donau – und um den Fuß sitzen Frauenfiguren, die seine großen Nebenflüsse verkörpern. Geht einmal drumherum und zählt die Damen.',
+    quiz: {
+      q: 'Wie viele Frauenfiguren (Nebenflüsse) sitzen am Fuß des Brunnens?',
+      accept: ['3', 'drei'],
+      hint: 'Theiß, Drau und … zählt nach!',
+      reveal: '3 – sie stehen für Theiß, Drau und Save.'
+    }
+  },
+
   /* ---------- 🎥 VIDEO-QUEST ---------- */
   {
     id: 'video-spot', cat: 'fun', title: 'Der Budapest-Werbespot', free: true, complicated: true,
@@ -513,7 +667,23 @@ const TASK_TIPS = {
   'day-foldalatti': 'Die Jahreszahl steht auf den historischen Emailschildern an den gelben Eingangshäuschen.',
   'day-rose':     'Der Laden liegt an der linken Seite des Basilika-Vorplatzes. Die Rose formt das Personal – ihr müsst nur nett gucken.',
   'day-shadow':   'Tiefe Nachmittagssonne macht die längsten Schatten. Elefant geht am leichtesten: ein Arm = Rüssel.',
-  'video-spot':   'Hochformat, eine Person filmt und dreht sich langsam. Slogan-Klassiker: „Budapest – kein Eintritt, keine Gnade!"'
+  'video-spot':   'Hochformat, eine Person filmt und dreht sich langsam. Slogan-Klassiker: „Budapest – kein Eintritt, keine Gnade!"',
+  'buda-bastion': 'Über die Kettenbrücke, dann die Treppen oder den Burgberg-Weg hoch – nachts sind die Bastei-Terrassen frei zugänglich.',
+  'buda-matthias': 'Stellt euch ein Stück zurück auf den Platz und zoomt auf die höchste, schlanke Turmspitze – der Vogel glänzt golden.',
+  'buda-turul':   'Vom Clark Ádám tér die große Treppe Richtung Palast – der Vogel thront auf dem Sockel an der Balustrade.',
+  'buda-batthyany': 'M2 oder Tram 19/41 bis Batthyány tér – direkt am Ufer stehen, Parlament füllt das ganze Bild.',
+  'buda-gellert': 'Das Denkmal mit der Säulen-Kolonnade seht ihr von der Elisabethbrücke aus am Hang. Zoom-Foto von unten zählt voll.',
+  'pest-opera':   'Die Statuen sitzen in Nischen links und rechts vom Haupteingang, die Namen stehen unten am Sockel.',
+  'pest-liszt':   'Der Platz geht von der Andrássy út ab, die Statue sitzt mittendrin zwischen den Café-Terrassen.',
+  'pest-newyork': 'Tram 4/6 bis Wesselényi utca – das Café liegt im Boscolo-Palast, das Foyer ist frei zugänglich.',
+  'pest-heroes':  'Nehmt die M1 ab Vörösmarty tér oder Oktogon – Endstation Hősök tere, die Säule ist unübersehbar.',
+  'pest-karavan': 'Kazinczy utca 18, direkt neben dem Szimpla – die Lichterketten weisen den Weg.',
+  'margit-fountain': 'Tram 4/6 bis Margitsziget (Haltestelle mitten auf der Brücke), dann 5 min zu Fuß auf die Südspitze.',
+  'margit-ruins': 'Vom Musikbrunnen dem Hauptweg ~800 m nach Norden folgen – die Ruinen liegen rechts, gut beleuchtet.',
+  'margit-watertower': 'Der Turm ragt über die Bäume – Richtung Inselmitte/Norden laufen, beim Freilichttheater steht er.',
+  'margit-track': 'Die rote Gummibahn läuft direkt am Wasser entlang – Staffel-Übergabe klappt am besten auf einer Geraden.',
+  'quiz-chainbridge': 'Die Tafeln sind in die Steinpfeiler am Pester Brückenkopf eingelassen – Handylampe hilft.',
+  'quiz-danubius': 'Der Brunnen steht mittig auf dem Platz beim Riesenrad – einmal langsam drumherum gehen und zählen.'
 };
 
 /* ---------- Prüfkriterien für den Magischen Prüfmeister (KI-Fotoprüfung) ---------- */
@@ -551,6 +721,13 @@ const PHOTO_CHECKS = {
   'secret-oath':  'Foto zeigt eine Gruppe am Flussgeländer bei Nacht, Hände auf dem Geländer, feierliche/alberne Schwur-Pose.',
   sisibridge:  'Foto zeigt Personen in vornehmer/kaiserlicher Pose, im Hintergrund eine weiße Hängebrücke bei Nacht.',
   parishchurch:'Foto zeigt Personen in Archäologen-Pose bei alten Steinen/Ruinen vor einer Kirche.',
+  'buda-batthyany': 'Foto zeigt Personen, im Hintergrund das beleuchtete ungarische Parlament (neugotisch, Kuppel) über einem Fluss.',
+  'buda-gellert': 'Foto zeigt eine segnende Pose mit erhobenem Arm, im Hintergrund ein Denkmal/Hang oder eine Brücke.',
+  'pest-liszt': 'Foto zeigt Personen in dramatischer Dirigier-/Klavierpose neben einer sitzenden Bronzestatue.',
+  'pest-newyork': 'Foto zeigt Personen in vornehmer Pose vor/in einem prunkvollen Gebäudeeingang oder Café-Interieur.',
+  'pest-karavan': 'Foto zeigt Street-Food (Gericht) mit Personen, Umgebung: Foodtrucks/Lichterketten.',
+  'margit-watertower': 'Foto zeigt Personen in gestaffelter Turm-Pose, im Hintergrund ein hoher historischer Wasserturm.',
+  'margit-track': 'Foto/Szene zeigt rennende Personen oder Staffel-Übergabe auf einer Laufbahn im Grünen.',
   'day-markthalle': 'Foto zeigt ein kurioses Souvenir/Produkt in einer Markthalle (Stände, Paprika, Marktatmosphäre).',
   'day-parisi': 'Foto zeigt eine prunkvolle Glas-/Kuppeldecke einer historischen Passage von unten fotografiert.',
   'day-rose': 'Foto zeigt ein Eis in Rosenform (Eiskugel als Blütenblätter), ggf. mit Personen.',

@@ -39,11 +39,15 @@ jobs:
                       os.remove(dest); fail.append((key, f'nur {size} B'))
               except Exception as e:
                   fail.append((key, str(e)[:120]))
-          json.dump(sorted(ok), open('assets/voice/manifest.json', 'w'))
-          print(f'{len(ok)} von {len(clips)} Clips geladen')
+          # Manifest MERGEN: bereits eingespielte Clips bleiben erhalten
+          existing = []
+          if os.path.exists('assets/voice/manifest.json'):
+              existing = json.load(open('assets/voice/manifest.json'))
+          existing = [k for k in existing if os.path.exists(f'assets/voice/{k}.mp3')]
+          merged = sorted(set(existing) | set(ok))
+          json.dump(merged, open('assets/voice/manifest.json', 'w'))
+          print(f'{len(ok)} von {len(clips)} neuen Clips geladen, Manifest gesamt: {len(merged)}')
           for k, why in fail: print('FEHLGESCHLAGEN:', k, '-', why)
-          total = sum(os.path.getsize(f'assets/voice/{k}.mp3') for k in ok)
-          print(f'Gesamtgröße: {total/1e6:.1f} MB')
           if len(ok) < len(clips) * 0.9:
               raise SystemExit('Zu viele Downloads fehlgeschlagen – kein Commit.')
           EOF

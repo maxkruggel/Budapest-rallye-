@@ -64,9 +64,17 @@ function bindStatic() {
 
   $('#ov-task .ov-close').onclick = closeTask;
   $('#ov-ar .ar-close').onclick = closeAR;
-  // Tap ins Nichts (auf den abgedunkelten Hintergrund) schließt das Quest-Popup
+  // Tap ins Nichts (auf den abgedunkelten Hintergrund) schließt IMMER das Popup
   $('#ov-task').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeTask();
+  });
+  $('#ov-team').addEventListener('click', e => {
+    // Team-Wahl abbrechen: Quest bleibt offen, nichts wird gewertet
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+  });
+  $('#ov-pause').addEventListener('click', e => {
+    // Tap neben das Bierglas = „Weiter geht's!"
+    if (e.target === e.currentTarget) resumeGame();
   });
 
   // Karten-Legende auf-/zuklappen
