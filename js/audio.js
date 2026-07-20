@@ -159,11 +159,17 @@ const Narrator = {
   clips: null,          // Set der Clip-Keys aus assets/voice/manifest.json, sonst null
   player: null,
 
-  async loadClips() {
+  async loadClips(force) {
+    // WICHTIG: no-cache statt force-cache – sonst klebt ein altes 404
+    // (App vor dem Stimmen-Deploy geoeffnet) fuer immer im Cache.
     try {
-      const res = await fetch('assets/voice/manifest.json', { cache: 'force-cache' });
-      if (res.ok) this.clips = new Set(await res.json());
+      const res = await fetch('assets/voice/manifest.json', { cache: force ? 'reload' : 'no-cache' });
+      if (res.ok) {
+        this.clips = new Set(await res.json());
+        document.dispatchEvent(new CustomEvent('br-voices'));
+      }
     } catch (e) { /* keine Studio-Clips - Geraetestimme uebernimmt */ }
+    return this.clips ? this.clips.size : 0;
   },
 
   playClip(key, onFail) {

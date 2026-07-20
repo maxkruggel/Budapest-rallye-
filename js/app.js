@@ -1491,15 +1491,26 @@ function renderCrew() {
       <p>${st.players.map(escapeHtml).join(', ')}</p>
       <div class="crew-score">${g.scores[0] + g.scores[1]} Pkt gemeinsam</div></div>`;
   }
+  const clipN = Narrator.clips ? Narrator.clips.size : 0;
   html += `
     <div class="card audio-card">
       <h3>🎚️ Klang der Nacht</h3>
+      <div class="studio-box ${clipN ? 'ok' : 'warn'}">
+        <p class="small"><b>🎙️ Studio-Erzähler „Friedrich Weber"</b><br>
+        ${clipN
+          ? `✅ ${clipN} Studio-Clips geladen – Quests, Tipps, Geister und Ansagen sprechen mit der tiefen Studio-Stimme.`
+          : '⚠️ Studio-Clips noch nicht geladen – einmal „Studio-Stimme laden" tippen (Internet nötig). Bis dahin springt die Gerätestimme ein.'}</p>
+        <div class="voice-tools">
+          <button class="btn ghost small-btn" id="studio-preview">▶ Studio-Hörprobe</button>
+          ${clipN ? '' : '<button class="btn ghost small-btn" id="studio-reload">🔄 Studio-Stimme laden</button>'}
+        </div>
+      </div>
       <label class="toggle-row"><span>🔔 Soundeffekte</span>
         <button class="tbtn a ${S.sound ? 'sel' : ''}" id="tog-sound">${S.sound ? 'an' : 'aus'}</button></label>
-      <label class="toggle-row"><span>🔮 Magische Erzählerstimme</span>
+      <label class="toggle-row"><span>🔮 Erzählerstimme</span>
         <button class="tbtn a ${S.voice ? 'sel' : ''}" id="tog-voice">${S.voice ? 'an' : 'aus'}</button></label>
       <div class="voice-style">
-        <p class="small muted">Stimmlage des Erzählers</p>
+        <p class="small muted">Stimmlage der Ersatzstimme (greift nur, wenn ein Studio-Clip fehlt oder ihr offline seid)</p>
         <div class="chip-row" id="voicestyle-picker">
           ${Object.entries(VOICE_STYLES).map(([key, st2]) => `
             <button class="chip ${(S.voiceStyle || 'wizard') === key ? 'sel' : ''}" data-vs="${key}">
@@ -1565,6 +1576,28 @@ function renderCrew() {
     S.apiKey = val; saveState(); renderCrew();
     Narrator.speak('Der Magische Prüfmeister ist erwacht. Ab jetzt wird jedes Beweisfoto begutachtet!');
     SFX.unlock();
+  };
+  const studioPrev = $('#studio-preview');
+  if (studioPrev) studioPrev.onclick = () => {
+    // Spielt die Studio-MP3 direkt (unabhängig vom Stimmen-Toggle);
+    // wenn die Clips fehlen: frisch laden und erneut versuchen.
+    if (!Narrator.playClip('welcome')) {
+      studioPrev.disabled = true;
+      Narrator.loadClips(true).then(n => {
+        studioPrev.disabled = false;
+        renderCrew();
+        if (n) Narrator.playClip('welcome');
+        else alert('Studio-Clips nicht erreichbar – seid ihr offline? Die Gerätestimme übernimmt derweil.');
+      });
+    }
+  };
+  const studioReload = $('#studio-reload');
+  if (studioReload) studioReload.onclick = () => {
+    studioReload.disabled = true;
+    Narrator.loadClips(true).then(n => {
+      renderCrew();
+      if (n) { SFX.unlock(); Narrator.playClip('welcome'); }
+    });
   };
   $('#tog-guard').onclick = () => {
     S.guard = !S.guard;
@@ -1694,7 +1727,7 @@ function renderVoicePicker() {
       <p class="small muted" id="voice-diagnose">📡 Gerät meldet <b>${all.length}</b> ${all.length === 1 ? 'Stimme' : 'Stimmen'},
         davon <b>${de.length}</b> deutsch · Siri-Stimme: <b>${hasSiri ? 'gefunden ✅' : 'vom iPhone nicht freigegeben'}</b></p>
       ${voices.length ? `
-      <label class="small muted" for="voice-select">Stimme wählen (🪄 = Siri, ✨ = beste Qualität)</label>
+      <label class="small muted" for="voice-select">🛟 Ersatzstimme wählen (🪄 = Siri, ✨ = beste Qualität)</label>
       <div class="voice-row">
         <select id="voice-select">${opts}</select>
         <button class="btn ghost small-btn" id="voice-preview">▶ Hörprobe</button>

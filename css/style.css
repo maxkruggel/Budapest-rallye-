@@ -886,6 +886,14 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .task-pin.free .pin-num { color: #ffe9b8; }
 .task-pin.free.done { background: rgba(76, 82, 125, .5); border-color: #6a719e; }
 
+/* Studio-Stimmen-Status im Crew-Tab */
+.studio-box {
+  border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+  display: grid; gap: 10px;
+}
+.studio-box.ok { background: rgba(123, 216, 143, .12); border: 1.5px dashed var(--ok); }
+.studio-box.warn { background: var(--paprika-soft); border: 1.5px dashed var(--paprika); }
+
 /* Stimmen-Werkzeuge im Picker */
 .voice-tools { display: flex; gap: 8px; flex-wrap: wrap; }
 #voice-diagnose b { color: var(--gold); }
