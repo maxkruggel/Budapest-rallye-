@@ -109,6 +109,59 @@ function bindStatic() {
   });
 }
 
+/* ---------------- Hintergrund-Wächter & Service Worker ---------------- */
+
+/* Offline-Fähigkeit + Benachrichtigungs-Basis (Homescreen-App auf iOS 16.4+) */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => { /* optional */ });
+}
+
+/* Der Wächter: Ein stiller, geloopter Audio-Kanal hält die Seite auf iOS
+   auch bei gesperrtem Bildschirm am Leben – GPS-Updates laufen weiter und
+   der Näherungs-Alarm kommt hörbar durch den Lautsprecher. Experimentell,
+   kostet etwas Akku, deshalb per Toggle im Crew-Tab (S.guard). */
+const Guard = {
+  audio: null,
+  running: false,
+
+  silentWavUrl() {
+    // 1 s Stille als WAV (44-Byte-Header + PCM-Nullen), zur Laufzeit gebaut
+    const rate = 8000, samples = rate;
+    const buf = new ArrayBuffer(44 + samples * 2);
+    const v = new DataView(buf);
+    const w = (o, s2) => { for (let i = 0; i < s2.length; i++) v.setUint8(o + i, s2.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + samples * 2, true); w(8, 'WAVE');
+    w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, 'data'); v.setUint32(40, samples * 2, true);
+    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  },
+
+  start() {
+    if (this.running || !S.guard) return;
+    try {
+      if (!this.audio) {
+        this.audio = new Audio(this.silentWavUrl());
+        this.audio.loop = true;
+      }
+      const p = this.audio.play();
+      if (p && p.then) p.then(() => { this.running = true; }).catch(() => { this.running = false; });
+      this.running = true;
+    } catch (e) { this.running = false; }
+  },
+
+  stop() {
+    if (this.audio) { try { this.audio.pause(); } catch (e) {} }
+    this.running = false;
+  }
+};
+
+// Wächter (falls aktiviert) in einer User-Geste starten – iOS verlangt das
+document.addEventListener('pointerdown', () => {
+  if (S.guard && S.game && !S.game.finished) Guard.start();
+}, { passive: true });
+
 /* ---------------- Launch-Intro & Magie-Staub ---------------- */
 
 /* „Die Nacht erwacht": rein visuelles Intro über der App –
@@ -464,6 +517,7 @@ function startGame() {
     try { Notification.requestPermission(); } catch (e) {}
   }
   enterGame();
+  if (S.guard) Guard.start();   // läuft in der User-Geste des Start-Buttons
   SFX.chime();
   Narrator.say('welcome', 'Willkommen, Abenteurer der Nacht! Budapest liegt euch zu Füßen. Euer Quest-Log ist geschrieben – möge die Laterne euch leuchten!');
 }
@@ -1455,6 +1509,35 @@ function renderCrew() {
       </div>
       ${renderVoicePicker()}
     </div>`;
+  const notifStatus = !('Notification' in window)
+    ? '❌ System-Benachrichtigung: vom Browser nicht unterstützt (iPhone: erst als Homescreen-App ab iOS 16.4)'
+    : Notification.permission === 'granted'
+      ? '✅ System-Benachrichtigung: erlaubt'
+      : Notification.permission === 'denied'
+        ? '⛔ System-Benachrichtigung: blockiert (in den Website-Einstellungen freigeben)'
+        : '🕐 System-Benachrichtigung: noch nicht angefragt – Probe-Alarm tippen';
+  const vibStatus = navigator.vibrate
+    ? '✅ Vibration: unterstützt'
+    : '❌ Vibration: vom iPhone-Browser gesperrt (Apple-Limit, kein App-Fehler)';
+  html += `
+    <div class="card audio-card">
+      <h3>🛡️ Alarm & Benachrichtigungen</h3>
+      <label class="toggle-row"><span>🔊 Hintergrund-Wächter</span>
+        <button class="tbtn a ${S.guard ? 'sel' : ''}" id="tog-guard">${S.guard ? 'an' : 'aus'}</button></label>
+      <p class="small muted">Der Wächter hält die Rallye über einen stillen Ton-Kanal wach: GPS läuft weiter
+      und der Näherungs-Alarm klingelt hörbar durch den Lautsprecher – auch bei gesperrtem Display.
+      Kostet etwas Akku; je nach iOS-Version experimentell.</p>
+      <button class="btn ghost small-btn" id="btn-probe">🔔 Probe-Alarm auslösen</button>
+      <p class="small muted" id="alert-status">
+        ✅ In-App-Alarm (Klingeln, Banner, Erzähler): immer aktiv, solange die App offen ist<br>
+        ${vibStatus}<br>
+        ${notifStatus}<br>
+        ${S.guard ? (Guard.running ? '✅ Wächter: wacht' : '🕐 Wächter: startet beim nächsten Tippen im Spiel') : '💤 Wächter: aus'}
+      </p>
+      <p class="small muted">📲 <b>Sperrbildschirm-Banner auf dem iPhone:</b> Die App über Teilen →
+      „Zum Home-Bildschirm" installieren (ab iOS 16.4) und dort einmal den Probe-Alarm tippen –
+      dann fragt iOS nach der Benachrichtigungs-Erlaubnis.</p>
+    </div>`;
   html += `
     <div class="card audio-card">
       <h3>🧙 Magischer Prüfmeister</h3>
@@ -1482,6 +1565,24 @@ function renderCrew() {
     S.apiKey = val; saveState(); renderCrew();
     Narrator.speak('Der Magische Prüfmeister ist erwacht. Ab jetzt wird jedes Beweisfoto begutachtet!');
     SFX.unlock();
+  };
+  $('#tog-guard').onclick = () => {
+    S.guard = !S.guard;
+    saveState();
+    if (S.guard) {
+      Guard.start();   // wir sind in einer User-Geste
+      Narrator.speak('Der Wächter der Nacht ist wach. Ich rufe euch, sobald eine Quest nahe ist – auch bei dunklem Bildschirm.');
+    } else {
+      Guard.stop();
+    }
+    renderCrew();
+  };
+  $('#btn-probe').onclick = () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      try { Notification.requestPermission().then(() => renderCrew()); } catch (e) {}
+    }
+    const t = (S.game && gameTasks().find(x => !S.game.completed[x.id])) || TASKS[0];
+    questNearbyAlert(t, 42);
   };
   const testBtn = $('#apikey-test');
   if (testBtn) testBtn.onclick = async () => {
@@ -1640,6 +1741,7 @@ function finishGame() {
   }
   saveState();
   updateArchiveButton();
+  Guard.stop();
 
   if (tickInterval) clearInterval(tickInterval);
   showFinal();
@@ -1988,15 +2090,22 @@ function questNearbyAlert(t, d) {
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 9000);
 
-  if ('Notification' in window && Notification.permission === 'granted') {
-    try {
-      new Notification('🌃 Quest in Reichweite!', {
-        body: `${t.title} – nur noch ${fmtDist(d)}. ${t.points} XP warten auf euch.`,
-        icon: 'assets/icon.svg',
-        tag: 'br-near-' + t.id
-      });
-    } catch (e) { /* Benachrichtigungen sind optional */ }
+  showSystemNotification('🌃 Quest in Reichweite!',
+    `${t.title} – nur noch ${fmtDist(d)}. ${t.points} XP warten auf euch.`, 'br-near-' + t.id);
+}
+
+/* System-Benachrichtigung: bevorzugt über den Service Worker (funktioniert
+   auch als installierte Homescreen-App auf iOS 16.4+), sonst klassisch. */
+function showSystemNotification(title, body, tag) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const opts = { body, icon: 'assets/icon.svg', badge: 'assets/icon.svg', tag };
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready
+      .then(reg => reg.showNotification(title, opts))
+      .catch(() => { try { new Notification(title, opts); } catch (e) {} });
+    return;
   }
+  try { new Notification(title, opts); } catch (e) { /* optional */ }
 }
 
 /* Beweis rendern: Foto-DataURL als <img>, Video-Blob als <video> */
