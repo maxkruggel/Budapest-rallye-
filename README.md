@@ -13,6 +13,12 @@ gebaut für Nachtschwärmer: alle Aufgaben sind kostenlos, draußen und nach Ein
   Kaffeehaus-Literat erscheinen als Geister im Kamerabild. Geisterfoto inklusive.
 - **Foto-Validierung**: Beweisfotos entwerten die Aufgaben-Tickets wie am alten Tram-Entwerter.
   Fotos bleiben ausschließlich auf dem Gerät (IndexedDB).
+- **🎩 Frag Friedrich**: Der Erzähler beantwortet in jeder Quest Rückfragen zur Geschichte
+  („Warum war das Anstoßen mit Bier verpönt?") – als Chat mit Sprachausgabe und, wo der
+  Browser es kann, Mikrofon-Eingabe. Braucht denselben API-Key wie der Magische Prüfmeister.
+  Ungelöste Quiz-Antworten verrät er nicht.
+- **Validierte GPS-Punkte**: Alle Quest-Koordinaten sind gegen externe Kartenquellen
+  verifiziert – Prozess und Referenztabelle in `docs/gps-validierung.md`.
 - **Flexible Spieldauer**: 30 Minuten bis 4 Stunden – die App stellt passend viele Aufgaben
   zusammen und plant die Route per GPS vom aktuellen Standort aus (Nearest-Neighbor).
 - **Zwei Modi**: Kooperativ (alle zusammen) oder Versus (🏮 Team Laterne vs. 🌶️ Team Paprika).

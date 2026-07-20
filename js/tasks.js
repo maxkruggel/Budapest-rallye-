@@ -20,7 +20,7 @@ const TASKS = [
   {
     id: 'shoes', cat: 'history', title: 'Schuhe am Donauufer',
     place: 'Donaupromenade, nördlich Richtung Parlament',
-    lat: 47.5039, lng: 19.0446, points: 30, verify: 'quiz',
+    lat: 47.5039, lng: 19.0448, points: 30, verify: 'quiz',
     desc: 'Dutzende eiserne Schuhe stehen am Kai – ein Mahnmal für die Menschen, die 1944/45 von Pfeilkreuzlern hier am Ufer erschossen wurden. Nehmt euch eine ruhige Minute. Dies ist der eine Ort der Rallye ohne Quatsch-Fotos.',
     quiz: {
       q: 'Auf den Gedenktafeln im Boden steht der Text in mehreren Sprachen. In wie vielen?',
@@ -32,7 +32,7 @@ const TASKS = [
   {
     id: 'lions', cat: 'history', title: 'Die Löwen der Kettenbrücke',
     place: 'Kettenbrücke, Pester Brückenkopf',
-    lat: 47.4989, lng: 19.0455, points: 25, verify: 'quiz',
+    lat: 47.4990, lng: 19.0459, points: 25, verify: 'quiz',
     desc: 'Die Legende sagt, der Bildhauer stürzte sich in die Donau, weil er den Löwen die Zungen vergessen hat. Stimmt nicht ganz – aber prüft selbst nach! Leuchtet mit der Handylampe ins Löwenmaul.',
     quiz: {
       q: 'Wie viele steinerne Löwen bewachen die Kettenbrücke insgesamt (beide Ufer)?',
@@ -44,7 +44,7 @@ const TASKS = [
   {
     id: 'basilica', cat: 'history', title: 'Das letzte Wort der Basilika',
     place: 'St.-Stephans-Basilika, Hauptportal',
-    lat: 47.5009, lng: 19.0540, points: 25, verify: 'quiz',
+    lat: 47.5008, lng: 19.0534, points: 25, verify: 'quiz',
     desc: 'Die Basilika ist nachts golden angestrahlt. Über dem Hauptportal steht eine lateinische Inschrift – das Motto des Hauses sozusagen.',
     quiz: {
       q: 'Wie lautet das LETZTE Wort der lateinischen Inschrift über dem Hauptportal?',
@@ -56,7 +56,7 @@ const TASKS = [
   {
     id: 'sovietstar', cat: 'history', title: 'Der letzte Sowjet-Obelisk',
     place: 'Szabadság tér (Freiheitsplatz), Nordseite',
-    lat: 47.5049, lng: 19.0503, points: 25, verify: 'quiz',
+    lat: 47.5046, lng: 19.0503, points: 25, verify: 'quiz',
     desc: 'Auf dem Freiheitsplatz steht das letzte sowjetische Denkmal Budapests – direkt gegenüber der US-Botschaft. Die Nachbarschaft könnte ironischer nicht sein.',
     quiz: {
       q: 'Welches Symbol thront ganz oben auf dem Obelisken?',
@@ -67,14 +67,14 @@ const TASKS = [
   },
   {
     id: 'reagan', cat: 'history', title: 'Spaziergang mit dem Präsidenten',
-    place: 'Szabadság tér, Südseite',
-    lat: 47.5041, lng: 19.0500, points: 20, verify: 'photo',
+    place: 'Szabadság tér, Nordteil (Promenade Richtung US-Botschaft)',
+    lat: 47.5049, lng: 19.0499, points: 20, verify: 'photo',
     desc: 'Ein US-Präsident spaziert seit 2011 in Lebensgröße über den Freiheitsplatz: Ronald Reagan, als Danke für sein Mitwirken am Ende des Kalten Kriegs. Foto-Beweis: Geht neben ihm her, als wärt ihr mitten im hochbrisanten Staatsgespräch. Mindestens eine Person gestikuliert wild.'
   },
   {
     id: 'bullets', cat: 'history', title: 'Kugeln in der Fassade',
     place: 'Landwirtschaftsministerium, Kossuth tér (Ostseite)',
-    lat: 47.5068, lng: 19.0478, points: 30, verify: 'quiz',
+    lat: 47.5065, lng: 19.0481, points: 30, verify: 'quiz',
     desc: 'An der Arkaden-Fassade gegenüber dem Parlament stecken eiserne Kugeln in der Wand. Jede markiert ein Einschussloch eines Massakers an Demonstranten. Sucht die Kugeln und die Gedenktafel dazu.',
     quiz: {
       q: 'In welchem Jahr geschah das, woran die Eisenkugeln erinnern?',
@@ -86,19 +86,19 @@ const TASKS = [
   {
     id: 'parliament', cat: 'foto', title: 'Levitation vor dem Parlament', complicated: true,
     place: 'Kossuth Lajos tér',
-    lat: 47.5076, lng: 19.0460, points: 40, verify: 'photo',
+    lat: 47.5069, lng: 19.0472, points: 40, verify: 'photo',
     desc: 'Das drittgrößte Parlamentsgebäude der Welt, nachts komplett in Gold. Eure Aufgabe: ein Levitationsfoto! Eine Person „schwebt" waagerecht in der Luft (Springen + perfektes Timing, oder kreativ aufstützen und Stützen verstecken). Die anderen drei schauen möglichst unbeeindruckt.'
   },
   {
     id: 'jozsef', cat: 'foto', title: 'Melancholie mit Attila',
     place: 'Attila-József-Statue, Donauseite am Parlament',
-    lat: 47.5063, lng: 19.0450, points: 20, verify: 'photo',
+    lat: 47.5051, lng: 19.0449, points: 20, verify: 'photo',
     desc: 'Ungarns großer Dichter Attila József sitzt als Statue an der Donautreppe, Hut neben sich, Blick ins Wasser – wie in seinem Gedicht „An der Donau". Setzt euch alle zu ihm und schaut GENAUSO melancholisch. Wer lacht, schuldet eine Runde.'
   },
   {
     id: 'princess', cat: 'foto', title: 'Die kleine Prinzessin',
     place: 'Donaukorzó beim Vigadó',
-    lat: 47.4954, lng: 19.0490, points: 25, verify: 'photo',
+    lat: 47.4959, lng: 19.0482, points: 25, verify: 'photo',
     desc: 'Auf dem Geländer der Promenade sitzt die „Kiskirálylány", die kleine Prinzessin mit Narrenkappe – eines der meistfotografierten Dinger der Stadt. Ihre Knie sind blank gerieben (soll Glück bringen). Kopiert ihre exakte Sitzpose auf dem Geländer daneben. Ohne. In. Die. Donau. Zu. Fallen.'
   },
   {
@@ -110,7 +110,7 @@ const TASKS = [
   {
     id: 'gerbeaud', cat: 'history', title: 'Süße Jahreszahl',
     place: 'Café Gerbeaud, Vörösmarty tér',
-    lat: 47.4964, lng: 19.0502, points: 25, verify: 'quiz',
+    lat: 47.4967, lng: 19.0503, points: 25, verify: 'quiz',
     desc: 'Am Vörösmarty tér residiert eines der berühmtesten Kaffeehäuser Europas. Kaiserin Sisi ließ sich die Süßigkeiten von hier kommen. Sucht an Fassade, Schildern oder Schaufenstern nach der Gründungs-Jahreszahl.',
     quiz: {
       q: 'Seit welchem Jahr gibt es die Konditorei?',
@@ -122,13 +122,13 @@ const TASKS = [
   {
     id: 'sisibridge', cat: 'history', title: 'Sisis weiße Brücke', minMin: 60,
     place: 'Elisabethbrücke, Pester Seite',
-    lat: 47.4910, lng: 19.0500, points: 20, verify: 'photo',
+    lat: 47.4916, lng: 19.0512, points: 20, verify: 'photo',
     desc: 'Die schneeweiße Elisabethbrücke ist nach Kaiserin Elisabeth benannt – „Sisi", die die Ungarn bis heute verehren, weil sie Ungarisch lernte und Wien regelmäßig für Budapest sitzen ließ. Foto-Beweis: eure allervornehmste kaiserliche Pose, Brücke im Hintergrund. Kinn hoch!'
   },
   {
     id: 'parishchurch', cat: 'history', title: 'Das älteste Gebäude von Pest', minMin: 60,
     place: 'Innerstädtische Pfarrkirche, Március 15. tér',
-    lat: 47.4919, lng: 19.0505, points: 20, verify: 'photo',
+    lat: 47.4921, lng: 19.0522, points: 20, verify: 'photo',
     desc: 'An der Elisabethbrücke steht die Innerstädtische Pfarrkirche – das älteste Gebäude von Pest, auf römischen Fundamenten. Davor liegen tatsächlich Ruinen des Römerkastells Contra-Aquincum offen herum. Foto: ihr vier als dramatische Ausgrabungs-Archäologen an den Römersteinen.'
   },
 
@@ -136,25 +136,25 @@ const TASKS = [
   {
     id: 'eye', cat: 'foto', title: 'Abheben am Riesenrad',
     place: 'Budapest Eye, Erzsébet tér',
-    lat: 47.4983, lng: 19.0525, points: 25, verify: 'photo',
+    lat: 47.4981, lng: 19.0520, points: 25, verify: 'photo',
     desc: 'Das beleuchtete Riesenrad dreht sich bis tief in die Nacht. Aufgabe: ALLE gleichzeitig in der Luft, Riesenrad im Hintergrund. Klingt einfach. Ist es mit vier Leuten und einem Auslöser nicht. Selbstauslöser + Geduld + ein Passant eurer Wahl sind erlaubt.'
   },
   {
     id: 'tram2', cat: 'foto', title: 'Tram-2-Photobomb',
     place: 'Vigadó tér, Haltestelle der Linie 2',
-    lat: 47.4959, lng: 19.0488, points: 30, verify: 'photo',
+    lat: 47.4962, lng: 19.0484, points: 30, verify: 'photo',
     desc: 'Die Linie 2 am Donauufer gilt als eine der schönsten Straßenbahnstrecken der Welt. Fangt ein Gruppenfoto, während im Hintergrund eine Tram durchfährt. Gelbe Retro-Tram = Ehrenpunkte. Die letzte fährt gegen 23:30 – tickt die Uhr schon?'
   },
   {
     id: 'panorama', cat: 'foto', title: 'Postkarte mit Silhouetten',
     place: 'Donaukorzó', time: 'night', fromHour: 18,
-    lat: 47.4950, lng: 19.0487, points: 25, verify: 'photo',
+    lat: 47.4972, lng: 19.0478, points: 25, verify: 'photo',
     desc: 'Von der Promenade seht ihr die beleuchtete Burg und die Brücken. Baut die perfekte Nacht-Postkarte: Burg UND eine Brücke im Bild, davor eure vier Silhouetten als Scherenschnitt (Gegenlicht, keine Blitze!). Ordentliche Posen – ihr werdet gedruckt.'
   },
   {
     id: 'vaci', cat: 'foto', title: 'Schaufensterpuppen der Váci utca',
     place: 'Váci utca', time: 'night', fromHour: 18,
-    lat: 47.4945, lng: 19.0512, points: 15, verify: 'photo',
+    lat: 47.4948, lng: 19.0511, points: 15, verify: 'photo',
     desc: 'Die Váci utca ist nachts leer und die Schaufenster hell. Sucht das schrägste Schaufenster und imitiert als Gruppe exakt die Posen der Schaufensterpuppen davor. Einer fotografiert so, dass man Puppen UND Kopien sieht.'
   },
   {
@@ -234,21 +234,21 @@ const TASKS = [
   },
   {
     id: 'columbo', cat: 'fun', title: 'Übrigens … noch eine Frage', minMin: 90,
-    place: 'Columbo-Statue, Falk Miksa utca',
-    lat: 47.5104, lng: 19.0474, points: 25, verify: 'photo',
+    place: 'Columbo-Statue, Falk Miksa utca / Ecke Szent István körút',
+    lat: 47.5126, lng: 19.0489, points: 25, verify: 'photo',
     desc: 'Ja, wirklich: In Budapest steht eine Bronzestatue von Inspektor Columbo samt Hund (die Straße ist nach Miksa Falk benannt – und Peter Falk hieß nun mal Falk). Stellt die Szene nach: Einer ist Columbo in Trenchcoat-Pose, einer der ertappte Mörder, der Rest ist entsetzt. Der Hund spielt sich selbst.'
   },
   {
     id: 'zerostone', cat: 'fun', title: 'Expedition: Kilometer Null', minMin: 180, complicated: true,
     place: 'Clark Ádám tér, Budaer Seite der Kettenbrücke',
-    lat: 47.4979, lng: 19.0399, points: 50, verify: 'photo',
+    lat: 47.4980, lng: 19.0401, points: 50, verify: 'photo',
     desc: 'Großes Finale für Ausdauernde: Überquert die Kettenbrücke ZU FUSS (nachts ein Gänsehaut-Moment). Drüben am Kreisverkehr steht der „0 km"-Stein – der Nullpunkt, von dem aus alle ungarischen Fernstraßen gemessen werden. Beweisfoto: ihr vier als dramatische Polar-Expedition, die endlich den Nullpunkt erreicht.'
   },
   {
     id: 'gozsdu', cat: 'foto', title: 'Ausflug: Gozsdu-Passage', minMin: 150,
     time: 'night', fromHour: 17,
     place: 'Gozsdu Udvar, Bezirk VII',
-    lat: 47.4987, lng: 19.0587, points: 20, verify: 'photo',
+    lat: 47.4987, lng: 19.0588, points: 20, verify: 'photo',
     desc: 'Kurzer Grenzübertritt ins Jüdische Viertel: Die Gozsdu-Passage ist eine 200 Meter lange Schlucht aus Bars, Lichterketten und Lärm. Aufgabe: ein Gruppenfoto MITTEN im Getümmel, auf dem alle vier ernst wie ein Beerdigungsinstitut schauen. Umgebung: Party. Ihr: Steuerprüfung.'
   },
   {
@@ -267,7 +267,7 @@ const TASKS = [
     id: 'ruinpub', cat: 'pause', title: 'Ausflug: Ruinenbar-Pause', minMin: 150, pause: true,
     time: 'night', fromHour: 16,
     place: 'Szimpla Kert, Kazinczy utca',
-    lat: 47.4972, lng: 19.0631, points: 25, verify: 'photo',
+    lat: 47.4970, lng: 19.0633, points: 25, verify: 'photo',
     desc: 'Die Mutter aller Ruinenbars – kein Eintritt, einfach reingehen und staunen: ein verfallenes Haus voller Trabant-Hälften, Badewannen-Sofas und Glühbirnen-Wäldern. Ein Getränk, dann Beweisfoto im absurdesten Winkel, den ihr findet.'
   },
 
@@ -276,14 +276,14 @@ const TASKS = [
     id: 'day-markthalle', cat: 'kiosk', title: 'Bauch der Stadt: Große Markthalle',
     time: 'day', openHours: [6, 18],
     place: 'Große Markthalle, Fővám tér (Mo–Sa)',
-    lat: 47.4871, lng: 19.0587, points: 25, verify: 'photo',
+    lat: 47.4870, lng: 19.0589, points: 25, verify: 'photo',
     desc: 'Tagsüber ist die Große Markthalle offen – drei Etagen unter dem bunten Zsolnay-Keramikdach, Paprikagirlanden bis zur Decke, oben brutzelt Lángos. Eintritt: null Forint. Aufgabe: Findet das absurdeste Souvenir der Halle (Paprika-Boxershorts? Salami-Plüschtier?) und macht ein Beweisfoto damit – kaufen müsst ihr nichts.'
   },
   {
     id: 'day-bees', cat: 'history', title: 'Die Bienen des Sparkassen-Palasts',
     time: 'day', openHours: [7, 19],
     place: 'Ehem. Postsparkasse, Hold utca 4',
-    lat: 47.5030, lng: 19.0508, points: 30, verify: 'quiz',
+    lat: 47.5042, lng: 19.0522, points: 30, verify: 'quiz',
     desc: 'Hinter dem Freiheitsplatz steht Ödön Lechners Jugendstil-Meisterwerk von 1901: die ehemalige Postsparkasse mit einem Märchendach aus grün-gelber Zsolnay-Keramik. Nur bei Tageslicht erkennt man die Details – schaut ganz nach oben an die Dachkanten und Giebel!',
     quiz: {
       q: 'Welche Tiere klettern an den Giebeln zum Dach hinauf?',
@@ -296,14 +296,14 @@ const TASKS = [
     id: 'day-parisi', cat: 'foto', title: 'Kaleidoskop: Párisi Udvar',
     time: 'day', openHours: [8, 20],
     place: 'Párisi Udvar, Ferenciek tere',
-    lat: 47.4931, lng: 19.0546, points: 20, verify: 'photo',
+    lat: 47.4932, lng: 19.0548, points: 20, verify: 'photo',
     desc: 'Die Párisi Udvar ist Budapests prunkvollste Passage – ein Glasdom aus 1913, halb maurisch, halb gotisch, komplett größenwahnsinnig. Tagsüber darf man frei hinein (heute Hotel-Lobby, freundlich gucken kostet nichts). Aufgabe: Legt euch in die Mitte auf den Rücken und fotografiert das Kuppeldach so, dass es wie ein Kaleidoskop aussieht.'
   },
   {
     id: 'day-foldalatti', cat: 'history', title: 'Die Ur-U-Bahn',
     time: 'day', openHours: [6, 22],
     place: 'M1-Station Vörösmarty tér (Zugang)',
-    lat: 47.4962, lng: 19.0508, points: 25, verify: 'quiz',
+    lat: 47.4966, lng: 19.0504, points: 25, verify: 'quiz',
     desc: 'Unter euren Füßen fährt die „Földalatti" – die älteste U-Bahn Kontinentaleuropas, gebaut für die Millenniumsfeier Ungarns. Die gusseisernen Jugendstil-Eingänge mit den gelben Schildern stehen unter UNESCO-Schutz. Sucht am Eingang oder auf den Schildern nach der Jahreszahl der Eröffnung.',
     quiz: {
       q: 'In welchem Jahr eröffnete die Földalatti?',
@@ -316,7 +316,7 @@ const TASKS = [
     id: 'day-rose', cat: 'kiosk', title: 'Die essbare Rose',
     time: 'day', openHours: [10, 21],
     place: 'Gelarto Rosa, Szent István tér',
-    lat: 47.5004, lng: 19.0536, points: 20, verify: 'photo',
+    lat: 47.5011, lng: 19.0529, points: 20, verify: 'photo',
     desc: 'Direkt an der Basilika formt Gelarto Rosa Eiskugeln zu Rosenblüten – Blatt für Blatt mit dem Spatel. Eine Rose für die Gruppe reicht. Beweisfoto: die Eisrose im Vordergrund, dahinter eure allervornehmsten „Oh, wie reizend!"-Gesichter, Basilika im Hintergrund gibt Stilpunkte.'
   },
   {
@@ -342,7 +342,7 @@ const TASKS = [
   {
     id: 'buda-matthias', cat: 'history', title: 'Der Vogel auf der Spitze', minMin: 120,
     place: 'Matthiaskirche, Szentháromság tér (Buda)',
-    lat: 47.5019, lng: 19.0339, points: 30, verify: 'quiz',
+    lat: 47.5019, lng: 19.0342, points: 30, verify: 'quiz',
     desc: 'Direkt neben der Fischerbastei glänzt die Matthiaskirche mit ihrem bunten Zsolnay-Keramikdach. Schaut ganz hinauf zur höchsten Turmspitze: Dort sitzt ein Tier mit einem goldenen Ring im Schnabel – das Wappentier von König Matthias Corvinus.',
     quiz: {
       q: 'Welches Tier sitzt mit dem Ring im Schnabel auf der Turmspitze?',
@@ -354,7 +354,7 @@ const TASKS = [
   {
     id: 'buda-turul', cat: 'history', title: 'Der Sagenvogel der Magyaren', minMin: 120,
     place: 'Burgpalast, Habsburg-Treppe (Buda)',
-    lat: 47.4962, lng: 19.0398, points: 30, verify: 'quiz',
+    lat: 47.4977, lng: 19.0398, points: 30, verify: 'quiz',
     desc: 'Am Aufgang zum Burgpalast breitet ein gewaltiger Bronzevogel mit Schwert in den Krallen die Flügel aus. Er ist DER Sagenvogel der ungarischen Mythologie – sein Name steht auf dem Sockel.',
     quiz: {
       q: 'Wie heißt der mythische Vogel am Burgaufgang?',
@@ -366,7 +366,7 @@ const TASKS = [
   {
     id: 'buda-batthyany', cat: 'foto', title: 'Parlament in Gold', minMin: 120,
     place: 'Batthyány tér, Donauufer (Buda)',
-    lat: 47.5059, lng: 19.0392, points: 25, verify: 'photo',
+    lat: 47.5061, lng: 19.0392, points: 25, verify: 'photo',
     desc: 'Vom Batthyány tér habt ihr DEN Blick: das golden angestrahlte Parlament direkt gegenüber, gespiegelt in der Donau. Foto-Beweis: das Parlament im Hintergrund, ihr vier davor in eurer besten „Wir regieren jetzt"-Pose.'
   },
   {
@@ -380,7 +380,7 @@ const TASKS = [
   {
     id: 'pest-opera', cat: 'history', title: 'Die Wächter der Oper', minMin: 120,
     place: 'Ungarische Staatsoper, Andrássy út 22',
-    lat: 47.5030, lng: 19.0585, points: 30, verify: 'quiz',
+    lat: 47.5027, lng: 19.0583, points: 30, verify: 'quiz',
     desc: 'Die Staatsoper an der Prachtstraße Andrássy út ist nachts hell angestrahlt. Links und rechts des Haupteingangs sitzen zwei ungarische Komponisten als Marmorstatuen – die Namen stehen an den Sockeln. Lest nach!',
     quiz: {
       q: 'Welche zwei Komponisten flankieren den Eingang? (Ein Nachname reicht.)',
@@ -392,7 +392,7 @@ const TASKS = [
   {
     id: 'pest-liszt', cat: 'foto', title: 'Der wilde Maestro', minMin: 150,
     place: 'Liszt-Ferenc-Statue, Liszt Ferenc tér',
-    lat: 47.5046, lng: 19.0644, points: 20, verify: 'photo',
+    lat: 47.5039, lng: 19.0634, points: 20, verify: 'photo',
     desc: 'Auf dem Kneipenplatz Liszt Ferenc tér sitzt Franz Liszt als Statue – wilde Mähne, dramatisch aufgerissene Klavierhände, mitten im unsichtbaren Fortissimo. Stellt euch dazu und dirigiert/klimpert GENAUSO dramatisch. Beweisfoto im Moment der größten Ekstase.'
   },
   {
@@ -417,7 +417,7 @@ const TASKS = [
     id: 'pest-karavan', cat: 'kiosk', title: 'Street-Food-Basar', minMin: 150,
     time: 'night', fromHour: 16,
     place: 'Karavan Street Food, Kazinczy utca',
-    lat: 47.4971, lng: 19.0628, points: 25, verify: 'photo',
+    lat: 47.4971, lng: 19.0630, points: 25, verify: 'photo',
     desc: 'Direkt neben der Ruinenbar Szimpla liegt der Karavan-Hof: Foodtrucks unter Lichterketten, vom Lángos-Burger bis Kürtőskalács-Eis. Auftrag: EIN Gericht, das keiner von euch kennt, gemeinsam bestellen und probieren. Beweisfoto: das Gericht + eure ersten Probier-Gesichter.'
   },
 
@@ -425,14 +425,14 @@ const TASKS = [
   {
     id: 'margit-fountain', cat: 'gps', title: 'Insel-Etappe: Der singende Brunnen', minMin: 240,
     place: 'Musikbrunnen, Margareteninsel (Südspitze)',
-    lat: 47.5170, lng: 19.0455, points: 30, verify: 'gps',
+    lat: 47.5187, lng: 19.0449, points: 30, verify: 'gps',
     desc: 'Ab auf die Margareteninsel! Über die Margaretenbrücke (Tram 4/6 hält mitten auf der Brücke) erreicht ihr die Südspitze mit dem Musikbrunnen – er spielt tagsüber stündlich Musik, abends leuchtet er. Check-in per GPS am Brunnenrand.'
   },
   {
     id: 'margit-ruins', cat: 'history', title: 'Insel-Etappe: Die Königstochter', minMin: 240,
-    place: 'Klosterruinen, Margareteninsel (Mitte)',
-    lat: 47.5243, lng: 19.0468, points: 35, verify: 'quiz',
-    desc: 'Mitten auf der Insel liegen die Ruinen eines Dominikanerinnenklosters. Hier lebte im 13. Jahrhundert eine Königstochter, die ihr Vater Béla IV. als Dank für die Rettung des Landes vor den Mongolen Gott versprach – die Insel trägt heute ihren Namen. Die Infotafeln an den Ruinen erzählen ihre Geschichte.',
+    place: 'Klosterruinen, Margareteninsel (Nordhälfte)',
+    lat: 47.5290, lng: 19.0511, points: 35, verify: 'quiz',
+    desc: 'In der Nordhälfte der Insel liegen die Ruinen eines Dominikanerinnenklosters. Hier lebte im 13. Jahrhundert eine Königstochter, die ihr Vater Béla IV. als Dank für die Rettung des Landes vor den Mongolen Gott versprach – die Insel trägt heute ihren Namen. Die Infotafeln an den Ruinen erzählen ihre Geschichte.',
     quiz: {
       q: 'Wie hieß die Königstochter, nach der die Insel benannt ist?',
       accept: ['margit', 'margarete', 'margaret', 'margareta', 'sankt margit'],
@@ -443,14 +443,14 @@ const TASKS = [
   {
     id: 'margit-watertower', cat: 'foto', title: 'Insel-Etappe: Der Wasserturm', minMin: 240,
     place: 'Wasserturm, Margareteninsel (Nordteil)',
-    lat: 47.5262, lng: 19.0480, points: 30, verify: 'photo',
+    lat: 47.5302, lng: 19.0501, points: 30, verify: 'photo',
     desc: 'Der 57 Meter hohe Jugendstil-Wasserturm von 1911 ist das Wahrzeichen der Insel und UNESCO-geschützt. Beweisfoto: Ihr vier baut den Turm nach – einer ist das Fundament, die anderen staffeln sich dahinter der Größe nach zur „Turmspitze". Der echte Turm muss mit aufs Bild.'
   },
   {
     id: 'margit-track', cat: 'fun', title: 'Insel-Etappe: Die Gummibahn', minMin: 240,
     video: true,
     place: 'Laufbahn, Margareteninsel (Westufer)',
-    lat: 47.5200, lng: 19.0440, points: 30, verify: 'photo',
+    lat: 47.5220, lng: 19.0425, points: 30, verify: 'photo',
     desc: 'Rund um die Insel führt die berühmte 5,35 km lange Gummi-Laufbahn – der Lieblingsort aller Budapester Läufer. Auftrag: eine 20-Meter-Staffel, jeder läuft eine Etappe, Übergabe-Objekt ist irgendwas Absurdes (Kürtőskalács? Bierdose? Schuh?). Beweis: Foto vom Zieleinlauf oder gleich ein Video der Staffel.'
   },
 
@@ -458,7 +458,7 @@ const TASKS = [
   {
     id: 'quiz-chainbridge', cat: 'history', title: 'Der Name auf der Tafel', minMin: 60,
     place: 'Kettenbrücke, Pester Widerlager',
-    lat: 47.4988, lng: 19.0450, points: 30, verify: 'quiz',
+    lat: 47.4989, lng: 19.0458, points: 30, verify: 'quiz',
     desc: 'Am Pester Brückenkopf der Kettenbrücke sind Gedenktafeln eingelassen. Eine nennt den englischen Ingenieur, der die Brücke entworfen hat (sein Namensvetter Adam Clark hat sie gebaut – der Platz drüben heißt nach ihm). Lest die Tafel!',
     quiz: {
       q: 'Wie lautet der Nachname des englischen Ingenieurs, der die Kettenbrücke entwarf?',
@@ -470,7 +470,7 @@ const TASKS = [
   {
     id: 'quiz-danubius', cat: 'history', title: 'Die Flüsse im Brunnen', minMin: 30,
     place: 'Danubius-Brunnen, Erzsébet tér',
-    lat: 47.4980, lng: 19.0521, points: 25, verify: 'quiz',
+    lat: 47.4982, lng: 19.0516, points: 25, verify: 'quiz',
     desc: 'Mitten auf dem Erzsébet tér steht der Danubius-Brunnen: Oben thront Vater Donau – und um den Fuß sitzen Frauenfiguren, die seine großen Nebenflüsse verkörpern. Geht einmal drumherum und zählt die Damen.',
     quiz: {
       q: 'Wie viele Frauenfiguren (Nebenflüsse) sitzen am Fuß des Brunnens?',
@@ -491,8 +491,8 @@ const TASKS = [
   {
     id: 'spy1', cat: 'fun', title: 'Agentenmission 1/3: Das Briefing',
     chain: 'spy', step: 1,
-    place: 'Szabadság tér, beim spazierenden Präsidenten',
-    lat: 47.5041, lng: 19.0500, points: 20, verify: 'photo',
+    place: 'Szabadság tér (Nordteil), beim spazierenden Präsidenten',
+    lat: 47.5049, lng: 19.0499, points: 20, verify: 'photo',
     desc: 'Budapest war im Kalten Krieg DIE Spionage-Hauptstadt Europas – zwischen US-Botschaft und Sowjet-Denkmal liegen hier 50 Meter. Eure Mission beginnt: Trefft euch mit „Agent R." (der Bronzeherr, der über den Platz spaziert) zum geheimen Briefing. Beweisfoto: konspiratives Gespräch, alle mit hochgeschlagenem Kragen.\n\n🎯 MERKT EUCH FÜR TEIL 2: Das Codewort ist der VORNAME des Präsidenten.'
   },
   {
@@ -512,33 +512,33 @@ const TASKS = [
     id: 'spy3', cat: 'fun', title: 'Agentenmission 3/3: Die Übergabe', complicated: true,
     chain: 'spy', step: 3, requires: 'spy2',
     place: 'Unterm Löwen der Kettenbrücke, Pester Seite',
-    lat: 47.4989, lng: 19.0455, points: 45, verify: 'photo',
+    lat: 47.4990, lng: 19.0459, points: 45, verify: 'photo',
     desc: 'Finale der Mission: die Übergabe. Unterm steinernen Löwen wechselt ein unauffälliges Päckchen (Snack, Zettel, was auch immer) den Besitzer. Beweisfoto: der Übergabemoment – zwei tauschen das Päckchen mit todernster Miene, die anderen sichern in VERSCHIEDENE Richtungen wie sehr, sehr schlechte Spione. Zeitungsloch zum Durchgucken gibt Stilpunkte.'
   },
 
   /* ---------- 🥚 EASTER EGGS: Die Mini-Statuen & Co. ---------- */
   {
-    id: 'egg-squirrel', cat: 'egg', title: 'Kolodko-Mini: Das tote Eichhörnchen',
-    place: 'Szabadság tér, Nähe US-Botschaft (niedrig suchen!)',
-    lat: 47.5048, lng: 19.0508, points: 35, verify: 'photo',
-    desc: 'Der Guerilla-Bildhauer Mihály Kolodko versteckt seit Jahren winzige Bronze-Figuren in der Stadt – ohne Genehmigung, über Nacht montiert. Auf dem Freiheitsplatz liegt sein berüchtigtstes Werk: ein totes Eichhörnchen mit Revolver (eine Anspielung auf einen absurden US-Diplomaten-Witz). Es ist ~10 cm klein und sitzt auf einem Poller – Handylampe an, tief bücken, suchen! Beweisfoto: das Eichhörnchen in Großaufnahme.'
+    id: 'egg-squirrel', cat: 'egg', title: 'Kolodko-Mini: Das tote Eichhörnchen', minMin: 90,
+    place: 'Falk Miksa utca / Szent István körút, bei der Columbo-Statue',
+    lat: 47.5126, lng: 19.0488, points: 35, verify: 'photo',
+    desc: 'Der Guerilla-Bildhauer Mihály Kolodko versteckt seit Jahren winzige Bronze-Figuren in der Stadt – ohne Genehmigung, über Nacht montiert. Am Nordende der Falk Miksa utca liegt sein berüchtigtstes Werk: ein totes Eichhörnchen mit Revolver samt Kreide-Umriss – ein inszenierter Tatort, direkt vor den Füßen von Inspektor Columbo. Es ist ~10 cm klein – Handylampe an, tief bücken, suchen! Beweisfoto: das Eichhörnchen in Großaufnahme.'
   },
   {
     id: 'egg-kermit', cat: 'egg', title: 'Kolodko-Mini: Der Frosch',
     place: 'Szabadság tér, am Geländer Richtung Park',
-    lat: 47.5040, lng: 19.0506, points: 35, verify: 'photo',
+    lat: 47.5041, lng: 19.0506, points: 35, verify: 'photo',
     desc: 'Noch ein Kolodko: Ein sehr bekannter grüner Frosch (ihr kennt ihn aus dem Fernsehen) sitzt in Miniatur auf einem Geländer am Freiheitsplatz und schaut melancholisch ins Grüne. Findet ihn und macht ein Foto, auf dem einer von euch GENAU seinen Gesichtsausdruck imitiert.'
   },
   {
     id: 'egg-rubik', cat: 'egg', title: 'Kolodko-Mini: Der schmelzende Würfel', minMin: 60,
-    place: 'Unteres Donauufer bei der Akademie der Wissenschaften',
-    lat: 47.5008, lng: 19.0450, points: 35, verify: 'photo',
-    desc: 'Der Zauberwürfel ist eine ungarische Erfindung (Ernő Rubik, 1974!) – und Kolodko hat ihm ein Denkmal gesetzt: ein kleiner Würfel, der wie Dalís Uhren über die Kaimauer am unteren Donauufer schmilzt. Runter zur Wasserkante (Treppen bei der Akademie), Mauer absuchen. Beweisfoto: der Würfel + im Hintergrund die beleuchtete Kettenbrücke. Vorsicht an der Kante!'
+    place: 'Unteres Donauufer (Buda), Bem rakpart beim Batthyány tér',
+    lat: 47.5048, lng: 19.0396, points: 35, verify: 'photo',
+    desc: 'Der Zauberwürfel ist eine ungarische Erfindung (Ernő Rubik, 1974!) – und Kolodko hat ihm ein Denkmal gesetzt: ein kleiner Würfel, der wie Dalís Uhren von der Kaimauer schmilzt – auf der BUDAER Seite, am Bem rakpart nahe Batthyány tér. Die Treppe zum unteren Kai nehmen und die Mauer absuchen. Beweisfoto: der Würfel + im Hintergrund das beleuchtete Parlament. Vorsicht an der Kante!'
   },
   {
     id: 'egg-peacock', cat: 'egg', title: 'Die Pfauen im Tor', minMin: 60,
     place: 'Gresham-Palast, Széchenyi tér',
-    lat: 47.4993, lng: 19.0477, points: 25, verify: 'quiz',
+    lat: 47.4997, lng: 19.0477, points: 25, verify: 'quiz',
     desc: 'Der Gresham-Palast ist Budapests Jugendstil-Juwel. Kaum jemand schaut genau hin: In den schmiedeeisernen Toren stecken kunstvolle Pfauen – das heimliche Wahrzeichen des Hauses. Findet die Tore und zählt genau.',
     quiz: {
       q: 'Wie viele Pfauen stecken in EINEM der schmiedeeisernen Torflügel-Paare? (Zählt an einem Tor!)',
@@ -562,17 +562,17 @@ const TASKS = [
   /* ---------- 📍 GPS-CHECKPOINTS ---------- */
   {
     id: 'cp-vorosmarty', cat: 'gps', title: 'Checkpoint: Vörösmarty tér',
-    place: 'Vörösmarty tér', lat: 47.4964, lng: 19.0504, points: 15, verify: 'gps',
+    place: 'Vörösmarty tér', lat: 47.4961, lng: 19.0506, points: 15, verify: 'gps',
     desc: 'Erreicht den Platz des Nationaldichters Mihály Vörösmarty. Sein weißes Marmordenkmal ist im Winter eingehaust, er selbst angeblich empfindlich gegen Kälte. Check-in per GPS, sobald ihr auf dem Platz steht.'
   },
   {
     id: 'cp-szechenyi', cat: 'gps', title: 'Checkpoint: Széchenyi tér',
-    place: 'Széchenyi István tér', lat: 47.4990, lng: 19.0470, points: 15, verify: 'gps',
+    place: 'Széchenyi István tér', lat: 47.4990, lng: 19.0466, points: 15, verify: 'gps',
     desc: 'Der Platz zwischen Kettenbrücke und dem Jugendstil-Märchenpalast Gresham (heute Luxushotel – Blick durch die Glastür ist gratis). Check-in per GPS.'
   },
   {
     id: 'cp-fovam', cat: 'gps', title: 'Checkpoint: Große Markthalle', minMin: 120,
-    place: 'Fővám tér', lat: 47.4870, lng: 19.0587, points: 20, verify: 'gps',
+    place: 'Fővám tér', lat: 47.4876, lng: 19.0584, points: 20, verify: 'gps',
     desc: 'Am südlichen Ende der Váci utca steht die Große Markthalle mit ihrem Dach aus bunten Zsolnay-Keramikziegeln – nachts schön angestrahlt, innen leider zu (kein Eintritt nötig, war eh nicht drin). Check-in per GPS auf dem Vorplatz.'
   },
 
@@ -588,7 +588,7 @@ const TASKS = [
   {
     id: 'ar-szechenyi', cat: 'ar', title: 'Zeitfenster: Der größte Ungar',
     place: 'Széchenyi István tér, vor dem Gresham-Palast',
-    lat: 47.4993, lng: 19.0477, points: 35, verify: 'ghost',
+    lat: 47.4996, lng: 19.0477, points: 35, verify: 'ghost',
     ghost: 'szechenyi',
     story: 'Graf István Széchenyi – „der größte Ungar" – stiftete ein Jahreseinkommen für die Akademie der Wissenschaften und trieb den Bau der Kettenbrücke voran: die erste feste Brücke zwischen Buda und Pest (1849). Der Platz hier und die Brücke tragen seinen Namen.',
     desc: 'Öffnet das Zeitfenster: Der Graf persönlich inspiziert nachts seine Brücke. Geisterfoto mit ehrfürchtigem Nicken.'
@@ -604,7 +604,7 @@ const TASKS = [
   {
     id: 'ar-tram', cat: 'ar', title: 'Zeitfenster: Die Ur-Tram',
     place: 'Vigadó tér, an den Gleisen der Linie 2',
-    lat: 47.4959, lng: 19.0490, points: 35, verify: 'ghost',
+    lat: 47.4961, lng: 19.0486, points: 35, verify: 'ghost',
     ghost: 'tram',
     story: 'Budapest war Straßenbahn-Pionier: Schon 1887 ratterte hier eine der ersten elektrischen Straßenbahnen Europas, und 1896 eröffnete auf der anderen Seite die erste U-Bahn Kontinentaleuropas. Die heutige Linie 2 am Ufer fährt eine der schönsten Strecken der Welt.',
     desc: 'Öffnet das Zeitfenster: Die Ur-Tram von 1887 rollt noch einmal über den Korzó. Geisterfoto – aber bitte nicht auf den echten Gleisen stehen bleiben.'
@@ -612,7 +612,7 @@ const TASKS = [
   {
     id: 'ar-literat', cat: 'ar', title: 'Zeitfenster: Das Kaffeehaus um 1900',
     place: 'Vörösmarty tér, vor dem Gerbeaud',
-    lat: 47.4963, lng: 19.0506, points: 35, verify: 'ghost',
+    lat: 47.4966, lng: 19.0505, points: 35, verify: 'ghost',
     ghost: 'literat',
     story: 'Um 1900 hatte Budapest über 500 Kaffeehäuser – Schriftsteller wohnten praktisch darin, Kellner liehen ihnen Geld und Papier („Hundeblatt" hieß das Gratis-Schreibpapier). Ganze Zeitungen wurden an Marmortischen wie diesen erfunden.',
     desc: 'Öffnet das Zeitfenster: Ein Kaffeehaus-Literat von 1900 erscheint mit Zeitung und Espresso. Geisterfoto: Setzt euch dazu, diskutiert stumm über Literatur.'
@@ -621,7 +621,7 @@ const TASKS = [
 
 /* ---------- Tipps (günstige Stufe vor dem Joker, −5 XP) ---------- */
 const TASK_TIPS = {
-  reagan:      'Er „läuft" Richtung Süden – stellt euch neben ihn, gleiche Schrittstellung, und diskutiert mit den Händen.',
+  reagan:      'Er „läuft" auf der Promenade im Nordteil des Platzes, zwischen Sowjet-Obelisk und US-Botschaft. Stellt euch neben ihn, gleiche Schrittstellung, und diskutiert mit den Händen.',
   parliament:  'Serienbild-Modus + im Moment des Auslösens springen. Oder: auf einen Poller stützen und die Stütze hinter dem Körper verstecken.',
   jozsef:      'Er sitzt auf der Treppenstufe zur Donau, südlich vom Parlament am Ufer. Hut liegt links neben ihm.',
   princess:    'Sie sitzt auf dem Geländer direkt an der Tramlinie beim Vigadó. Ein Bein angewinkelt, Hände neben den Hüften.',
@@ -641,18 +641,18 @@ const TASK_TIPS = {
   spellbuda:   'B = einer steht, einer macht die zwei Bäuche. U = zwei Personen als Schalen. Teamwork!',
   statue:      'Rund um den Vörösmarty tér und die Promenade steht alle 50 m Bronze. Faltenwurf mit Jacke imitieren!',
   choir:       'An der Promenade zwischen Vigadó und Kettenbrücke hört euch niemand böse zu – nur die Burg.',
-  columbo:     'Falk Miksa utca, nördlich vom Kossuth tér – ca. 5 min zu Fuß die Straße hoch. Er steht mitten auf dem Gehweg.',
+  columbo:     'Ganz am Nordende der Falk Miksa utca, Ecke Szent István körút (nahe Jászai Mari tér). Er steht mitten auf dem Gehweg – die Tram 4/6 hält gleich um die Ecke.',
   zerostone:   'Der Stein steht im Kreisverkehr-Park direkt am Budaer Brückenkopf, eine große „0" aus Stein.',
   gozsdu:      'Eingang Király utca 13 – die Passage zieht sich bis zur Dob utca durch.',
   ruinpub:     'Kazinczy utca 14. Kein Dresscode, kein Eintritt. Im Innenhof ist der berühmte Trabant.',
   'cp-vorosmarty': 'Der Platz mit dem großen weißen Marmordenkmal am nördlichen Ende der Váci utca.',
   'cp-szechenyi':  'Direkt am Pester Ende der Kettenbrücke, vor dem beleuchteten Jugendstil-Palast.',
   'cp-fovam':      'Immer die Váci utca Richtung Süden bis zum Ende durchlaufen – die Markthalle ist unübersehbar.',
-  spy1:        'Der Bronze-Reagan „geht" mitten auf dem Gehweg der Südseite des Platzes, Richtung Parlament.',
+  spy1:        'Der Bronze-Reagan „geht" auf der Promenade im Nordteil des Platzes – zwischen Sowjet-Obelisk und US-Botschaft.',
   spy3:        'Der Pester Löwe auf der Nordseite der Brücke hat den besten Schatten für konspirative Übergaben.',
-  'egg-squirrel': 'Sucht die kurzen Metallpoller an der Nordseite, Höhe US-Botschaft. Es liegt AUF einem davon. Wirklich winzig!',
+  'egg-squirrel': 'Direkt bei der Columbo-Statue: Auf einem niedrigen Poller liegt das Eichhörnchen samt Kreide-Umriss – der Fall, den der Inspektor gerade löst. Wirklich winzig!',
   'egg-kermit':   'Am Geländer der kleinen Parkanlage, Südseite des Platzes. Auf Kniehöhe schauen!',
-  'egg-rubik':    'Treppe zum unteren Kai bei der Akademie nehmen, dann die Kaimauer Richtung Kettenbrücke absuchen – er „tropft" über eine Kante.',
+  'egg-rubik':    'Budaer Seite! Am Bem rakpart (zwischen Batthyány tér und Margaretenbrücke) die Treppe zum unteren Kai nehmen – der Würfel „tropft" aus einer Nische der Ufermauer, gegenüber vom Parlament.',
   'egg-peacock':  'Das große schmiedeeiserne Haupttor in der Mitte der Fassade – die Pfauen sind im Torbogen-Gitter versteckt.',
   'egg-radar':    'Geheimtipp: Auch an Hauswänden und Fenstersimsen sitzen Minis. Augen auf Bauch- und Kniehöhe!',
   'secret-oath':  'Wortlaut vergessen? „Wir schwören bei Sisi, beim Paprika und beim heiligen Túró Rudi: Wir kommen wieder!"',
@@ -679,7 +679,7 @@ const TASK_TIPS = {
   'pest-heroes':  'Nehmt die M1 ab Vörösmarty tér oder Oktogon – Endstation Hősök tere, die Säule ist unübersehbar.',
   'pest-karavan': 'Kazinczy utca 18, direkt neben dem Szimpla – die Lichterketten weisen den Weg.',
   'margit-fountain': 'Tram 4/6 bis Margitsziget (Haltestelle mitten auf der Brücke), dann 5 min zu Fuß auf die Südspitze.',
-  'margit-ruins': 'Vom Musikbrunnen dem Hauptweg ~800 m nach Norden folgen – die Ruinen liegen rechts, gut beleuchtet.',
+  'margit-ruins': 'Vom Musikbrunnen dem Hauptweg ~1,2 km nach Norden folgen – die Ruinen liegen rechts vom Weg, kurz vor dem Wasserturm.',
   'margit-watertower': 'Der Turm ragt über die Bäume – Richtung Inselmitte/Norden laufen, beim Freilichttheater steht er.',
   'margit-track': 'Die rote Gummibahn läuft direkt am Wasser entlang – Staffel-Übergabe klappt am besten auf einer Geraden.',
   'quiz-chainbridge': 'Die Tafeln sind in die Steinpfeiler am Pester Brückenkopf eingelassen – Handylampe hilft.',
@@ -757,7 +757,7 @@ const CATS = {
 const TRANSIT_STOPS = [
   { name: 'Deák Ferenc tér',      lat: 47.4979, lng: 19.0546, lines: 'M1 · M2 · M3 · Nachtbus 914/950', night: true },
   { name: 'Vörösmarty tér',       lat: 47.4962, lng: 19.0510, lines: 'M1', night: false },
-  { name: 'Vigadó tér',           lat: 47.4959, lng: 19.0488, lines: 'Tram 2', night: false },
+  { name: 'Vigadó tér',           lat: 47.4962, lng: 19.0484, lines: 'Tram 2', night: false },
   { name: 'Széchenyi István tér', lat: 47.4993, lng: 19.0464, lines: 'Tram 2 · Bus 16', night: false },
   { name: 'Kossuth Lajos tér',    lat: 47.5073, lng: 19.0455, lines: 'M2 · Tram 2', night: false },
   { name: 'Arany János utca',     lat: 47.5040, lng: 19.0521, lines: 'M3', night: false },
