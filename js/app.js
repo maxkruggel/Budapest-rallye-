@@ -839,7 +839,7 @@ function addTaskToGame(id) {
   el.innerHTML = `<div class="stamp-inner secret">➕ NEUE QUEST<br><b>${escapeHtml(t.title)}</b><span>zur Rallye hinzugefügt (+${t.points} Pkt möglich)</span></div>`;
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2600);
-  Narrator.speak(`Eine neue Quest schließt sich eurer Reise an: ${t.title}.`);
+  Narrator.say('quest_added', 'Eine neue Quest schließt sich eurer Reise an!');
 }
 
 /* „Überall lösbar"-Quests bekommen virtuelle Karten-Punkte AUF der Route:
@@ -1001,7 +1001,7 @@ function rerollOpenTasks() {
   el.innerHTML = `<div class="stamp-inner secret">🎲 NEU GEWÜRFELT<br><b>${ri} frische Quests</b><span>Das Schicksal mischt die Karten neu</span></div>`;
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2600);
-  Narrator.speak('Das Schicksal würfelt neu! Frische Quests liegen vor euch.');
+  Narrator.say('dice', 'Das Schicksal würfelt neu! Frische Quests liegen vor euch.');
 }
 
 function stampTime(ts) {
@@ -1063,7 +1063,7 @@ function openTask(id) {
     $('#task-transit').hidden = true;
     $('#task-cozy').hidden = true;
     $('#task-actions').innerHTML = '';
-    $('#btn-speak').onclick = () => Narrator.speak('Geduld! Diese Quest ist gesperrt. Kommt in einer Stunde wieder.');
+    $('#btn-speak').onclick = () => Narrator.say('locked_attempts', 'Geduld! Diese Quest ist gesperrt. Kommt in einer Stunde wieder.');
     $('#ov-task').classList.add('open');
     return;
   }
@@ -1086,9 +1086,9 @@ function openTask(id) {
     $('#task-transit').hidden = true;
     $('#task-cozy').hidden = true;
     $('#task-actions').innerHTML = '';
-    $('#btn-speak').onclick = () => Narrator.speak(night
-      ? 'Geduld, Abenteurer. Diese Quest erwacht erst mit der Dunkelheit.'
-      : 'Diese Quest gehört dem Tageslicht. Kehrt zurück, wenn die Sonne wieder regiert.');
+    $('#btn-speak').onclick = () => night
+      ? Narrator.say('locked_night', 'Geduld, Abenteurer. Diese Quest erwacht erst mit der Dunkelheit.')
+      : Narrator.say('locked_day', 'Diese Quest gehört dem Tageslicht. Kehrt zurück, wenn die Sonne wieder regiert.');
     $('#ov-task').classList.add('open');
     return;
   }
@@ -1111,7 +1111,7 @@ function openTask(id) {
     $('#task-actions').innerHTML = '';
     $('#task-transit').hidden = true;
     $('#task-cozy').hidden = true;
-    $('#btn-speak').onclick = () => Narrator.speak('Diese Akte ist versiegelt. Erfüllt erst den vorherigen Teil der Mission.');
+    $('#btn-speak').onclick = () => Narrator.say('locked_chain', 'Diese Akte ist versiegelt. Erfüllt erst den vorherigen Teil der Mission.');
     $('#ov-task').classList.add('open');
     return;
   }
@@ -1743,7 +1743,7 @@ function renderSettings() {
   };
   $('#tog-voice').onclick = () => {
     S.voice = !S.voice; saveState(); applyAudioIcon(); renderSettings();
-    if (S.voice) Narrator.speak('Die Stimme der Nacht ist erwacht.');
+    if (S.voice) Narrator.say('voice_on', 'Die Stimme der Nacht ist erwacht.');
     else Narrator.stop();
   };
   const studioPrev = $('#studio-preview');
@@ -1778,7 +1778,7 @@ function renderSettings() {
     saveState();
     if (S.guard) {
       Guard.start();   // wir sind in einer User-Geste
-      Narrator.speak('Der Wächter der Nacht ist wach. Ich rufe euch, sobald eine Quest nahe ist – auch bei dunklem Bildschirm.');
+      Narrator.say('guard_on', 'Der Wächter der Nacht ist wach. Ich rufe euch, sobald eine Quest nahe ist – auch bei dunklem Bildschirm.');
     } else {
       Guard.stop();
     }
@@ -1800,7 +1800,7 @@ function renderSettings() {
       return;
     }
     S.apiKey = val; saveState(); renderSettings();
-    Narrator.speak('Der Magische Prüfmeister ist erwacht. Ab jetzt wird jedes Beweisfoto begutachtet!');
+    Narrator.say('inspector_on', 'Der Magische Prüfmeister ist erwacht. Ab jetzt wird jedes Beweisfoto begutachtet!');
     SFX.unlock();
   };
   const testBtn = $('#apikey-test');
@@ -1826,7 +1826,7 @@ function renderSettings() {
       if (res.ok) {
         status.textContent = '✅ Prüfmeister antwortet – der Key funktioniert!';
         SFX.unlock();
-        Narrator.speak('Der Prüfmeister ist wach und bereit, eure Fotos zu begutachten.');
+        Narrator.say('inspector_ready', 'Der Prüfmeister ist wach und bereit, eure Fotos zu begutachten.');
       } else if (res.status === 401) {
         status.textContent = '❌ Key ungültig (401) – bitte prüfen und neu einfügen.';
         SFX.nope();

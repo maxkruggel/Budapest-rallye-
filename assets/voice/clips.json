@@ -1,0 +1,12 @@
+{
+  "dice": "https://pikaso.cdnpk.net/private/production/4930986754/audio.mp3?token=exp=1784851200~hmac=a27e2c5874fa38e0ff6210f505bee12241de53285f1d69915d4ccc50aa488621",
+  "quest_added": "https://pikaso.cdnpk.net/private/production/4930988579/audio.mp3?token=exp=1784851200~hmac=86b594f4289d6e823ef7a8282346d65f859b981500dffe038da169e170551177",
+  "locked_attempts": "https://pikaso.cdnpk.net/private/production/4930989783/audio.mp3?token=exp=1784851200~hmac=ef94910760d4bb952b9087231bfdc40b1da0a9f1c85f4647bcc77da07bb3a191",
+  "locked_night": "https://pikaso.cdnpk.net/private/production/4930989956/audio.mp3?token=exp=1784851200~hmac=e44d82bfe465d9832d07f84a05b9ae13e41811992bdd6b07e58b25d3f4e90d29",
+  "locked_day": "https://pikaso.cdnpk.net/private/production/4930990793/audio.mp3?token=exp=1784851200~hmac=55d002baadfb287126dace9ccdc1ba43568942121a2a5b44f235b9fbfbbe2a82",
+  "locked_chain": "https://pikaso.cdnpk.net/private/production/4930991430/audio.mp3?token=exp=1784851200~hmac=a5b8b90d956ca30651b8dc145fb4f0ebc2512d87c021b13be5ba746186a85f6f",
+  "voice_on": "https://pikaso.cdnpk.net/private/production/4930991864/audio.mp3?token=exp=1784851200~hmac=c3e02dbc7f7c38bf08cbec4a4cc654ff16bba1f5f45aa099dcb8a7dbd7268198",
+  "guard_on": "https://pikaso.cdnpk.net/private/production/4930992876/audio.mp3?token=exp=1784851200~hmac=3f9368326d50ac215469799ee0c6b5cb4fd5e572d951b97ce38c31c3d9c8517d",
+  "inspector_on": "https://pikaso.cdnpk.net/private/production/4930993880/audio.mp3?token=exp=1784851200~hmac=90f73b206a5a321219298fe78f589b5fb0a344478e9072cd29fed5e14e6218ab",
+  "inspector_ready": "https://pikaso.cdnpk.net/private/production/4930994448/audio.mp3?token=exp=1784851200~hmac=869ac1c3ae4c97c7aca90920f8bbe1406a862963c24a5b9c19f5c43d6e63a217"
+}

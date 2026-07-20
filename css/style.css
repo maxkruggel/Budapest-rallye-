@@ -210,6 +210,8 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 14px; gap: 10px;
   background: var(--bg-deep); border-bottom: 1px solid var(--line);
+  /* Sicherheitsnetz: lieber umbrechen als Buttons aus dem Bild schieben */
+  flex-wrap: wrap;
 }
 .hud-left { display: flex; align-items: baseline; gap: 10px; }
 .hud-timer {
@@ -221,6 +223,16 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 @keyframes pulse { 50% { opacity: .55; } }
 .hud-progress { font-family: var(--font-m); font-size: .8rem; color: var(--muted); }
 .hud-right { display: flex; align-items: center; gap: 8px; }
+/* Schmale Handys: HUD kompakt, damit alle 5 Knöpfe + Timer in eine Zeile passen
+   (seit dem ⚙️-Button lief die Leiste sonst rechts aus dem Bild) */
+@media (max-width: 430px) {
+  .hud { padding: 8px 10px; gap: 6px; }
+  .hud-left { gap: 6px; }
+  .hud-timer { font-size: 1.05rem; }
+  .hud-right { gap: 4px; }
+  .hud-right .theme-btn { width: 34px; height: 34px; font-size: .95rem; border-radius: 10px; flex-shrink: 0; }
+  .score-chip { padding: 4px 8px; font-size: .8rem; }
+}
 .score-chip {
   font-size: .9rem; background: var(--surface-2); border: 1px solid var(--line);
   border-radius: 999px; padding: 6px 12px; white-space: nowrap;
