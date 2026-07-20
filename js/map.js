@@ -104,8 +104,12 @@ function initMap(theme) {
     if (b) b.classList.remove('on');
   });
 
-  // Tap auf die freie Karte schließt auch die Legende
+  // Tap auf die freie Karte schließt Mini-Popup UND Legende
+  // (marker-gebundene Popups über die Marker schließen – map.closePopup()
+  //  räumt sie in dieser Leaflet-Version nicht zuverlässig auf)
   map.on('click', () => {
+    map.closePopup();
+    Object.values(taskMarkers).forEach(m => { try { m.closePopup(); } catch (e) {} });
     const lg = document.querySelector('#map-legend');
     if (lg && !lg.hidden) {
       lg.hidden = true;
