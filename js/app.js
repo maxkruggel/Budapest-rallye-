@@ -69,6 +69,14 @@ function bindStatic() {
     if (e.target === e.currentTarget) closeTask();
   });
 
+  // Karten-Legende auf-/zuklappen
+  $('#legend-toggle').onclick = () => {
+    const lg = $('#map-legend');
+    lg.hidden = !lg.hidden;
+    $('#legend-toggle').textContent = lg.hidden ? '❔ Legende' : '✕ Legende';
+    SFX.tap();
+  };
+
   // Stimmenliste kann (v. a. auf iOS) nachträglich wachsen → Picker aktuell halten
   document.addEventListener('br-voices', () => {
     if (S.screen === 'game' && $('#tab-crew').classList.contains('active')) renderCrew();
@@ -405,6 +413,18 @@ function timeLockLabel(t) {
   return '☀️ nur ' + a + '–' + b + ' Uhr';
 }
 
+/* Zeitfenster-Badge: Tag hell mit Öffnungsfenster, Nacht dunkel mit „ab X Uhr" */
+function timeBadge(t) {
+  if (t.time === 'day') {
+    const [a, b] = t.openHours || [8, 18];
+    return `<span class="badge tday">☀️ Tag · ${a}–${b} Uhr</span>`;
+  }
+  if (t.time === 'night') {
+    return `<span class="badge tnight">🌙 ab ${t.fromHour != null ? t.fromHour : 17} Uhr</span>`;
+  }
+  return '';
+}
+
 /* ---------------- Spiel starten / fortsetzen ---------------- */
 
 function startGame() {
@@ -733,8 +753,7 @@ function renderTaskList() {
       <div class="ticket-body">
         <div class="ticket-top">
           <span class="badge">${CATS[t.cat].icon} ${CATS[t.cat].label}</span>
-          ${t.time === 'day' ? '<span class="badge tday">☀️ Tag</span>' : ''}
-          ${t.time === 'night' ? '<span class="badge tnight">🌙 Nacht</span>' : ''}
+          ${timeBadge(t)}
           ${t.complicated ? '<span class="badge hard">★ knifflig</span>' : ''}
           ${locked ? '<span class="badge lock">🔒 gesperrt</span>' : ''}
           ${tlocked ? '<span class="badge lock">⏰ ' + timeLockLabel(t) + '</span>' : ''}
@@ -876,6 +895,7 @@ function openTask(id) {
 
   $('#task-badge').innerHTML =
     `<span class="badge">${CATS[t.cat].icon} ${CATS[t.cat].label}</span>` +
+    timeBadge(t) +
     (t.complicated ? '<span class="badge hard">★ knifflig – Bonuswürdig</span>' : '');
   $('#task-title').textContent = t.title;
   $('#task-place').innerHTML = t.place

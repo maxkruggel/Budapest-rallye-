@@ -166,8 +166,11 @@ function renderTaskMarkers(tasks, completedMap, onOpen, activeId) {
     seen.add(t.id);
     const done = !!completedMap[t.id];
     const isFree = t.free || t.lat == null;
-    const html = `<div class="task-pin ${done ? 'done' : ''} cat-${t.cat} ${t.id === activeId ? 'pulse' : ''} ${isFree ? 'free' : ''}">
-               <span class="pin-num">${done ? '✓' : i + 1}</span>
+    const timeClass = t.time === 'day' ? 'tday' : t.time === 'night' ? 'tnight' : '';
+    const timeDot = t.time === 'day' ? '<span class="pin-time">☀️</span>'
+                  : t.time === 'night' ? '<span class="pin-time">🌙</span>' : '';
+    const html = `<div class="task-pin ${done ? 'done' : ''} cat-${t.cat} ${timeClass} ${t.id === activeId ? 'pulse' : ''} ${isFree ? 'free' : ''}">
+               <span class="pin-num">${done ? '✓' : i + 1}</span>${timeDot}
              </div>`;
     const icon = () => L.divIcon({
       className: 'task-pin-wrap', html,
@@ -176,10 +179,16 @@ function renderTaskMarkers(tasks, completedMap, onOpen, activeId) {
     let mk = taskMarkers[t.id];
     if (!mk) {
       mk = L.marker(ll, { icon: icon() }).addTo(map);
+      const timeLine = t.time === 'day'
+        ? `<div class="pin-timeinfo day">☀️ Tag-Quest · ${(t.openHours || [8, 18])[0]}–${(t.openHours || [8, 18])[1]} Uhr lösbar</div>`
+        : t.time === 'night'
+          ? `<div class="pin-timeinfo night">🌙 Nacht-Quest · lösbar ab ${t.fromHour != null ? t.fromHour : 17} Uhr</div>`
+          : '';
       mk.bindPopup(
         `<div class="pin-pop">
            <strong>${CATS[t.cat].icon} ${t.title}</strong>
            <div class="pin-place">${isFree ? '🃏 überall lösbar – der Punkt liegt auf eurer Route' : (t.place || '')}</div>
+           ${timeLine}
            <button class="pin-open" data-task="${t.id}">Aufgabe öffnen</button>
          </div>`, { autoClose: true, closeOnClick: false });
       mk.on('popupopen', e => {

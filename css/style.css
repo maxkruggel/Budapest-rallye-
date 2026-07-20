@@ -813,6 +813,70 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .badge.tday { background: #ffefc7; border-color: #d99b17; color: #7a5500; }
 .badge.tnight { background: #171b3a; border-color: #5b63b8; color: #aeb6e8; }
 
+/* Tag/Nacht-Quests auf der Karte: hell vs. dunkel, Mini-Sonne/-Mond am Pin */
+.task-pin.tday {
+  background: linear-gradient(150deg, #fff7e2, #ffe9b8);
+  border-color: #fff;
+}
+.task-pin.tday .pin-num { color: #7a5500; }
+.task-pin.tnight {
+  background: linear-gradient(150deg, #171b3a, #262c5c);
+  border-color: #8a92e0;
+}
+.task-pin.tnight .pin-num { color: #ffe9b8; }
+.pin-time {
+  position: absolute; top: -7px; right: -9px;
+  font-size: .65rem; transform: rotate(45deg);
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.6));
+}
+.pin-pop .pin-timeinfo {
+  font-size: .75rem; font-weight: 700; border-radius: 8px; padding: 4px 8px;
+}
+.pin-pop .pin-timeinfo.day { background: #fff3d1; color: #7a5500; }
+.pin-pop .pin-timeinfo.night { background: #1d2247; color: #c9d0ff; }
+
+/* Karten-Legende */
+#legend-toggle {
+  position: absolute; top: 10px; right: 10px; z-index: 500;
+  font-family: var(--font-m); font-size: .75rem; font-weight: 700;
+  background: var(--surface); border: 1.5px solid var(--line);
+  color: var(--ink); border-radius: 999px; padding: 5px 11px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.4); cursor: pointer;
+}
+#map-legend {
+  position: absolute; top: 46px; right: 10px; z-index: 500;
+  width: min(78vw, 290px); max-height: 60%; overflow-y: auto;
+  background: var(--surface); border: 1.5px solid var(--gold);
+  border-radius: 16px; padding: 12px 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.55);
+  display: grid; gap: 7px;
+  animation: sheet .2s ease-out;
+}
+#map-legend h4 { font-size: .9rem; }
+.legend-row { display: flex; align-items: center; gap: 10px; font-size: .78rem; color: var(--muted); }
+.lg-dot.user {
+  width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0;
+  background: #4db8ff; border: 2.5px solid #fff; box-shadow: 0 0 8px #4db8ff;
+}
+.lg-pin {
+  width: 22px; height: 22px; border-radius: 50% 50% 50% 4px; flex-shrink: 0;
+  transform: rotate(-45deg); display: grid; place-items: center;
+  background: var(--gold); border: 1.5px solid #fff;
+  font-family: var(--font-m); font-weight: 700; font-size: .6rem; color: #241a02;
+}
+.lg-pin i { transform: rotate(45deg); font-style: normal; }
+.lg-pin.day { background: linear-gradient(150deg, #fff7e2, #ffe9b8); font-size: .55rem; }
+.lg-pin.night { background: linear-gradient(150deg, #171b3a, #262c5c); border-color: #8a92e0; font-size: .55rem; }
+.lg-pin.ar { background: #b98aff; }
+.lg-pin.egg { background: #7bd88f; }
+.lg-pin.free { background: rgba(255,193,69,.35); border: 1.5px dashed #ffc145; font-size: .55rem; }
+.lg-pin.done { background: #4c527d; color: #fff; }
+.lg-pin.pulse-demo { animation: pinpulse 1.6s ease-in-out infinite; }
+.lg-line {
+  width: 26px; height: 0; flex-shrink: 0;
+  border-top: 3px dashed var(--gold);
+}
+
 /* 🃏-Pins: virtuelle Punkte der „überall lösbar"-Quests auf der Route */
 .task-pin.free {
   background: rgba(255, 193, 69, .35);
