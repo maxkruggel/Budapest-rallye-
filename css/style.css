@@ -42,9 +42,10 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
 
-/* Dunkler Grund auch außerhalb des Layout-Viewports (iOS-Safe-Area unten):
-   verhindert den hellen Balken unter dem Launch-Screen */
-html { background: #0a0c1f; }
+/* Grund auch außerhalb des Layout-Viewports (iOS-Safe-Area unter dem
+   Home-Indikator): folgt IMMER dem Theme, damit dort nie ein andersfarbiger
+   Balken sichtbar wird – weder unter der App noch unter dem Launch-Screen */
+html { background: var(--bg); }
 html, body { height: 100%; }
 body {
   font-family: var(--font-b);
@@ -1069,6 +1070,19 @@ video.proof-thumb { width: 100%; border-radius: 14px; border: 1px solid var(--li
   text-transform: uppercase; color: #8b90b5; margin-top: 14px;
   animation: launchTitle 1s ease .95s both;
 }
+/* Tag-Theme: heller Launch-Screen – gleiche Farbwelt wie die App, damit
+   die Safe-Area unten nahtlos anschließt (kein Farbsprung = keine Leiste) */
+:root[data-theme="day"] #launch {
+  background: radial-gradient(circle at 50% 42%, #fbf3df, #f6efdf 70%);
+}
+:root[data-theme="day"] .launch-title {
+  color: #2a2410;
+  text-shadow: 0 0 40px rgba(214, 148, 12, .35);
+}
+:root[data-theme="day"] .launch-title span { color: #b07800; }
+:root[data-theme="day"] .launch-sub { color: #8a7a50; }
+:root[data-theme="day"] .launch-ring { border-color: rgba(176, 120, 0, .55); }
+
 @keyframes launchFade { to { opacity: 0; visibility: hidden; } }
 @keyframes launchLamp { from { opacity: 0; transform: scale(.15); } to { opacity: 1; transform: scale(1); } }
 @keyframes launchRing {
