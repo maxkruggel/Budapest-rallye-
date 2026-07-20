@@ -1540,7 +1540,7 @@ function renderFriedrichPanel(t) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   panel.innerHTML = `
     <button class="btn ghost small-btn friedrich-toggle" id="friedrich-toggle">
-      🎩 Frag Friedrich <span class="muted">– Rückfragen zur Geschichte</span>
+      <span>🎩 Frag Friedrich <span class="muted">– Rückfragen zur Geschichte</span></span>
     </button>
     <div class="friedrich-chat" id="friedrich-chat" hidden>
       <div class="friedrich-msgs" id="friedrich-msgs"></div>
