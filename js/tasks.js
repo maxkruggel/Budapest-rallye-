@@ -780,6 +780,33 @@ function nearestStop(pos, nightOnly = false) {
   return best ? { ...best, dist: bestD } : null;
 }
 
+/* ---------- ☕ Cozy-Spots: kuratierte Cafés, Bars & Pubs entlang der Route.
+   Handverlesen: gemütlich + in Bewertungen konstant ≥ 4,4★ (Google, ca.-Werte). */
+const COZY_SPOTS = [
+  { name: 'Espresso Embassy',   type: '☕ Café',        lat: 47.5010, lng: 19.0507, rating: 4.6, note: 'Backstein-Gewölbe, einer der besten Kaffees der Stadt' },
+  { name: 'Madal Café',         type: '☕ Café',        lat: 47.5008, lng: 19.0489, rating: 4.5, note: 'ruhig, viel Holz, Specialty Coffee nahe der Basilika' },
+  { name: 'Kontakt Coffee',     type: '☕ Café',        lat: 47.4998, lng: 19.0538, rating: 4.6, note: 'Puristen-Kaffee im versteckten Hinterhof' },
+  { name: 'My Little Melbourne',type: '☕ Café',        lat: 47.4989, lng: 19.0561, rating: 4.4, note: 'winzig & herzlich, australischer Kaffeestil' },
+  { name: 'Gerlóczy Café',      type: '☕ Café',        lat: 47.4938, lng: 19.0546, rating: 4.4, note: 'Pariser Flair und warmes Licht am Altstadtplatz' },
+  { name: 'Csendes Vintage Bar',type: '🍷 Bar',         lat: 47.4920, lng: 19.0609, rating: 4.5, note: 'schummrige Wohnzimmer-Ruine voller Krimskrams' },
+  { name: 'Mazel Tov',          type: '🍸 Bar',         lat: 47.4979, lng: 19.0642, rating: 4.5, note: 'Lichterketten-Innenhof, warm und lebendig' },
+  { name: 'Doblo Wine Bar',     type: '🍷 Weinbar',     lat: 47.4990, lng: 19.0616, rating: 4.4, note: 'Kerzenlicht & ungarische Weine im Ziegelgewölbe' },
+  { name: 'Léhűtő',             type: '🍺 Craft-Pub',   lat: 47.4986, lng: 19.0611, rating: 4.6, note: 'kleine Craft-Beer-Höhle, sehr herzlich' },
+  { name: 'Kisüzem',            type: '🍺 Bar',         lat: 47.4997, lng: 19.0621, rating: 4.5, note: 'entspannte Künstlerkneipe im Jüdischen Viertel' },
+  { name: 'Ruszwurm Cukrászda', type: '☕ Konditorei',  lat: 47.5014, lng: 19.0331, rating: 4.4, note: 'älteste Konditorei Budapests (1827), Burgviertel' },
+  { name: 'Bambi Eszpresszó',   type: '☕ Retro-Café',  lat: 47.5100, lng: 19.0369, rating: 4.5, note: 'unverändertes 60er-Jahre-Retro auf der Buda-Seite' },
+  { name: 'Fekete',             type: '☕ Café',        lat: 47.4913, lng: 19.0570, rating: 4.5, note: 'minimalistisch-gemütliches Innenhof-Café' }
+];
+
+function nearestCozy(pos, maxM = 400) {
+  let best = null, bd = maxM;
+  COZY_SPOTS.forEach(s => {
+    const d = distMeters(pos, s);
+    if (d < bd) { bd = d; best = { ...s, dist: d }; }
+  });
+  return best;
+}
+
 /* AR-Geister: Bilddatei + Blickrichtung (Kompass-Grad, in die man das Handy drehen soll) */
 const GHOSTS = {
   sisi:        { img: 'assets/ar/sisi.svg',        name: 'Kaiserin Elisabeth „Sisi"', heading: 250 },

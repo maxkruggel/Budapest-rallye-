@@ -110,6 +110,7 @@ function initMap(theme) {
   map.on('click', () => {
     map.closePopup();
     Object.values(taskMarkers).forEach(m => { try { m.closePopup(); } catch (e) {} });
+    cozyMarkers.forEach(m => { try { m.closePopup(); } catch (e) {} });
     const lg = document.querySelector('#map-legend');
     if (lg && !lg.hidden) {
       lg.hidden = true;
@@ -233,6 +234,32 @@ function renderTaskMarkers(tasks, completedMap, onOpen, activeId, onAdd) {
   // Quests, die das Deck verlassen haben (Joker), aufräumen
   Object.keys(taskMarkers).forEach(id => {
     if (!seen.has(id)) { map.removeLayer(taskMarkers[id]); delete taskMarkers[id]; }
+  });
+}
+
+/* ☕ Cozy-Spots: kleine runde Pins für Cafés/Bars/Pubs mit ≥ 4,4★ */
+let cozyMarkers = [];
+
+function renderCozySpots(show) {
+  if (!map) return;
+  if (!show) { cozyMarkers.forEach(m => map.removeLayer(m)); cozyMarkers = []; return; }
+  if (cozyMarkers.length) return;   // schon gerendert
+  COZY_SPOTS.forEach(s => {
+    const icon = L.divIcon({
+      className: 'cozy-pin-wrap',
+      html: `<div class="cozy-pin">${s.type.slice(0, 2).trim()}</div>`,
+      iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -14]
+    });
+    const mk = L.marker([s.lat, s.lng], { icon }).addTo(map);
+    mk.bindPopup(
+      `<div class="pin-pop">
+         <strong>${s.type} ${s.name}</strong>
+         <div class="pin-place">★ ${s.rating.toFixed(1)} · ${s.note}</div>
+         <a class="pin-open" style="display:block;text-align:center;text-decoration:none"
+            target="_blank" rel="noopener"
+            href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}&travelmode=walking">🧭 Hinlaufen</a>
+       </div>`, { autoClose: true, closeOnClick: true });
+    cozyMarkers.push(mk);
   });
 }
 

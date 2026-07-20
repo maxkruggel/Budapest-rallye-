@@ -1,0 +1,8 @@
+{
+  "denied_0": "https://pikaso.cdnpk.net/private/production/4929516405/audio.mp3?token=exp=1784851200~hmac=2ca78faa1ee156fafc0d93d59d0971cc7980cfce2b6c003557efbc8e2b003658",
+  "denied_1": "https://pikaso.cdnpk.net/private/production/4929517225/audio.mp3?token=exp=1784851200~hmac=568f1ad960c7da6feb868b11c462628ddc2cee41155a544f4dc37369b3933808",
+  "denied_2": "https://pikaso.cdnpk.net/private/production/4929517743/audio.mp3?token=exp=1784851200~hmac=0f365512e4465b67661872ddda54c9ec23e06a64e619c2b30c820a261ac4b20a",
+  "blessed_0": "https://pikaso.cdnpk.net/private/production/4929518331/audio.mp3?token=exp=1784851200~hmac=4246b0522fd098fc3c7e189204328c31c1fb9a5fcdb5d2e956b67801ecdc3b51",
+  "blessed_1": "https://pikaso.cdnpk.net/private/production/4929518860/audio.mp3?token=exp=1784851200~hmac=15f731c18b68117ca67cff449ef89723ecaed7bb7d122ae4442e7a9714dfd968",
+  "blessed_2": "https://pikaso.cdnpk.net/private/production/4929519469/audio.mp3?token=exp=1784851200~hmac=6319bfbd6c380bd759b8eb51db5117bcc6a37bbb39905636f8f9296ff794e60e"
+}

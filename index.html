@@ -145,8 +145,11 @@
     <main class="game-body">
       <div class="tab active" id="tab-tasks">
         <div class="joker-bar">
-          <span class="small muted">⚔️ Euer Quest-Log – Quest antippen</span>
-          <button class="btn ghost small-btn" id="btn-joker">🃏 Joker (<span id="joker-count">2</span>)</button>
+          <span class="small muted">⚔️ Quest antippen</span>
+          <span class="foot-btns">
+            <button class="btn ghost small-btn" id="btn-dice">🎲 Würfeln</button>
+            <button class="btn ghost small-btn" id="btn-joker">🃏 Joker (<span id="joker-count">2</span>)</button>
+          </span>
         </div>
         <div id="task-list"></div>
       </div>
@@ -165,6 +168,7 @@
           <div class="legend-row"><span class="lg-pin egg"><i>3</i></span> Easter Egg</div>
           <div class="legend-row"><span class="lg-pin free"><i>🃏</i></span> Überall lösbar – Punkt liegt auf eurer Route</div>
           <div class="legend-row"><span class="lg-pin extra"><i>+</i></span> Entdecker-Quest – antippen und zur Rallye hinzufügen</div>
+          <div class="legend-row"><span class="lg-cozy">☕</span> Cozy-Spot: Café/Bar/Pub mit ≥ 4,4★</div>
           <div class="legend-row"><span class="lg-pin done"><i>✓</i></span> Erledigt</div>
           <div class="legend-row"><span class="lg-pin gold pulse-demo"><i>1</i></span> Pulsierend = aktive Quest</div>
           <div class="legend-row"><span class="lg-line"></span> Eure Route in Live-Reihenfolge</div>
@@ -222,6 +226,7 @@
       <h2 id="task-title"></h2>
       <p class="task-place" id="task-place"></p>
       <p class="task-desc" id="task-desc"></p>
+      <p class="task-cozy" id="task-cozy" hidden></p>
       <div class="transit-panel" id="task-transit" hidden></div>
       <div class="task-foot">
         <span class="points-pill" id="task-points"></span>

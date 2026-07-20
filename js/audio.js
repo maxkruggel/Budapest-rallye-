@@ -177,6 +177,7 @@ const Narrator = {
     try {
       if (!this.player) this.player = new Audio();
       this.player.pause();
+      this.player.onended = null;
       // Datei kaputt/offline? Key streichen und auf die Geraetestimme zurueckfallen.
       this.player.onerror = () => { this.clips.delete(key); if (onFail) onFail(); };
       this.player.src = 'assets/voice/' + key + '.mp3';
@@ -184,6 +185,27 @@ const Narrator = {
       if (p && p.catch) p.catch(() => { if (onFail) onFail(); });
       return true;
     } catch (e) { return false; }
+  },
+
+  /* Prüfmeister-Urteil vorlesen: erst ein Studio-Urteilsspruch (streng bei
+     Ablehnung, wohlwollend bei Erfolg), dann die dynamische KI-Begründung
+     über die Gerätestimme – mit passender Betonung (streng = tief & langsam,
+     gut = hell & lebendig). */
+  sayVerdict(passed, reason) {
+    if (!S.voice) return;
+    this.stop();
+    const i = ((reason || '').length + (passed ? 1 : 0)) % 3;
+    const key = (passed ? 'blessed_' : 'denied_') + i;
+    const tone = passed
+      ? { pitch: 1.12, rate: 1.04 }    // wohlwollend: heller, lebendiger
+      : { pitch: 0.82, rate: 0.88 };   // streng: tiefer, bedächtig-drohend
+    const follow = () => { if (reason) this.speakDevice(reason, tone); };
+    if (this.clips && this.clips.has(key) && this.playClip(key, follow)) {
+      this.player.onended = follow;
+      return;
+    }
+    const intro = passed ? 'Vortrefflich!' : 'Abgelehnt!';
+    this.speakDevice(intro + ' ' + (reason || ''), tone);
   },
 
   /* --- Geraetestimme: beste verfuegbare deutsche Stimme waehlen --- */

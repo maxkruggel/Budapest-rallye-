@@ -835,6 +835,26 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .pin-pop .pin-timeinfo.day { background: #fff3d1; color: #7a5500; }
 .pin-pop .pin-timeinfo.night { background: #1d2247; color: #c9d0ff; }
 
+/* ☕ Cozy-Spots auf der Karte + Tipp im Quest-Detail */
+.cozy-pin {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; font-size: .8rem;
+  background: rgba(253, 243, 218, .95);
+  border: 2px solid #b98457;
+  box-shadow: 0 2px 6px rgba(0,0,0,.45);
+}
+.lg-cozy {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: grid; place-items: center; font-size: .65rem;
+  background: rgba(253, 243, 218, .95); border: 1.5px solid #b98457;
+}
+.task-cozy {
+  background: rgba(185, 132, 87, .14);
+  border: 1.5px dashed #b98457;
+  border-radius: 14px; padding: 10px 13px;
+  font-size: .85rem; line-height: 1.5; margin-bottom: 14px;
+}
+
 /* ➕ Entdecker-Pins: verfügbare Quests außerhalb des Decks */
 .task-pin.extra {
   background: rgba(26, 30, 61, .78);

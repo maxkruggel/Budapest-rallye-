@@ -754,6 +754,7 @@ function refreshMapLayers() {
     all = [...sorted, ...extras];
   }
   renderTaskMarkers(all, S.game.completed, openTask, activeQuestId(), addTaskToGame);
+  renderCozySpots(S.mapShowAll);
   updateRouteLine(sorted.filter(t => !S.game.completed[t.id]));
 }
 
@@ -888,6 +889,55 @@ function renderTaskList() {
   $('#joker-count').textContent = g.jokersLeft;
   $('#btn-joker').disabled = g.jokersLeft <= 0;
   $('#btn-joker').onclick = useJoker;
+  $('#btn-dice').onclick = rerollOpenTasks;
+}
+
+/* 🎲 Würfelmodus: Gefallen die Aufgaben nicht, lost das Schicksal alle
+   offenen Quests neu aus (Erledigtes, Agentenkette und Geheimauftrag
+   bleiben unangetastet; Pausen werden durch Pausen ersetzt). */
+function rerollOpenTasks() {
+  const g = S.game;
+  const open = gameTasks().filter(t => !g.completed[t.id] && !t.chain && !t.secret);
+  if (!open.length) return;
+  if (!confirm(`🎲 Alle ${open.length} offenen Quests neu würfeln?\n(Erledigtes und die Agentenmission bleiben.)`)) return;
+
+  const keep = new Set(g.taskIds.filter(id => !open.some(t => t.id === id)));
+  const pool = TASKS.filter(t =>
+    !keep.has(t.id) && !t.chain && !t.secret &&
+    (!t.minMin || t.minMin <= g.durationMin) &&
+    fitsGamemode(t, g.gamemode || S.settings.gamemode));
+  const pick = (arr, n, exclude) =>
+    arr.filter(t => !exclude.has(t.id)).sort(() => Math.random() - 0.5).slice(0, n);
+
+  const nPause = open.filter(t => t.cat === 'pause').length;
+  const oldIds = new Set(open.map(t => t.id));
+  const excl = new Set([...keep, ...oldIds]);          // bevorzugt ganz NEUE Quests
+  let pauses = pick(pool.filter(t => t.cat === 'pause'), nPause, excl);
+  let others = pick(pool.filter(t => t.cat !== 'pause'), open.length - nPause, excl);
+  // Vorrat zu klein? Dann dürfen auch bisherige Quests wieder mitspielen
+  if (pauses.length < nPause)
+    pauses = pauses.concat(pick(pool.filter(t => t.cat === 'pause'), nPause - pauses.length, new Set([...keep, ...pauses.map(t => t.id)])));
+  if (others.length < open.length - nPause)
+    others = others.concat(pick(pool.filter(t => t.cat !== 'pause'), open.length - nPause - others.length, new Set([...keep, ...others.map(t => t.id)])));
+
+  const repl = [...pauses, ...others];
+  let ri = 0;
+  g.taskIds = g.taskIds.map(id => (oldIds.has(id) && ri < repl.length) ? repl[ri++].id : id);
+  g.taskIds = enforceChainOrder(g.taskIds);
+  saveState();
+  listAnimated = false;
+  renderTaskList();
+  if (map) {
+    Object.keys(taskMarkers).forEach(id => { map.removeLayer(taskMarkers[id]); delete taskMarkers[id]; });
+    refreshMapLayers();
+  }
+  SFX.shuffle();
+  if (navigator.vibrate) navigator.vibrate([50, 40, 50, 40, 120]);
+  const el = $('#stamp-toast');
+  el.innerHTML = `<div class="stamp-inner secret">🎲 NEU GEWÜRFELT<br><b>${ri} frische Quests</b><span>Das Schicksal mischt die Karten neu</span></div>`;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+  Narrator.speak('Das Schicksal würfelt neu! Frische Quests liegen vor euch.');
 }
 
 function stampTime(ts) {
@@ -947,6 +997,7 @@ function openTask(id) {
     $('#task-points').textContent = t.points + ' Punkte';
     $('#task-gmaps').hidden = true;
     $('#task-transit').hidden = true;
+    $('#task-cozy').hidden = true;
     $('#task-actions').innerHTML = '';
     $('#btn-speak').onclick = () => Narrator.speak('Geduld! Diese Quest ist gesperrt. Kommt in einer Stunde wieder.');
     $('#ov-task').classList.add('open');
@@ -969,6 +1020,7 @@ function openTask(id) {
     $('#task-points').textContent = t.points + ' Punkte';
     $('#task-gmaps').hidden = true;
     $('#task-transit').hidden = true;
+    $('#task-cozy').hidden = true;
     $('#task-actions').innerHTML = '';
     $('#btn-speak').onclick = () => Narrator.speak(night
       ? 'Geduld, Abenteurer. Diese Quest erwacht erst mit der Dunkelheit.'
@@ -994,6 +1046,7 @@ function openTask(id) {
     $('#task-gmaps').hidden = true;
     $('#task-actions').innerHTML = '';
     $('#task-transit').hidden = true;
+    $('#task-cozy').hidden = true;
     $('#btn-speak').onclick = () => Narrator.speak('Diese Akte ist versiegelt. Erfüllt erst den vorherigen Teil der Mission.');
     $('#ov-task').classList.add('open');
     return;
@@ -1011,6 +1064,14 @@ function openTask(id) {
     : '🃏 Überall lösbar – wo ihr gerade steht.';
   $('#task-desc').textContent = t.desc;
   $('#task-points').textContent = t.points + ' Punkte';
+
+  // ☕ Cozy-Tipp: gemütliches Café/Bar/Pub (≥4,4★) in Quest-Nähe vorschlagen
+  const cozyRef = (!t.free && t.lat != null) ? t : lastPos;
+  const cz = cozyRef ? nearestCozy(cozyRef) : null;
+  $('#task-cozy').hidden = !cz;
+  if (cz) $('#task-cozy').innerHTML =
+    `☕ <b>Cozy-Tipp nebenan:</b> ${escapeHtml(cz.name)} (${cz.type} · ★ ${cz.rating.toFixed(1)}) · ${fmtDist(cz.dist)} – ${escapeHtml(cz.note)}`;
+
   renderTransitPanel(t, done ? null : dist);
 
   $('#task-gmaps').hidden = !(t.lat != null && !t.free);
@@ -1324,9 +1385,9 @@ function registerFailedAttempt(t, reason) {
   SFX.nope();
   if (navigator.vibrate) navigator.vibrate([100, 60, 100]);
   if (a.lockedUntil) {
-    Narrator.speak('Dreimal verweigert! Der Prüfmeister braucht eine Stunde Pause von euch. Versucht derweil eine andere Quest.');
+    Narrator.sayVerdict(false, 'Dreimal verweigert! Der Prüfmeister braucht eine Stunde Pause von euch. Versucht derweil eine andere Quest.');
   } else {
-    Narrator.speak(`Abgelehnt! ${reason} Ihr habt noch ${MAX_ATTEMPTS - a.n} ${MAX_ATTEMPTS - a.n === 1 ? 'Versuch' : 'Versuche'}.`);
+    Narrator.sayVerdict(false, `${reason} Ihr habt noch ${MAX_ATTEMPTS - a.n} ${MAX_ATTEMPTS - a.n === 1 ? 'Versuch' : 'Versuche'}.`);
   }
   return a;
 }
@@ -1467,7 +1528,10 @@ function completeTask(t, extra) {
     SFX.stamp();
     setTimeout(() => SFX.coins(), 250);
     confettiBurst();
-    Narrator.praise(points);
+    // KI-Urteil vorhanden? Dann liest der Prüfmeister sein wohlwollendes
+    // Urteil samt Begründung vor – sonst das klassische Lob.
+    if (extra.verdictReason) Narrator.sayVerdict(true, extra.verdictReason);
+    else Narrator.praise(points);
     const rankAfter = rankFor(g.scores[0] + g.scores[1]);
     if (rankAfter !== rankBefore) {
       setTimeout(() => {
