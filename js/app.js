@@ -12,9 +12,26 @@ let wakeLock = null;
 
 /* ---------------- Boot ---------------- */
 
+/* Glas-Leisten: echte Höhen von HUD + Nav als CSS-Variablen bereitstellen,
+   damit Inhalt/Karten-Aufsätze exakt darunter beginnen (auch bei Umbruch). */
+function measureBars() {
+  const h = $('.hud'), n = $('.bottom-nav');
+  if (!h || !n) return;
+  document.documentElement.style.setProperty('--hud-h', h.offsetHeight + 'px');
+  document.documentElement.style.setProperty('--tab-h', n.offsetHeight + 'px');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(S.theme);
   applyAudioIcon();
+  measureBars();
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(measureBars);
+    const h = $('.hud'), n = $('.bottom-nav');
+    if (h) ro.observe(h);
+    if (n) ro.observe(n);
+  }
+  window.addEventListener('resize', measureBars);
   initLaunch();
   spawnFireflies();
   bindStatic();

@@ -22,11 +22,16 @@
   --font-d: "Bricolage Grotesque", "Instrument Sans", sans-serif;
   --font-b: "Instrument Sans", system-ui, sans-serif;
   --font-m: "Space Mono", monospace;
+  /* Frosted-Glass-Leisten (Header/Footer schweben über dem Inhalt) */
+  --glass: rgba(10, 12, 31, .58);
+  --glass-line: rgba(253, 243, 218, .08);
 }
 
 :root[data-theme="day"] {
   --bg: #f6efdf;
   --bg-deep: #ece2cc;
+  --glass: rgba(246, 239, 223, .6);
+  --glass-line: rgba(36, 34, 74, .09);
   --surface: #fffaf0;
   --surface-2: #f3ead6;
   --line: #dccfae;
@@ -205,11 +210,17 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .tbtn.b.sel { background: var(--paprika-soft); border-color: var(--paprika); color: var(--ink); }
 #dur-info { margin-top: 10px; }
 
-/* ---------- HUD ---------- */
+/* ---------- HUD (Frosted Glass: schwebt über dem Inhalt, kein harter Balken) ---------- */
+#s-game { padding-top: 0; }
 .hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 80;
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 14px; gap: 10px;
-  background: var(--bg-deep); border-bottom: 1px solid var(--line);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  border-bottom: 1px solid var(--glass-line);
   /* Sicherheitsnetz: lieber umbrechen als Buttons aus dem Bild schieben */
   flex-wrap: wrap;
 }
@@ -226,7 +237,7 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 /* Schmale Handys: HUD kompakt, damit alle 5 Knöpfe + Timer in eine Zeile passen
    (seit dem ⚙️-Button lief die Leiste sonst rechts aus dem Bild) */
 @media (max-width: 430px) {
-  .hud { padding: 8px 10px; gap: 6px; }
+  .hud { padding: 8px 10px; gap: 6px; padding-top: calc(env(safe-area-inset-top, 0px) + 8px); }
   .hud-left { gap: 6px; }
   .hud-timer { font-size: 1.05rem; }
   .hud-right { gap: 4px; }
@@ -242,6 +253,7 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .score-chip.b { border-color: var(--paprika); }
 
 .time-up {
+  margin-top: var(--hud-h, 92px); position: relative; z-index: 75;
   display: flex; align-items: center; justify-content: center; gap: 10px;
   background: var(--paprika); color: #fff; font-weight: 700;
   padding: 8px 12px; font-size: .9rem;
@@ -249,19 +261,33 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .time-up .btn.primary { box-shadow: none; }
 .time-up .btn.ghost { border-color: rgba(255,255,255,.5); color: #fff; }
 
-/* ---------- Game Body & Tabs ---------- */
+/* ---------- Game Body & Tabs ----------
+   Der Inhalt läuft UNTER den Glas-Leisten durch (native Optik):
+   Scroll-Tabs schieben ihren Inhalt per Padding unter HUD/Nav,
+   die Karte füllt den ganzen Schirm. */
 .game-body { flex: 1; position: relative; overflow: hidden; }
-.tab { position: absolute; inset: 0; display: none; overflow-y: auto; }
+.tab {
+  position: absolute; inset: 0; display: none; overflow-y: auto;
+  padding-top: var(--hud-h, 92px);
+  padding-bottom: calc(var(--tab-h, 74px) + 6px);
+}
 .tab.active { display: block; }
-#tab-map { overflow: hidden; }
+#tab-map { overflow: hidden; padding: 0; }
 #map { position: absolute; inset: 0; background: var(--bg-deep); }
+/* Leaflet-Bedienelemente über die Glas-Nav heben */
+#tab-map .leaflet-bottom { bottom: var(--tab-h, 74px); }
 .map-fail {
   display: grid; place-items: center; height: 100%; text-align: center;
   color: var(--muted); padding: 30px; line-height: 1.6;
 }
 
 .bottom-nav {
-  display: flex; background: var(--bg-deep); border-top: 1px solid var(--line);
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 80;
+  display: flex;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  border-top: 1px solid var(--glass-line);
   padding-bottom: env(safe-area-inset-bottom);
 }
 .navbtn {
@@ -731,7 +757,7 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 }
 
 #gps-chip {
-  position: absolute; top: 10px; left: 10px; z-index: 500;
+  position: absolute; top: calc(var(--hud-h, 92px) + 10px); left: 10px; z-index: 500;
   font-family: var(--font-m); font-size: .75rem; font-weight: 700;
   background: var(--surface); border: 1.5px solid var(--ok);
   color: var(--ok); border-radius: 999px; padding: 5px 11px;
@@ -906,7 +932,7 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .pin-pop .pin-add { background: #7bd88f; }
 
 #btn-mapall {
-  position: absolute; top: 46px; right: 10px; z-index: 500;
+  position: absolute; top: calc(var(--hud-h, 92px) + 46px); right: 10px; z-index: 500;
   font-family: var(--font-m); font-size: .75rem; font-weight: 700;
   background: var(--surface); border: 1.5px solid var(--gold);
   color: var(--gold); border-radius: 999px; padding: 5px 11px;
@@ -915,14 +941,14 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 
 /* Karten-Legende */
 #legend-toggle {
-  position: absolute; top: 10px; right: 10px; z-index: 500;
+  position: absolute; top: calc(var(--hud-h, 92px) + 10px); right: 10px; z-index: 500;
   font-family: var(--font-m); font-size: .75rem; font-weight: 700;
   background: var(--surface); border: 1.5px solid var(--line);
   color: var(--ink); border-radius: 999px; padding: 5px 11px;
   box-shadow: 0 3px 10px rgba(0,0,0,.4); cursor: pointer;
 }
 #map-legend {
-  position: absolute; top: 82px; right: 10px; z-index: 501;
+  position: absolute; top: calc(var(--hud-h, 92px) + 82px); right: 10px; z-index: 501;
   width: min(78vw, 290px); max-height: 60%; overflow-y: auto;
   background: var(--surface); border: 1.5px solid var(--gold);
   border-radius: 16px; padding: 12px 14px;
