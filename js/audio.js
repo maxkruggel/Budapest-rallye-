@@ -138,18 +138,11 @@ const PRAISE = [
   'So steht es geschrieben, so ward es vollbracht.'
 ];
 
-/* Stimmlagen: Die Erzählerstimme hat Charakter. Default: der alte, weise
-   Zauberer – tief und bedächtig (Pitch/Rate wirken als Multiplikator auf
-   jede Gerätestimme, auch auf installierte Siri-/Premium-Stimmen). */
-const VOICE_STYLES = {
-  wizard:  { label: '🧙 Dumbledore', desc: 'tief, warm, weise',      pitch: 0.72, rate: 0.88 },
-  fee:     { label: '🧚 Nachtfee',   desc: 'hell und verspielt',     pitch: 1.18, rate: 1.02 },
-  neutral: { label: '🎙️ Chronist',  desc: 'klar und unaufgeregt',   pitch: 1.0,  rate: 1.0 }
-};
-
-function voiceStyle() {
-  return VOICE_STYLES[S.voiceStyle] || VOICE_STYLES.wizard;
-}
+/* Erzähler ist fix der Studio-Sprecher „Friedrich Weber" (MP3-Clips).
+   Springt die Gerätestimme als Fallback ein, spricht sie tief und
+   bedächtig – angelehnt an Friedrichs Studio-Klang (Pitch/Rate wirken
+   als Multiplikator auf jede Gerätestimme). */
+const VOICE_STYLE = { pitch: 0.72, rate: 0.88 };
 
 const Narrator = {
   voice: null,
@@ -219,11 +212,6 @@ const Narrator = {
       .filter(v => (v.lang || '').toLowerCase().startsWith('de'));
   },
 
-  hasSiriVoice() {
-    return this.allVoices().some(v =>
-      ((v.name || '') + ' ' + (v.voiceURI || '')).toLowerCase().includes('siri'));
-  },
-
   scoreVoice(v) {
     const s = (v.name + ' ' + (v.voiceURI || '')).toLowerCase();
     let p = 0;
@@ -238,11 +226,7 @@ const Narrator = {
   },
 
   pickVoice() {
-    // Vom User gewaehlte Stimme darf JEDE Sprache haben (Alle-Stimmen-Picker)
-    if (S.voiceURI) {
-      const chosen = this.allVoices().find(v => v.voiceURI === S.voiceURI);
-      if (chosen) { this.voice = chosen; return; }
-    }
+    // Automatisch die beste deutsche Gerätestimme – keine manuelle Auswahl
     const de = this.germanVoices();
     if (!de.length) { this.voice = null; return; }
     this.voice = de.slice().sort((a, b) => this.scoreVoice(b) - this.scoreVoice(a))[0];
@@ -265,7 +249,7 @@ const Narrator = {
     }
   },
 
-  /* Manuell neu laden (Button im Crew-Tab, läuft in der User-Geste) */
+  /* Stimmenliste neu abfragen (erste Berührung / App wird wieder sichtbar) */
   reloadVoices() {
     if (!this.available) return 0;
     const list = speechSynthesis.getVoices() || [];
@@ -294,7 +278,7 @@ const Narrator = {
         .replace(/\s+/g, ' ').trim();
       if (!clean) return;
       if (!this.voice) this.pickVoice();
-      const style = voiceStyle();
+      const style = VOICE_STYLE;
       const sentences = clean.match(/[^.!?\u2026]+[.!?\u2026]+["']?|[^.!?\u2026]+$/g) || [clean];
       sentences.forEach(sent => {
         const u = new SpeechSynthesisUtterance(sent.trim());
@@ -322,19 +306,6 @@ const Narrator = {
   praise(points) {
     const i = Math.floor(points * 7 + (points % 3) * 13) % PRAISE.length;
     this.say('praise_' + i, `${PRAISE[i]} ${points} Erfahrungspunkte!`, { pitch: 1.2 });
-  },
-
-  preview(voiceURI) {
-    const v = this.allVoices().find(x => x.voiceURI === voiceURI);
-    if (!v) return;
-    this.stop();
-    try {
-      const style = voiceStyle();
-      const u = new SpeechSynthesisUtterance('Hoert, Abenteurer der Nacht! So klingt eure Erzaehlerstimme.');
-      u.voice = v; u.lang = v.lang || 'de-DE';
-      u.pitch = style.pitch; u.rate = style.rate;
-      speechSynthesis.speak(u);
-    } catch (e) {}
   },
 
   stop() {

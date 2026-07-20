@@ -10,10 +10,7 @@ const DEFAULT_STATE = () => ({
   screen: 'splash',
   secretUnlocked: false,
   sound: true,     // Soundeffekte
-  voice: true,     // magische Erzählerstimme
-  voiceURI: null,  // vom User gewählte Gerätestimme
-  voiceStyle: 'wizard',  // Stimmlage: 'wizard' (Dumbledore) | 'fee' | 'neutral'
-  voiceShowAll: false,   // Stimmen-Picker: alle Sprachen statt nur Deutsch zeigen
+  voice: true,     // Erzähler „Friedrich Weber" (fixe Studio-Stimme)
   guard: false,          // Hintergrund-Wächter: Audio-Kanal hält GPS/Alarm bei Sperrbildschirm wach
   mapShowAll: true,      // Karte: alle verfügbaren Quests zeigen (nicht nur das Deck)
   apiKey: null,    // optional: Anthropic-API-Key für den Magischen Prüfmeister
@@ -40,9 +37,6 @@ function loadState() {
         // Migration: neue Audio-Flags für ältere Spielstände
         if (s.sound === undefined) s.sound = true;
         if (s.voice === undefined) s.voice = true;
-        if (s.voiceURI === undefined) s.voiceURI = null;
-        if (s.voiceStyle === undefined) s.voiceStyle = 'wizard';
-        if (s.voiceShowAll === undefined) s.voiceShowAll = false;
         if (s.guard === undefined) s.guard = false;
         if (s.mapShowAll === undefined) s.mapShowAll = true;
         if (s.apiKey === undefined) s.apiKey = null;

@@ -46,6 +46,13 @@ function bindStatic() {
     saveState(); applyAudioIcon();
   };
 
+  $('#btn-settings').onclick = openSettings;
+  $('#btn-settings-splash').onclick = openSettings;
+  $('#ov-settings .ov-close').onclick = closeSettings;
+  $('#ov-settings').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeSettings();
+  });
+
   $$('.navbtn').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
   $('#btn-start').onclick = startGame;
@@ -103,9 +110,9 @@ function bindStatic() {
     SFX.tap();
   };
 
-  // Stimmenliste kann (v. a. auf iOS) nachträglich wachsen → Picker aktuell halten
+  // Studio-Clips können nachträglich eintreffen → offenes Einstellungs-Fenster aktualisieren
   document.addEventListener('br-voices', () => {
-    if (S.screen === 'game' && $('#tab-crew').classList.contains('active')) renderCrew();
+    if ($('#ov-settings').classList.contains('open')) renderSettings();
   });
 
   $('#btn-again').onclick = () => {
@@ -145,7 +152,7 @@ if ('serviceWorker' in navigator) {
 /* Der Wächter: Ein stiller, geloopter Audio-Kanal hält die Seite auf iOS
    auch bei gesperrtem Bildschirm am Leben – GPS-Updates laufen weiter und
    der Näherungs-Alarm kommt hörbar durch den Lautsprecher. Experimentell,
-   kostet etwas Akku, deshalb per Toggle im Crew-Tab (S.guard). */
+   kostet etwas Akku, deshalb per Toggle in den Einstellungen (S.guard). */
 const Guard = {
   audio: null,
   running: false,
@@ -1666,79 +1673,63 @@ function renderCrew() {
       <p>${st.players.map(escapeHtml).join(', ')}</p>
       <div class="crew-score">${g.scores[0] + g.scores[1]} Pkt gemeinsam</div></div>`;
   }
+  box.innerHTML = html;
+}
+
+/* ---------------- Einstellungen (⚙️-Fenster) ---------------- */
+
+function openSettings() {
+  SFX.tap();
+  renderSettings();
+  $('#ov-settings').classList.add('open');
+}
+
+function closeSettings() {
+  $('#ov-settings').classList.remove('open');
+}
+
+function renderSettings() {
+  const box = $('#settings-box');
   const clipN = Narrator.clips ? Narrator.clips.size : 0;
-  html += `
-    <div class="card audio-card">
-      <h3>🎚️ Klang der Nacht</h3>
-      <div class="studio-box ${clipN ? 'ok' : 'warn'}">
-        <p class="small"><b>🎙️ Studio-Erzähler „Friedrich Weber"</b><br>
-        ${clipN
-          ? `✅ ${clipN} Studio-Clips geladen – Quests, Tipps, Geister und Ansagen sprechen mit der tiefen Studio-Stimme.`
-          : '⚠️ Studio-Clips noch nicht geladen – einmal „Studio-Stimme laden" tippen (Internet nötig). Bis dahin springt die Gerätestimme ein.'}</p>
-        <div class="voice-tools">
-          <button class="btn ghost small-btn" id="studio-preview">▶ Studio-Hörprobe</button>
-          ${clipN ? '' : '<button class="btn ghost small-btn" id="studio-reload">🔄 Studio-Stimme laden</button>'}
-        </div>
-      </div>
-      <label class="toggle-row"><span>🔔 Soundeffekte</span>
-        <button class="tbtn a ${S.sound ? 'sel' : ''}" id="tog-sound">${S.sound ? 'an' : 'aus'}</button></label>
-      <label class="toggle-row"><span>🔮 Erzählerstimme</span>
-        <button class="tbtn a ${S.voice ? 'sel' : ''}" id="tog-voice">${S.voice ? 'an' : 'aus'}</button></label>
-      <div class="voice-style">
-        <p class="small muted">Stimmlage der Ersatzstimme (greift nur, wenn ein Studio-Clip fehlt oder ihr offline seid)</p>
-        <div class="chip-row" id="voicestyle-picker">
-          ${Object.entries(VOICE_STYLES).map(([key, st2]) => `
-            <button class="chip ${(S.voiceStyle || 'wizard') === key ? 'sel' : ''}" data-vs="${key}">
-              ${st2.label}<small>${st2.desc}</small>
-            </button>`).join('')}
-        </div>
-      </div>
-      ${renderVoicePicker()}
-    </div>`;
   const notifStatus = !('Notification' in window)
-    ? '❌ System-Benachrichtigung: vom Browser nicht unterstützt (iPhone: erst als Homescreen-App ab iOS 16.4)'
+    ? '❌ System-Benachrichtigung: nicht verfügbar'
     : Notification.permission === 'granted'
       ? '✅ System-Benachrichtigung: erlaubt'
       : Notification.permission === 'denied'
-        ? '⛔ System-Benachrichtigung: blockiert (in den Website-Einstellungen freigeben)'
-        : '🕐 System-Benachrichtigung: noch nicht angefragt – Probe-Alarm tippen';
-  const vibStatus = navigator.vibrate
-    ? '✅ Vibration: unterstützt'
-    : '❌ Vibration: vom iPhone-Browser gesperrt (Apple-Limit, kein App-Fehler)';
-  html += `
+        ? '⛔ System-Benachrichtigung: blockiert'
+        : '🕐 System-Benachrichtigung: Probe-Alarm tippen';
+  box.innerHTML = `
+    <div class="card audio-card">
+      <h3>🎚️ Klang</h3>
+      <label class="toggle-row"><span>🔔 Soundeffekte</span>
+        <button class="tbtn a ${S.sound ? 'sel' : ''}" id="tog-sound">${S.sound ? 'an' : 'aus'}</button></label>
+      <label class="toggle-row"><span>🎙️ Erzähler „Friedrich Weber"</span>
+        <button class="tbtn a ${S.voice ? 'sel' : ''}" id="tog-voice">${S.voice ? 'an' : 'aus'}</button></label>
+      <p class="small muted">${clipN
+        ? `✅ ${clipN} Studio-Clips geladen.`
+        : '⚠️ Studio-Clips noch nicht geladen (Internet nötig) – bis dahin spricht die Gerätestimme.'}</p>
+      <div class="voice-tools">
+        <button class="btn ghost small-btn" id="studio-preview">▶ Hörprobe</button>
+        ${clipN ? '' : '<button class="btn ghost small-btn" id="studio-reload">🔄 Stimme laden</button>'}
+      </div>
+    </div>
     <div class="card audio-card">
       <h3>🧭 Spielstil</h3>
       <label class="toggle-row"><span>🚶 Beiläufig-Modus</span>
-        <button class="tbtn a ${st.playstyle === 'beilaeufig' ? 'sel' : ''}" id="tog-playstyle">${st.playstyle === 'beilaeufig' ? 'an' : 'aus'}</button></label>
-      <p class="small muted">Beiläufig: Beim Öffnen der App poppt automatisch auf, welche offenen
-      Quests gerade in eurer Nähe liegen – ohne Suchen im Quest-Log. Aus = Aktiv-Modus,
-      ihr wählt eure Quests selbst.</p>
-    </div>`;
-  html += `
+        <button class="tbtn a ${S.settings.playstyle === 'beilaeufig' ? 'sel' : ''}" id="tog-playstyle">${S.settings.playstyle === 'beilaeufig' ? 'an' : 'aus'}</button></label>
+      <p class="small muted">Beiläufig: Beim App-Öffnen poppen offene Quests in eurer Nähe automatisch auf.</p>
+    </div>
     <div class="card audio-card">
-      <h3>🛡️ Alarm & Benachrichtigungen</h3>
+      <h3>🛡️ Alarm</h3>
       <label class="toggle-row"><span>🔊 Hintergrund-Wächter</span>
         <button class="tbtn a ${S.guard ? 'sel' : ''}" id="tog-guard">${S.guard ? 'an' : 'aus'}</button></label>
-      <p class="small muted">Der Wächter hält die Rallye über einen stillen Ton-Kanal wach: GPS läuft weiter
-      und der Näherungs-Alarm klingelt hörbar durch den Lautsprecher – auch bei gesperrtem Display.
-      Kostet etwas Akku; je nach iOS-Version experimentell.</p>
-      <button class="btn ghost small-btn" id="btn-probe">🔔 Probe-Alarm auslösen</button>
-      <p class="small muted" id="alert-status">
-        ✅ In-App-Alarm (Klingeln, Banner, Erzähler): immer aktiv, solange die App offen ist<br>
-        ${vibStatus}<br>
-        ${notifStatus}<br>
-        ${S.guard ? (Guard.running ? '✅ Wächter: wacht' : '🕐 Wächter: startet beim nächsten Tippen im Spiel') : '💤 Wächter: aus'}
-      </p>
-      <p class="small muted">📲 <b>Sperrbildschirm-Banner auf dem iPhone:</b> Die App über Teilen →
-      „Zum Home-Bildschirm" installieren (ab iOS 16.4) und dort einmal den Probe-Alarm tippen –
-      dann fragt iOS nach der Benachrichtigungs-Erlaubnis.</p>
-    </div>`;
-  html += `
+      <p class="small muted">Hält GPS und Näherungs-Alarm auch bei gesperrtem Display wach – kostet etwas Akku.</p>
+      <button class="btn ghost small-btn" id="btn-probe">🔔 Probe-Alarm</button>
+      <p class="small muted" id="alert-status">${notifStatus}${S.guard ? (Guard.running ? ' · ✅ Wächter wacht' : ' · 🕐 Wächter startet beim nächsten Tippen') : ''}</p>
+    </div>
     <div class="card audio-card">
       <h3>🧙 Magischer Prüfmeister</h3>
-      <p class="small muted">Mit einem Anthropic-API-Key prüft eine KI eure Beweisfotos wirklich inhaltlich
-      (falsches Motiv = abgelehnt, max. 3 Versuche, dann 1 h Sperre). Ohne Key gilt der lokale Basis-Check.
-      Der Key bleibt nur auf diesem Gerät.</p>
+      <p class="small muted">KI-Fotoprüfung per Anthropic-API-Key – der Key bleibt auf diesem Gerät.</p>
       <div class="voice-row">
         <input type="password" id="apikey-input" placeholder="sk-ant-…" value="${S.apiKey ? '••••••••' : ''}" autocomplete="off">
         <button class="btn ghost small-btn" id="apikey-save">${S.apiKey ? 'Ändern' : 'Aktivieren'}</button>
@@ -1746,20 +1737,14 @@ function renderCrew() {
       ${S.apiKey ? '<button class="btn ghost small-btn" id="apikey-test">🔍 Key testen</button>' : ''}
       <p class="small ${S.apiKey ? '' : 'muted'}" id="apikey-status">${S.apiKey ? '✅ Prüfmeister wacht – Fotos werden von der KI begutachtet.' : 'Prüfmeister schläft – Fotos zählen per Ehrenwort + Basis-Check.'}</p>
     </div>`;
-  html += `<p class="small muted center">Spielstand wird automatisch gespeichert –
-    ihr könnt die App jederzeit schließen und weiterspielen.</p>`;
-  box.innerHTML = html;
-  $('#apikey-save').onclick = () => {
-    const val = $('#apikey-input').value.trim();
-    if (!val || val.startsWith('••')) {
-      if (S.apiKey && confirm('Prüfmeister deaktivieren (Key löschen)?')) {
-        S.apiKey = null; saveState(); renderCrew();
-      }
-      return;
-    }
-    S.apiKey = val; saveState(); renderCrew();
-    Narrator.speak('Der Magische Prüfmeister ist erwacht. Ab jetzt wird jedes Beweisfoto begutachtet!');
-    SFX.unlock();
+  $('#tog-sound').onclick = () => {
+    S.sound = !S.sound; saveState(); applyAudioIcon(); renderSettings();
+    if (S.sound) SFX.chime();
+  };
+  $('#tog-voice').onclick = () => {
+    S.voice = !S.voice; saveState(); applyAudioIcon(); renderSettings();
+    if (S.voice) Narrator.speak('Die Stimme der Nacht ist erwacht.');
+    else Narrator.stop();
   };
   const studioPrev = $('#studio-preview');
   if (studioPrev) studioPrev.onclick = () => {
@@ -1769,7 +1754,7 @@ function renderCrew() {
       studioPrev.disabled = true;
       Narrator.loadClips(true).then(n => {
         studioPrev.disabled = false;
-        renderCrew();
+        renderSettings();
         if (n) Narrator.playClip('welcome');
         else alert('Studio-Clips nicht erreichbar – seid ihr offline? Die Gerätestimme übernimmt derweil.');
       });
@@ -1779,13 +1764,13 @@ function renderCrew() {
   if (studioReload) studioReload.onclick = () => {
     studioReload.disabled = true;
     Narrator.loadClips(true).then(n => {
-      renderCrew();
+      renderSettings();
       if (n) { SFX.unlock(); Narrator.playClip('welcome'); }
     });
   };
   $('#tog-playstyle').onclick = () => {
     S.settings.playstyle = S.settings.playstyle === 'beilaeufig' ? 'aktiv' : 'beilaeufig';
-    saveState(); renderCrew();
+    saveState(); renderSettings();
     if (S.settings.playstyle === 'beilaeufig') maybeShowNearby(true);
   };
   $('#tog-guard').onclick = () => {
@@ -1797,14 +1782,26 @@ function renderCrew() {
     } else {
       Guard.stop();
     }
-    renderCrew();
+    renderSettings();
   };
   $('#btn-probe').onclick = () => {
     if ('Notification' in window && Notification.permission === 'default') {
-      try { Notification.requestPermission().then(() => renderCrew()); } catch (e) {}
+      try { Notification.requestPermission().then(() => renderSettings()); } catch (e) {}
     }
     const t = (S.game && gameTasks().find(x => !S.game.completed[x.id])) || TASKS[0];
     questNearbyAlert(t, 42);
+  };
+  $('#apikey-save').onclick = () => {
+    const val = $('#apikey-input').value.trim();
+    if (!val || val.startsWith('••')) {
+      if (S.apiKey && confirm('Prüfmeister deaktivieren (Key löschen)?')) {
+        S.apiKey = null; saveState(); renderSettings();
+      }
+      return;
+    }
+    S.apiKey = val; saveState(); renderSettings();
+    Narrator.speak('Der Magische Prüfmeister ist erwacht. Ab jetzt wird jedes Beweisfoto begutachtet!');
+    SFX.unlock();
   };
   const testBtn = $('#apikey-test');
   if (testBtn) testBtn.onclick = async () => {
@@ -1843,98 +1840,6 @@ function renderCrew() {
       testBtn.disabled = false;
     }
   };
-  $('#tog-sound').onclick = () => {
-    S.sound = !S.sound; saveState(); applyAudioIcon(); renderCrew();
-    if (S.sound) SFX.chime();
-  };
-  $('#tog-voice').onclick = () => {
-    S.voice = !S.voice; saveState(); applyAudioIcon(); renderCrew();
-    if (S.voice) Narrator.speak('Die Stimme der Nacht ist erwacht.');
-    else Narrator.stop();
-  };
-  const sel = $('#voice-select');
-  if (sel) {
-    sel.onchange = () => {
-      S.voiceURI = sel.value || null;
-      saveState();
-      Narrator.pickVoice();
-      Narrator.preview(Narrator.voice ? Narrator.voice.voiceURI : null);
-    };
-  }
-  const prev = $('#voice-preview');
-  if (prev) prev.onclick = () => {
-    Narrator.pickVoice();
-    if (Narrator.voice) Narrator.preview(Narrator.voice.voiceURI);
-  };
-  $$('#voicestyle-picker .chip').forEach(c => c.onclick = () => {
-    S.voiceStyle = c.dataset.vs;
-    saveState();
-    renderCrew();
-    const lines = {
-      wizard: 'Ah… willkommen, Abenteurer. Die Nacht hat auf euch gewartet.',
-      fee: 'Huiii! Auf gehts, ihr Nachtschwärmer!',
-      neutral: 'Erzählerstimme bereit. Die Rallye kann beginnen.'
-    };
-    Narrator.speak(lines[c.dataset.vs] || lines.wizard);
-  });
-  const reload = $('#voice-reload');
-  if (reload) reload.onclick = () => {
-    const n = Narrator.reloadVoices();
-    renderCrew();
-    Narrator.speak(n
-      ? `${n} deutsche ${n === 1 ? 'Stimme' : 'Stimmen'} gefunden. Die beste spricht zu euch.`
-      : 'Noch keine deutsche Stimme gefunden. Einmal tippen, kurz warten, nochmal laden.');
-  };
-  const showAllBtn = $('#voice-showall');
-  if (showAllBtn) showAllBtn.onclick = () => {
-    S.voiceShowAll = !S.voiceShowAll;
-    saveState();
-    renderCrew();
-  };
-}
-
-function renderVoicePicker() {
-  if (!Narrator.available) {
-    return '<p class="small muted">Dieses Gerät stellt leider keine Vorlesestimme bereit.</p>';
-  }
-  const all = Narrator.allVoices();
-  const de = Narrator.germanVoices();
-  const hasSiri = Narrator.hasSiriVoice();
-  const showAll = !!S.voiceShowAll;
-  const voices = showAll ? all : de;
-  Narrator.pickVoice();
-  const current = S.voiceURI || (Narrator.voice ? Narrator.voice.voiceURI : '');
-  const sorted = voices.slice().sort((a, b) => Narrator.scoreVoice(b) - Narrator.scoreVoice(a));
-  const opts = sorted.map(v => {
-    const s = (v.name + ' ' + (v.voiceURI || '')).toLowerCase();
-    const mark = s.includes('siri') ? ' 🪄 Siri' : Narrator.scoreVoice(v) >= 25 ? ' ✨' : '';
-    const lang = showAll ? ` [${escapeHtml(v.lang || '?')}]` : '';
-    return `<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI === current ? 'selected' : ''}>${escapeHtml(v.name)}${lang}${mark}</option>`;
-  }).join('');
-  return `
-    <div class="voice-picker">
-      <p class="small muted" id="voice-diagnose">📡 Gerät meldet <b>${all.length}</b> ${all.length === 1 ? 'Stimme' : 'Stimmen'},
-        davon <b>${de.length}</b> deutsch · Siri-Stimme: <b>${hasSiri ? 'gefunden ✅' : 'vom iPhone nicht freigegeben'}</b></p>
-      ${voices.length ? `
-      <label class="small muted" for="voice-select">🛟 Ersatzstimme wählen (🪄 = Siri, ✨ = beste Qualität)</label>
-      <div class="voice-row">
-        <select id="voice-select">${opts}</select>
-        <button class="btn ghost small-btn" id="voice-preview">▶ Hörprobe</button>
-      </div>` : `
-      <p class="small muted">Noch keine ${showAll ? '' : 'deutsche '}Stimme gemeldet – iPhones rücken die Liste oft erst nach dem ersten Tippen raus.</p>`}
-      <div class="voice-tools">
-        <button class="btn ghost small-btn" id="voice-showall">${showAll ? '🇩🇪 Nur deutsche Stimmen' : '🌍 Alle Stimmen anzeigen (' + all.length + ')'}</button>
-        <button class="btn ghost small-btn" id="voice-reload">🔄 Stimmen neu laden</button>
-      </div>
-      ${hasSiri ? '' : `
-      <div class="tip-box small">🪄 <b>Warum fehlt eure Siri-Stimme?</b> Apple gibt Siri-Stimmen grundsätzlich
-      nicht an Browser und Web-Apps frei – keine Website kann sie abspielen, das ist eine iOS-Sperre und kein
-      Fehler der Rallye. Der beste Ersatz: Unter <b>Einstellungen → Bedienungshilfen → Gesprochene Inhalte →
-      Stimmen → Deutsch</b> die Stimme <b>„Anna (Premium)"</b> oder <b>„Helena (Premium)"</b> laden – die
-      erscheint danach hier in der Liste (notfalls „🔄 Stimmen neu laden") und klingt mit der
-      🧙-Dumbledore-Stimmlage fast so würdevoll. Über „🌍 Alle Stimmen anzeigen" seht ihr außerdem ALLES,
-      was euer iPhone wirklich meldet – falls eure Stimme unter anderem Namen läuft, wählt sie einfach dort.</div>`}
-    </div>`;
 }
 
 /* ---------------- Finale ---------------- */

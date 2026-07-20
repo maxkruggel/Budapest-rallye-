@@ -124,6 +124,16 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
   display: grid; place-items: center;
 }
 .theme-btn.corner { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; z-index: 5; }
+.theme-btn.corner-2 { right: 62px; }
+
+/* Einstellungs-Fenster (⚙️) */
+.settings-body { display: grid; gap: 12px; margin-top: 10px; }
+.settings-body .card { padding: 14px 16px; }
+.settings-body input[type="password"] {
+  flex: 1; min-width: 0; font-family: inherit; font-size: .9rem; color: var(--ink);
+  background: var(--surface-2); border: 1.5px solid var(--line);
+  border-radius: 12px; padding: 9px 12px;
+}
 
 /* ---------- Splash ---------- */
 #s-splash { overflow-y: auto; }
@@ -802,14 +812,8 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 }
 .pause-btn { font-size: 1.15rem; }
 
-/* Stimmen-Auswahl im Crew-Tab */
-.voice-picker { display: grid; gap: 8px; margin-top: 10px; border-top: 1px dashed var(--line); padding-top: 12px; }
+/* Eingabezeile im Einstellungs-Fenster (z. B. API-Key) */
 .voice-row { display: flex; gap: 8px; }
-.voice-row select {
-  flex: 1; font-family: inherit; font-size: .9rem; color: var(--ink);
-  background: var(--surface-2); border: 1.5px solid var(--line);
-  border-radius: 12px; padding: 9px 12px; min-width: 0;
-}
 
 /* ---------- Welle 10: Tag/Nacht-Quests, Stimmlage, Video, Hyper-AR ---------- */
 
@@ -944,22 +948,8 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .task-pin.free .pin-num { color: #ffe9b8; }
 .task-pin.free.done { background: rgba(76, 82, 125, .5); border-color: #6a719e; }
 
-/* Studio-Stimmen-Status im Crew-Tab */
-.studio-box {
-  border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
-  display: grid; gap: 10px;
-}
-.studio-box.ok { background: rgba(123, 216, 143, .12); border: 1.5px dashed var(--ok); }
-.studio-box.warn { background: var(--paprika-soft); border: 1.5px dashed var(--paprika); }
-
-/* Stimmen-Werkzeuge im Picker */
-.voice-tools { display: flex; gap: 8px; flex-wrap: wrap; }
-#voice-diagnose b { color: var(--gold); }
-
-/* Stimmlage im Crew-Tab */
-.voice-style { border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 6px; display: grid; gap: 8px; }
-.voice-style .chip small { text-transform: none; }
-.voice-picker .btn { justify-self: start; }
+/* Button-Zeile im Einstellungs-Fenster */
+.voice-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 
 /* Video-Beweis */
 video.proof-thumb { width: 100%; border-radius: 14px; border: 1px solid var(--line); background: #000; }

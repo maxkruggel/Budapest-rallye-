@@ -34,6 +34,7 @@
   <!-- ═══════════ SPLASH ═══════════ -->
   <section class="screen active" id="s-splash">
     <button class="theme-btn corner" id="btn-theme-splash" aria-label="Tag/Nacht wechseln"><span class="theme-icon">☀️</span></button>
+    <button class="theme-btn corner corner-2" id="btn-settings-splash" aria-label="Einstellungen">⚙️</button>
     <div class="splash-inner">
       <div class="splash-lamp"></div>
       <div id="fireflies" aria-hidden="true">
@@ -120,8 +121,7 @@
       </div>
 
       <button class="btn primary big" id="btn-start">🌃 Los geht's!</button>
-      <p class="small muted center">Tipp: Standort-Freigabe erlauben – die Route startet dann genau dort, wo ihr steht.</p>
-      <p class="small muted center">🧙 Foto-KI gewünscht? Den Anthropic-API-Key hinterlegt ihr im Spiel unter <b>Crew → Magischer Prüfmeister</b>.</p>
+      <p class="small muted center">Tipp: Standort freigeben – die Route startet dort, wo ihr steht.</p>
     </div>
   </section>
 
@@ -141,6 +141,7 @@
         <button class="theme-btn pause-btn" id="btn-pause" aria-label="Barpause – Sör o'clock">🍺</button>
         <button class="theme-btn" id="btn-audio" aria-label="Ton an/aus"><span id="audio-icon">🔊</span></button>
         <button class="theme-btn" id="btn-theme" aria-label="Tag/Nacht wechseln"><span class="theme-icon">☀️</span></button>
+        <button class="theme-btn" id="btn-settings" aria-label="Einstellungen">⚙️</button>
         <button class="theme-btn" id="btn-endgame" aria-label="Rallye beenden">🏁</button>
       </div>
     </header>
@@ -314,6 +315,15 @@
       <div class="pause-clock" id="pause-clock">00:00</div>
       <p class="pause-quote" id="pause-quote"></p>
       <button class="btn primary big" id="btn-resume-game">▶ Weiter geht's!</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ OVERLAY: EINSTELLUNGEN ═══════════ -->
+  <div class="overlay" id="ov-settings">
+    <div class="sheet">
+      <button class="ov-close" aria-label="Schließen">✕</button>
+      <h2>⚙️ Einstellungen</h2>
+      <div id="settings-box" class="settings-body"></div>
     </div>
   </div>
 
