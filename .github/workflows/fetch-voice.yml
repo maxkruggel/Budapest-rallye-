@@ -1,0 +1,58 @@
+name: Studio-Stimme einspielen
+
+# Lädt die generierten Erzähler-MP3s (Friedrich Weber) von den befristeten
+# CDN-URLs in assets/voice/clips.json herunter, baut das manifest.json und
+# committet alles auf main. Der Runner hat freien Netzzugang – die
+# Entwicklungs-Sandbox nicht, deshalb dieser Umweg.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: voice
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Clips herunterladen + Manifest bauen
+        run: |
+          python3 - <<'EOF'
+          import json, os, urllib.request
+          clips = json.load(open('assets/voice/clips.json'))
+          ok, fail = [], []
+          for key, url in sorted(clips.items()):
+              dest = f'assets/voice/{key}.mp3'
+              try:
+                  urllib.request.urlretrieve(url, dest)
+                  size = os.path.getsize(dest)
+                  if size > 2000:
+                      ok.append(key)
+                  else:
+                      os.remove(dest); fail.append((key, f'nur {size} B'))
+              except Exception as e:
+                  fail.append((key, str(e)[:120]))
+          json.dump(sorted(ok), open('assets/voice/manifest.json', 'w'))
+          print(f'{len(ok)} von {len(clips)} Clips geladen')
+          for k, why in fail: print('FEHLGESCHLAGEN:', k, '-', why)
+          total = sum(os.path.getsize(f'assets/voice/{k}.mp3') for k in ok)
+          print(f'Gesamtgröße: {total/1e6:.1f} MB')
+          if len(ok) < len(clips) * 0.9:
+              raise SystemExit('Zu viele Downloads fehlgeschlagen – kein Commit.')
+          EOF
+
+      - name: Auf main committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -q assets/voice/clips.json
+          git add assets/voice
+          git commit -m "Studio-Erzaehlerstimme: MP3-Clips (Friedrich Weber, eleven_v3)"
+          git push origin main

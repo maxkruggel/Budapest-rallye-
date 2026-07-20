@@ -166,13 +166,16 @@ const Narrator = {
     } catch (e) { /* keine Studio-Clips - Geraetestimme uebernimmt */ }
   },
 
-  playClip(key) {
+  playClip(key, onFail) {
     if (!this.clips || !this.clips.has(key)) return false;
     try {
       if (!this.player) this.player = new Audio();
       this.player.pause();
+      // Datei kaputt/offline? Key streichen und auf die Geraetestimme zurueckfallen.
+      this.player.onerror = () => { this.clips.delete(key); if (onFail) onFail(); };
       this.player.src = 'assets/voice/' + key + '.mp3';
-      this.player.play().catch(() => {});
+      const p = this.player.play();
+      if (p && p.catch) p.catch(() => { if (onFail) onFail(); });
       return true;
     } catch (e) { return false; }
   },
@@ -244,11 +247,17 @@ const Narrator = {
     return this.germanVoices().length;
   },
 
-  /* --- Sprechen: MP3 zuerst, sonst Geraetestimme (satzweise = bessere Kadenz) --- */
+  /* --- Sprechen: Studio-MP3 zuerst, sonst Geraetestimme --- */
   say(key, text, opts = {}) {
     if (!S.voice) return;
     this.stop();
-    if (key && this.playClip(key)) return;
+    if (key && this.playClip(key, () => this.speakDevice(text, opts))) return;
+    this.speakDevice(text, opts);
+  },
+
+  /* Geraetestimme (satzweise = bessere Kadenz) */
+  speakDevice(text, opts = {}) {
+    if (!S.voice) return;
     if (!this.available) return;
     try {
       const clean = (text || '')

@@ -445,7 +445,7 @@ function startGame() {
   }
   enterGame();
   SFX.chime();
-  Narrator.speak('Willkommen, Abenteurer der Nacht! Budapest liegt euch zu Füßen. Euer Quest-Log ist geschrieben – möge die Laterne euch leuchten!');
+  Narrator.say('welcome', 'Willkommen, Abenteurer der Nacht! Budapest liegt euch zu Füßen. Euer Quest-Log ist geschrieben – möge die Laterne euch leuchten!');
 }
 
 function enterGame() {
@@ -608,12 +608,12 @@ function tick() {
   if (left >= 0 && left < 5 * 60000 && !g.warned5) {
     g.warned5 = true; saveState();
     SFX.gong();
-    Narrator.speak('Die Sanduhr rinnt, Abenteurer – nur noch fünf Minuten!');
+    Narrator.say('warn5', 'Die Sanduhr rinnt, Abenteurer – nur noch fünf Minuten!');
   }
   if (left < 0 && $('#time-up-banner').hidden) {
     $('#time-up-banner').hidden = false;
     SFX.gong();
-    Narrator.speak('Die Stunde ist gekommen! Eure Zeit ist abgelaufen.');
+    Narrator.say('timeup', 'Die Stunde ist gekommen! Eure Zeit ist abgelaufen.');
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   }
 }
@@ -1147,7 +1147,7 @@ function appendTipRow(t, act) {
     box.hidden = false;
     box.textContent = '💡 ' + t.tip;
     SFX.sparkle();
-    Narrator.speak('Ein Tipp vom Prüfmeister: ' + t.tip);
+    Narrator.say('tip_' + t.id, 'Ein Tipp vom Prüfmeister: ' + t.tip);
   };
 }
 
@@ -1344,7 +1344,7 @@ function completeTask(t, extra) {
     if (rankAfter !== rankBefore) {
       setTimeout(() => {
         SFX.fanfare();
-        Narrator.speak(`Rangaufstieg! Ihr seid nun ${rankAfter.name}!`, { pitch: 1.25 });
+        Narrator.say('rank_' + RANKS.indexOf(rankAfter), `Rangaufstieg! Ihr seid nun ${rankAfter.name}!`, { pitch: 1.25 });
         const el = $('#stamp-toast');
         el.innerHTML = `<div class="stamp-inner secret">${rankAfter.icon} RANGAUFSTIEG<br><b>${rankAfter.name}</b></div>`;
         el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
@@ -1748,7 +1748,7 @@ async function openAR(t) {
   ov.classList.add('open');
   $('#ar-story h3').textContent = ghost.name;
   $('#ar-story p').textContent = t.story;
-  Narrator.speak(`Der Schleier öffnet sich. ${ghost.name}. ${t.story}`);
+  Narrator.say('ghost_' + t.ghost, `Der Schleier öffnet sich. ${ghost.name}. ${t.story}`);
   $('#ar-hint').textContent = 'Kamera startet …';
   $('#ar-preview').hidden = true;
   $('#ar-live').hidden = false;
@@ -1955,7 +1955,7 @@ function checkProximity() {
 function questNearbyAlert(t, d) {
   SFX.ring();
   if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 600]);
-  Narrator.say('near_' + t.cat, `Haltet ein, Abenteurer! Eine Quest ist zum Greifen nah: ${t.title}.`);
+  Narrator.say('near', `Haltet ein, Abenteurer! Eine Quest ist zum Greifen nah: ${t.title}.`);
 
   const el = $('#near-toast');
   el.innerHTML = `
