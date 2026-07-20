@@ -652,7 +652,11 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 #near-toast {
   position: fixed; left: 12px; right: 12px; z-index: 96;
   top: calc(env(safe-area-inset-top) + 8px);
-  transform: translateY(-130%); transition: transform .35s cubic-bezier(.2,.9,.3,1.15);
+  /* Versteckt = eigene Höhe + Safe-Area-Versatz nach oben raus: sonst bleibt
+     der Banner auf iPhones mit Dynamic Island sichtbar hinter der Statusleiste
+     stehen (der Safe-Area-Abstand ist dort größer als 130 % Bannerhöhe) */
+  transform: translateY(calc(-130% - env(safe-area-inset-top, 0px)));
+  transition: transform .35s cubic-bezier(.2,.9,.3,1.15);
   pointer-events: none;
 }
 #near-toast.show { transform: translateY(0); pointer-events: auto; }
