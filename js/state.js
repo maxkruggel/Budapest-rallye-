@@ -15,6 +15,7 @@ const DEFAULT_STATE = () => ({
   voiceStyle: 'wizard',  // Stimmlage: 'wizard' (Dumbledore) | 'fee' | 'neutral'
   voiceShowAll: false,   // Stimmen-Picker: alle Sprachen statt nur Deutsch zeigen
   guard: false,          // Hintergrund-Wächter: Audio-Kanal hält GPS/Alarm bei Sperrbildschirm wach
+  mapShowAll: true,      // Karte: alle verfügbaren Quests zeigen (nicht nur das Deck)
   apiKey: null,    // optional: Anthropic-API-Key für den Magischen Prüfmeister
   archive: [],     // Halle der Legenden: abgeschlossene Rallyes
   settings: {
@@ -42,6 +43,7 @@ function loadState() {
         if (s.voiceStyle === undefined) s.voiceStyle = 'wizard';
         if (s.voiceShowAll === undefined) s.voiceShowAll = false;
         if (s.guard === undefined) s.guard = false;
+        if (s.mapShowAll === undefined) s.mapShowAll = true;
         if (s.apiKey === undefined) s.apiKey = null;
         if (!Array.isArray(s.archive)) s.archive = [];
         if (s.settings && s.settings.gamemode === undefined) s.settings.gamemode = 'night';

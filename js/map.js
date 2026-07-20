@@ -171,7 +171,7 @@ function updateRouteLine(orderedTasks) {
 
 /* Marker werden IN-PLACE aktualisiert (kein Zerstören/Neubauen) –
    dadurch überlebt ein offenes Popup jeden GPS-/Render-Zyklus. */
-function renderTaskMarkers(tasks, completedMap, onOpen, activeId) {
+function renderTaskMarkers(tasks, completedMap, onOpen, activeId, onAdd) {
   if (!map) return;
   const seen = new Set();
   tasks.forEach((t, i) => {
@@ -180,11 +180,12 @@ function renderTaskMarkers(tasks, completedMap, onOpen, activeId) {
     seen.add(t.id);
     const done = !!completedMap[t.id];
     const isFree = t.free || t.lat == null;
+    const isExtra = !!t._extra;
     const timeClass = t.time === 'day' ? 'tday' : t.time === 'night' ? 'tnight' : '';
     const timeDot = t.time === 'day' ? '<span class="pin-time">☀️</span>'
                   : t.time === 'night' ? '<span class="pin-time">🌙</span>' : '';
-    const html = `<div class="task-pin ${done ? 'done' : ''} cat-${t.cat} ${timeClass} ${t.id === activeId ? 'pulse' : ''} ${isFree ? 'free' : ''}">
-               <span class="pin-num">${done ? '✓' : i + 1}</span>${timeDot}
+    const html = `<div class="task-pin ${done ? 'done' : ''} cat-${t.cat} ${timeClass} ${!isExtra && t.id === activeId ? 'pulse' : ''} ${isFree ? 'free' : ''} ${isExtra ? 'extra' : ''}">
+               <span class="pin-num">${isExtra ? '+' : done ? '✓' : i + 1}</span>${timeDot}
              </div>`;
     const icon = () => L.divIcon({
       className: 'task-pin-wrap', html,
@@ -203,11 +204,19 @@ function renderTaskMarkers(tasks, completedMap, onOpen, activeId) {
            <strong>${CATS[t.cat].icon} ${t.title}</strong>
            <div class="pin-place">${isFree ? '🃏 überall lösbar – der Punkt liegt auf eurer Route' : (t.place || '')}</div>
            ${timeLine}
-           <button class="pin-open" data-task="${t.id}">Aufgabe öffnen</button>
+           ${isExtra
+             ? `<div class="pin-place">✨ ${t.points} Punkte – noch nicht in eurer Rallye</div>
+                <button class="pin-open pin-add" data-task="${t.id}">➕ Zur Rallye hinzufügen</button>`
+             : `<button class="pin-open" data-task="${t.id}">Aufgabe öffnen</button>`}
          </div>`, { autoClose: true, closeOnClick: true });
       mk.on('popupopen', e => {
         const btn = e.popup.getElement().querySelector('.pin-open');
-        if (btn) btn.onclick = () => { map.closePopup(); onOpen(t.id); };
+        if (!btn) return;
+        btn.onclick = () => {
+          map.closePopup();
+          if (btn.classList.contains('pin-add')) { if (onAdd) onAdd(t.id); }
+          else onOpen(t.id);
+        };
       });
       mk._iconHtml = html;
       taskMarkers[t.id] = mk;

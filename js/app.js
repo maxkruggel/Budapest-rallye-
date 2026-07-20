@@ -77,6 +77,20 @@ function bindStatic() {
     if (e.target === e.currentTarget) resumeGame();
   });
 
+  // 🌐 Alle Quests / 🎯 Nur Route auf der Karte
+  $('#btn-mapall').onclick = () => {
+    S.mapShowAll = !S.mapShowAll;
+    saveState();
+    $('#btn-mapall').textContent = S.mapShowAll ? '🌐 Alle Quests' : '🎯 Nur Route';
+    refreshMapLayers();
+    if (map) {
+      const pts = Object.values(taskMarkers).map(m => m.getLatLng());
+      if (lastPos) pts.push(L.latLng(lastPos.lat, lastPos.lng));
+      if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.12));
+    }
+    SFX.tap();
+  };
+
   // Karten-Legende auf-/zuklappen
   $('#legend-toggle').onclick = () => {
     const lg = $('#map-legend');
@@ -727,8 +741,40 @@ function switchTab(tab) {
 function refreshMapLayers() {
   if (!map) return;
   const sorted = decorateFreeTasks(sortedGameTasks());
-  renderTaskMarkers(sorted, S.game.completed, openTask, activeQuestId());
+  // 🌐 Entdecker-Pins: ALLE verfügbaren Orts-Quests der Stadt, die nicht
+  // im Deck sind – antippbar und direkt zur Rallye hinzufügbar.
+  let all = sorted;
+  if (S.mapShowAll) {
+    const inDeck = new Set(S.game.taskIds);
+    const extras = TASKS.filter(t =>
+      !inDeck.has(t.id) && !t.free && t.lat != null &&
+      !t.chain && !t.secret &&
+      fitsGamemode(t, S.game.gamemode || S.settings.gamemode))
+      .map(t => ({ ...t, _extra: true }));
+    all = [...sorted, ...extras];
+  }
+  renderTaskMarkers(all, S.game.completed, openTask, activeQuestId(), addTaskToGame);
   updateRouteLine(sorted.filter(t => !S.game.completed[t.id]));
+}
+
+/* Entdecker-Pin angetippt: Quest ins laufende Deck aufnehmen */
+function addTaskToGame(id) {
+  const g = S.game;
+  const t = TASKS.find(x => x.id === id);
+  if (!t || g.taskIds.includes(id)) return;
+  g.taskIds.push(id);
+  saveState();
+  renderTaskList();
+  // Marker neu aufbauen: aus dem ➕-Entdecker-Pin wird ein nummerierter Deck-Pin
+  if (taskMarkers[id] && map) { map.removeLayer(taskMarkers[id]); delete taskMarkers[id]; }
+  refreshMapLayers();
+  SFX.unlock();
+  if (navigator.vibrate) navigator.vibrate([60, 40, 120]);
+  const el = $('#stamp-toast');
+  el.innerHTML = `<div class="stamp-inner secret">➕ NEUE QUEST<br><b>${escapeHtml(t.title)}</b><span>zur Rallye hinzugefügt (+${t.points} Pkt möglich)</span></div>`;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+  Narrator.speak(`Eine neue Quest schließt sich eurer Reise an: ${t.title}.`);
 }
 
 /* „Überall lösbar"-Quests bekommen virtuelle Karten-Punkte AUF der Route:

@@ -835,6 +835,24 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 .pin-pop .pin-timeinfo.day { background: #fff3d1; color: #7a5500; }
 .pin-pop .pin-timeinfo.night { background: #1d2247; color: #c9d0ff; }
 
+/* ➕ Entdecker-Pins: verfügbare Quests außerhalb des Decks */
+.task-pin.extra {
+  background: rgba(26, 30, 61, .78);
+  border: 2px dashed rgba(255, 193, 69, .8);
+  opacity: .85;
+}
+.task-pin.extra .pin-num { color: var(--gold); font-size: 1rem; }
+.lg-pin.extra { background: rgba(26, 30, 61, .9); border: 1.5px dashed #ffc145; color: #ffc145; }
+.pin-pop .pin-add { background: #7bd88f; }
+
+#btn-mapall {
+  position: absolute; top: 46px; right: 10px; z-index: 500;
+  font-family: var(--font-m); font-size: .75rem; font-weight: 700;
+  background: var(--surface); border: 1.5px solid var(--gold);
+  color: var(--gold); border-radius: 999px; padding: 5px 11px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.4); cursor: pointer;
+}
+
 /* Karten-Legende */
 #legend-toggle {
   position: absolute; top: 10px; right: 10px; z-index: 500;
@@ -844,7 +862,7 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
   box-shadow: 0 3px 10px rgba(0,0,0,.4); cursor: pointer;
 }
 #map-legend {
-  position: absolute; top: 46px; right: 10px; z-index: 500;
+  position: absolute; top: 82px; right: 10px; z-index: 501;
   width: min(78vw, 290px); max-height: 60%; overflow-y: auto;
   background: var(--surface); border: 1.5px solid var(--gold);
   border-radius: 16px; padding: 12px 14px;
