@@ -18,12 +18,28 @@
 </head>
 <body>
 
+  <!-- ═══════════ APP-LAUNCH: Die Nacht erwacht (rein visuell) ═══════════ -->
+  <div id="launch" aria-hidden="true">
+    <div class="launch-inner">
+      <div class="launch-lamp"></div>
+      <div class="launch-ring"></div>
+      <div class="launch-ring r2"></div>
+      <div class="launch-orbit"><span class="launch-spark"></span></div>
+      <div class="launch-orbit o2"><span class="launch-spark"></span></div>
+      <div class="launch-title">BUDAPEST<span>NACHT-RALLYE</span></div>
+      <div class="launch-sub">Die Nacht erwacht …</div>
+    </div>
+  </div>
+
   <!-- ═══════════ SPLASH ═══════════ -->
   <section class="screen active" id="s-splash">
     <button class="theme-btn corner" id="btn-theme-splash" aria-label="Tag/Nacht wechseln"><span class="theme-icon">☀️</span></button>
     <div class="splash-inner">
       <div class="splash-lamp"></div>
-      <div id="fireflies" aria-hidden="true"></div>
+      <div id="fireflies" aria-hidden="true">
+        <span class="shooting-star st1"></span>
+        <span class="shooting-star st2"></span>
+      </div>
       <p class="eyebrow">Bezirk V · Pest · nach Einbruch der Dunkelheit</p>
       <h1 class="splash-title">BUDAPEST<br><span>NACHT-RALLYE</span></h1>
       <p class="splash-sub">Eine Schnitzeljagd durch 150 Jahre Stadtgeschichte.<br>
@@ -261,9 +277,10 @@
     </div>
   </div>
 
-  <!-- Stempel-Toast + Konfetti + Näherungs-Alarm -->
+  <!-- Stempel-Toast + Konfetti + Näherungs-Alarm + Magie-Staub -->
   <div id="stamp-toast" aria-live="polite"></div>
   <div id="confetti" aria-hidden="true"></div>
+  <div id="dust" aria-hidden="true"></div>
   <div id="near-toast" aria-live="assertive"></div>
 
   <script src="vendor/leaflet.js"></script>

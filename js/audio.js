@@ -91,6 +91,29 @@ const SFX = {
   nope() {
     tone(233, 0, 0.18, { type: 'sawtooth', gain: 0.06 });
     tone(174, 0.15, 0.25, { type: 'sawtooth', gain: 0.06 });
+  },
+  /* Leiser Tap – Tab-Wechsel & kleine Interaktionen */
+  tap() {
+    tone(920, 0, 0.05, { type: 'triangle', gain: 0.035 });
+  },
+  /* Wuschhh – Screen-Übergänge */
+  whoosh() {
+    tone(280, 0, 0.26, { glide: 980, gain: 0.045 });
+    tone(190, 0.05, 0.3, { glide: 640, gain: 0.03, type: 'triangle' });
+  },
+  /* Feenstaub – Tipp-Enthüllung */
+  sparkle() {
+    [1567.98, 2093, 2637, 3135.96].forEach((f, i) => tone(f, i * 0.05, 0.22, { gain: 0.05 }));
+  },
+  /* Karten-Riffeln – Joker */
+  shuffle() {
+    [0, 0.055, 0.11, 0.165, 0.22].forEach((t, i) =>
+      tone(360 + i * 140, t, 0.045, { type: 'square', gain: 0.05 }));
+  },
+  /* Kamera-Verschluss – Geisterfoto */
+  shutter() {
+    tone(1250, 0, 0.03, { type: 'square', gain: 0.12 });
+    tone(620, 0.045, 0.05, { type: 'square', gain: 0.09 });
   }
 };
 
@@ -340,7 +363,8 @@ function confettiBurst(n = 26) {
 
 function spawnFireflies(n = 12) {
   const box = document.getElementById('fireflies');
-  if (!box || box.children.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Achtung: im Container liegen auch die Sternschnuppen – nur auf echte Glühwürmchen prüfen
+  if (!box || box.querySelector('.firefly') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   for (let i = 0; i < n; i++) {
     const f = document.createElement('span');
     f.className = 'firefly';

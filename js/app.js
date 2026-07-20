@@ -15,6 +15,7 @@ let wakeLock = null;
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(S.theme);
   applyAudioIcon();
+  initLaunch();
   spawnFireflies();
   bindStatic();
   updateArchiveButton();
@@ -32,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function bindStatic() {
-  $('#btn-new').onclick = () => { renderSetup(); showScreen('setup'); };
+  $('#btn-new').onclick = () => { SFX.whoosh(); renderSetup(); showScreen('setup'); };
   $('#btn-resume').onclick = () => {
     if (S.game.finished) { showFinal(); } else { enterGame(); }
   };
@@ -78,7 +79,7 @@ function bindStatic() {
     S.game = null; saveState();
     renderSetup(); showScreen('setup');
   };
-  $('#btn-archive').onclick = () => { renderArchive(); showScreen('archive'); };
+  $('#btn-archive').onclick = () => { SFX.whoosh(); renderArchive(); showScreen('archive'); };
   $('#btn-archive-back').onclick = () => showScreen('splash');
   $('#btn-final-back').onclick = () => { renderArchive(); showScreen('archive'); };
 
@@ -98,6 +99,58 @@ function bindStatic() {
     setTimeout(() => el.classList.remove('show'), 3000);
     if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]);
   });
+}
+
+/* ---------------- Launch-Intro & Magie-Staub ---------------- */
+
+/* „Die Nacht erwacht": rein visuelles Intro über der App –
+   Taps gehen durch (pointer-events: none), nach ~2,8 s ist es weg. */
+function initLaunch() {
+  const el = $('#launch');
+  if (!el) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.hidden = true; return; }
+  setTimeout(() => { el.hidden = true; }, 2800);
+}
+
+/* Goldene Fünkchen an jeder Berührung */
+let _lastDust = 0;
+document.addEventListener('pointerdown', e => {
+  const now = Date.now();
+  if (now - _lastDust < 130) return;
+  _lastDust = now;
+  spawnDust(e.clientX, e.clientY);
+}, { passive: true });
+
+function spawnDust(x, y) {
+  const layer = $('#dust');
+  if (!layer || x == null || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for (let i = 0; i < 7; i++) {
+    const p = document.createElement('span');
+    p.className = 'dust-p';
+    const ang = Math.random() * 2 * Math.PI;
+    const r = 16 + Math.random() * 28;
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    p.style.setProperty('--dx', Math.cos(ang) * r + 'px');
+    p.style.setProperty('--dy', (Math.sin(ang) * r - 16) + 'px');
+    layer.appendChild(p);
+    setTimeout(() => p.remove(), 750);
+  }
+}
+
+/* Zahlen zählen magisch hoch statt hart zu springen */
+function tweenNumber(el, to) {
+  if (!el) return;
+  const from = parseInt(el.textContent, 10) || 0;
+  if (from === to) { el.textContent = to; return; }
+  el.classList.remove('score-pop'); void el.offsetWidth; el.classList.add('score-pop');
+  const t0 = performance.now(), dur = 500;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur);
+    el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 
 /* ---------------- Screens & Theme ---------------- */
@@ -515,10 +568,10 @@ function renderHud() {
 function updateScores() {
   const g = S.game;
   if (S.settings.mode === 'versus') {
-    $('#scoreA').textContent = g.scores[0];
-    $('#scoreB').textContent = g.scores[1];
+    tweenNumber($('#scoreA'), g.scores[0]);
+    tweenNumber($('#scoreB'), g.scores[1]);
   } else {
-    $('#score-total').textContent = g.scores[0] + g.scores[1];
+    tweenNumber($('#score-total'), g.scores[0] + g.scores[1]);
   }
   const done = Object.keys(g.completed).length;
   $('#hud-progress').textContent = `${done}/${g.taskIds.length}`;
@@ -568,6 +621,7 @@ function tick() {
 /* ---------------- Tabs ---------------- */
 
 function switchTab(tab) {
+  SFX.tap();
   $$('.navbtn').forEach(b => b.classList.toggle('sel', b.dataset.tab === tab));
   $$('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + tab));
   if (tab === 'map') {
@@ -744,6 +798,7 @@ function useJoker() {
   g.taskIds[g.taskIds.indexOf(oldTask.id)] = replacement.id;
   g.jokersLeft--;
   saveState(); renderTaskList();
+  SFX.shuffle();
   alert(`🃏 „${oldTask.title}" fliegt raus.\nNeue Aufgabe: „${replacement.title}"`);
 }
 
@@ -1091,6 +1146,7 @@ function appendTipRow(t, act) {
     const box = tipRow.querySelector('#tip-box');
     box.hidden = false;
     box.textContent = '💡 ' + t.tip;
+    SFX.sparkle();
     Narrator.speak('Ein Tipp vom Prüfmeister: ' + t.tip);
   };
 }
@@ -1792,6 +1848,7 @@ function enableGhostDrag() {
 }
 
 function captureAR() {
+  SFX.shutter();
   const video = $('#ar-video');
   const stage = $('#ar-stage');
   const img = $('#ar-ghost');
