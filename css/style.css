@@ -750,6 +750,41 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
 @keyframes stamptoast-in { from { transform: rotate(-6deg) scale(1.6); opacity: 0; } }
 #photo-label.checking { opacity: .7; pointer-events: none; animation: pulse 1.2s infinite; }
 
+/* ---------- 🎩 Frag Friedrich: Rückfragen-Chat zur Geschichte ---------- */
+.friedrich-panel { margin-top: 14px; display: grid; gap: 10px; }
+.friedrich-toggle { justify-self: start; }
+.friedrich-chat {
+  background: var(--bg-deep); border: 1px solid var(--line);
+  border-radius: 16px; padding: 12px; display: grid; gap: 10px;
+}
+.friedrich-msgs {
+  display: grid; gap: 8px; max-height: 42vh; overflow-y: auto;
+  scroll-behavior: smooth;
+}
+.fmsg {
+  font-size: .92rem; line-height: 1.5; padding: 9px 12px;
+  border-radius: 14px; max-width: 88%; white-space: pre-line;
+}
+.fmsg.u {
+  justify-self: end; background: var(--gold-soft);
+  border: 1px solid var(--gold); border-bottom-right-radius: 4px;
+}
+.fmsg.f {
+  justify-self: start; background: var(--surface);
+  border: 1px solid var(--line); border-bottom-left-radius: 4px;
+}
+.fmsg.f::before { content: '🎩 '; }
+.fmsg.err { justify-self: start; color: var(--paprika); font-size: .85rem; }
+.fmsg.pending { color: var(--muted); }
+.fmsg .fdots { animation: pulse 1.2s infinite; }
+.fmsg-speak {
+  background: none; border: none; cursor: pointer; font-size: .95rem;
+  padding: 0 2px; vertical-align: middle;
+}
+.friedrich-row { display: flex; gap: 8px; }
+.friedrich-row input { flex: 1; min-width: 0; }
+#friedrich-mic.listening { animation: pulse .9s infinite; border-color: var(--paprika); }
+
 .tip-row { display: grid; gap: 8px; }
 .tip-box {
   background: var(--gold-soft); border: 1.5px dashed var(--gold);

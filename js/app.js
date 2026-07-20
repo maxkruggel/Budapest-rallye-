@@ -1068,6 +1068,9 @@ function openTask(id) {
   const g = S.game;
   const done = g.completed[id];
 
+  // 🎩 Friedrich-Panel erst mal verstecken – der Haupt-Pfad blendet es wieder ein
+  $('#task-friedrich').hidden = true;
+
   // Sperre nach 3 abgelehnten Foto-Versuchen: Countdown-Akte
   if (!done && attemptsLocked(t)) {
     SFX.nope();
@@ -1174,6 +1177,7 @@ function openTask(id) {
   } else {
     buildVerifyUI(t, act);
   }
+  renderFriedrichPanel(t);
   ov.classList.add('open');
 
   // Quest-Sound + magische Erzählerstimme
@@ -1425,6 +1429,216 @@ function normalize(s) {
   return (s || '').toLowerCase().trim()
     .replace(/[.,!?"'´`]/g, '')
     .replace(/\s+/g, ' ');
+}
+
+/* ---------------- 🎩 Frag Friedrich (Rückfragen zur Geschichte) ----------------
+   Der Erzähler beantwortet Fragen zu Quest, Ort und Geschichte – als Chat,
+   auf Wunsch eingesprochen (Mikrofon) und vorgelesen (Gerätestimme).
+   Nutzt denselben API-Key wie der Magische Prüfmeister. */
+
+const FRIEDRICH_KEEP = 16;    // gespeicherte Nachrichten je Quest (localStorage)
+const FRIEDRICH_SEND = 12;    // davon an die KI geschickte jüngste Nachrichten
+
+function friedrichLog(taskId) {
+  const g = S.game;
+  if (!g) return [];
+  g.friedrichChats = g.friedrichChats || {};
+  return (g.friedrichChats[taskId] = g.friedrichChats[taskId] || []);
+}
+
+function friedrichContext(t) {
+  const done = S.game && S.game.completed[t.id];
+  const parts = [
+    `Quest: „${t.title}"`,
+    t.place ? `Ort: ${t.place}` : 'Ort: ortsunabhängig, irgendwo in Budapests Innenstadt',
+    `Aufgabentext: ${t.desc}`,
+    t.story ? `Historischer Hintergrund: ${t.story}` : ''
+  ];
+  if (t.quiz) {
+    parts.push(done
+      ? `Das Quiz der Quest ist bereits gelöst, die Auflösung darf frei besprochen werden: ${t.quiz.reveal}`
+      : `ACHTUNG: Die Quest enthält ein noch UNGELÖSTES Quiz („${t.quiz.q}"). Verrate die Antwort unter keinen Umständen – auch nicht indirekt oder auf Nachfrage. Ermuntere stattdessen charmant, vor Ort selbst nachzusehen.`);
+  }
+  return parts.filter(Boolean).join('\n');
+}
+
+async function askFriedrich(t, question) {
+  const log = friedrichLog(t.id);
+  // Verlauf in API-Form bringen; gleiche Rollen zusammenfassen (Pflicht der API)
+  const msgs = [];
+  log.slice(-FRIEDRICH_SEND).forEach(m => {
+    const role = m.r === 'u' ? 'user' : 'assistant';
+    if (msgs.length && msgs[msgs.length - 1].role === role) {
+      msgs[msgs.length - 1].content += '\n' + m.t;
+    } else {
+      msgs.push({ role, content: m.t });
+    }
+  });
+  if (!msgs.length || msgs[msgs.length - 1].role !== 'user') {
+    msgs.push({ role: 'user', content: question });
+  }
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': S.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-5',
+      max_tokens: 500,
+      system:
+        'Du bist Friedrich Weber, der Erzähler der Budapester Nacht-Rallye: ein kultivierter, warmherziger ' +
+        'Geschichtenerzähler mit leichtem Schalk – ein pensionierter Geschichtsprofessor beim dritten Espresso ' +
+        'im Kaffeehaus. Eine Spielergruppe steht gerade (oder stand vorhin) an einem Ort in Budapest und hat ' +
+        'Rückfragen zur Geschichte dahinter.\n\n' +
+        'Regeln:\n' +
+        '– Antworte auf Deutsch in 2 bis 5 Sätzen, in gesprochener Sprache (deine Antworten werden oft laut ' +
+        'vorgelesen). Keine Listen, kein Markdown, keine Emojis.\n' +
+        '– Bleib historisch korrekt. Kennzeichne Legenden als Legenden. Wenn du etwas nicht sicher weißt, ' +
+        'sag das offen – Friedrich flunkert nie bei Fakten.\n' +
+        '– Bleib bei Budapest, Ungarn und der Geschichte dieser Quest. Kleine charmante Abschweifungen sind ' +
+        'erlaubt, aber kurz.\n\n' +
+        'Kontext der aktuellen Quest:\n' + friedrichContext(t),
+      messages: msgs
+    })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  if (data.stop_reason === 'refusal') throw new Error('refusal');
+  const txt = (data.content || []).find(b => b.type === 'text');
+  if (!txt || !txt.text) throw new Error('Leere Antwort');
+  return txt.text.trim();
+}
+
+/* Antwort vorlesen – bewusste Nutzer-Aktion, funktioniert darum auch,
+   wenn der Erzähler in den Einstellungen stumm geschaltet ist */
+function friedrichSpeak(text) {
+  if (!Narrator.available) return;
+  try {
+    speechSynthesis.cancel();
+    if (!Narrator.voice) Narrator.pickVoice();
+    const clean = (text || '').replace(/\s+/g, ' ').trim();
+    const sentences = clean.match(/[^.!?…]+[.!?…]+["']?|[^.!?…]+$/g) || [clean];
+    sentences.forEach(sent => {
+      const u = new SpeechSynthesisUtterance(sent.trim());
+      if (Narrator.voice) u.voice = Narrator.voice;
+      u.lang = (Narrator.voice && Narrator.voice.lang) || 'de-DE';
+      u.rate = VOICE_STYLE.rate;
+      u.pitch = VOICE_STYLE.pitch;
+      speechSynthesis.speak(u);
+    });
+  } catch (e) { /* Stimme ist optional */ }
+}
+
+function renderFriedrichPanel(t) {
+  const panel = $('#task-friedrich');
+  const log = friedrichLog(t.id);
+  panel.hidden = false;
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  panel.innerHTML = `
+    <button class="btn ghost small-btn friedrich-toggle" id="friedrich-toggle">
+      🎩 Frag Friedrich <span class="muted">– Rückfragen zur Geschichte</span>
+    </button>
+    <div class="friedrich-chat" id="friedrich-chat" hidden>
+      <div class="friedrich-msgs" id="friedrich-msgs"></div>
+      ${S.apiKey ? `
+      <div class="friedrich-row">
+        <input type="text" id="friedrich-input" placeholder="z. B. Warum war das Anstoßen verpönt?" autocomplete="off">
+        ${SR ? '<button class="btn ghost small-btn" id="friedrich-mic" aria-label="Frage einsprechen">🎙️</button>' : ''}
+        <button class="btn primary small-btn" id="friedrich-send" aria-label="Frage senden">➤</button>
+      </div>
+      <p class="small muted">Friedrich antwortet live (KI über euren Prüfmeister-Key). 🔊 liest eine Antwort vor${SR ? ', 🎙️ nimmt eure Frage per Sprache auf' : ''}.</p>`
+      : `<p class="small muted">🎩 Friedrich würde ja gern plaudern – dafür braucht er den <b>Magischen Prüfmeister</b>: hinterlegt in den ⚙️ Einstellungen euren API-Key, dann beantwortet er hier alle Rückfragen zur Geschichte.</p>`}
+    </div>`;
+
+  const chat = panel.querySelector('#friedrich-chat');
+  const msgsBox = panel.querySelector('#friedrich-msgs');
+
+  const renderMsgs = (pending, error) => {
+    msgsBox.innerHTML =
+      (log.length ? '' : '<div class="fmsg f">Servus, hier Friedrich! Was wollt ihr über diesen Ort und seine Geschichte wissen?</div>') +
+      log.map((m, i) => m.r === 'u'
+        ? `<div class="fmsg u">${escapeHtml(m.t)}</div>`
+        : `<div class="fmsg f">${escapeHtml(m.t)}${Narrator.available ? ` <button class="fmsg-speak" data-i="${i}" aria-label="Antwort vorlesen">🔊</button>` : ''}</div>`
+      ).join('') +
+      (pending ? '<div class="fmsg f pending">Friedrich überlegt <span class="fdots">…</span></div>' : '') +
+      (error ? `<div class="fmsg err">${escapeHtml(error)}</div>` : '');
+    msgsBox.querySelectorAll('.fmsg-speak').forEach(b => {
+      b.onclick = () => friedrichSpeak(log[+b.dataset.i].t);
+    });
+    msgsBox.scrollTop = msgsBox.scrollHeight;
+  };
+
+  panel.querySelector('#friedrich-toggle').onclick = () => {
+    chat.hidden = !chat.hidden;
+    if (!chat.hidden) {
+      renderMsgs();
+      const inp = panel.querySelector('#friedrich-input');
+      if (inp && !log.length) inp.focus();
+    }
+  };
+  // Läuft schon ein Gespräch zu dieser Quest? Dann direkt aufgeklappt zeigen.
+  if (log.length) { chat.hidden = false; renderMsgs(); }
+
+  if (!S.apiKey) return;
+
+  const input = panel.querySelector('#friedrich-input');
+  const sendBtn = panel.querySelector('#friedrich-send');
+
+  const send = async () => {
+    const q = input.value.trim();
+    if (!q || sendBtn.disabled) return;
+    input.value = '';
+    sendBtn.disabled = true;
+    log.push({ r: 'u', t: q });
+    while (log.length > FRIEDRICH_KEEP) log.shift();
+    saveState();
+    renderMsgs(true);
+    try {
+      const answer = await askFriedrich(t, q);
+      log.push({ r: 'f', t: answer });
+      while (log.length > FRIEDRICH_KEEP) log.shift();
+      saveState();
+      renderMsgs();
+      if (S.voice) Narrator.speak(answer);
+    } catch (e) {
+      renderMsgs(false, 'Friedrich ist gerade nicht zu erreichen (Netz? Key?) – versucht es gleich noch einmal.');
+      input.value = q;   // Frage nicht verlieren
+    } finally {
+      sendBtn.disabled = false;
+    }
+  };
+  sendBtn.onclick = send;
+  input.onkeydown = e => { if (e.key === 'Enter') send(); };
+
+  const micBtn = panel.querySelector('#friedrich-mic');
+  if (micBtn && SR) {
+    let rec = null;
+    micBtn.onclick = () => {
+      if (rec) { rec.stop(); return; }
+      rec = new SR();
+      rec.lang = 'de-DE';
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+      micBtn.classList.add('listening');
+      micBtn.textContent = '⏺️';
+      rec.onresult = ev => {
+        const said = ev.results[0][0].transcript;
+        input.value = said;
+        send();
+      };
+      rec.onerror = () => { input.placeholder = 'Mikro klappt nicht – tippt die Frage einfach.'; };
+      rec.onend = () => {
+        micBtn.classList.remove('listening');
+        micBtn.textContent = '🎙️';
+        rec = null;
+      };
+      try { rec.start(); } catch (e) { rec = null; }
+    };
+  }
 }
 
 /* ---------------- Der Magische Prüfmeister (Foto-Validierung) ---------------- */
