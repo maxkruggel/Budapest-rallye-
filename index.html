@@ -98,6 +98,15 @@
       </div>
 
       <div class="card">
+        <h3>🧭 Wie spielt ihr?</h3>
+        <div class="chip-row" id="playstyle-picker">
+          <button class="chip" data-ps="aktiv">🎯 Aktiv<small>ihr wählt selbst</small></button>
+          <button class="chip" data-ps="beilaeufig">🚶 Beiläufig<small>die Nähe schlägt vor</small></button>
+        </div>
+        <p class="small muted" id="ps-info" style="margin-top:10px"></p>
+      </div>
+
+      <div class="card">
         <h3>⏱️ Wie lange habt ihr?</h3>
         <div class="chip-row wrap" id="dur-picker">
           <button class="chip" data-min="30">30 min</button>
@@ -240,6 +249,16 @@
   </div>
 
   <!-- ═══════════ OVERLAY: TEAM-WAHL ═══════════ -->
+  <!-- ═══════════ OVERLAY: IN EURER NÄHE (Beiläufig-Modus) ═══════════ -->
+  <div class="overlay center-modal" id="ov-nearby">
+    <div class="modal nearby-modal">
+      <h3>🧭 In eurer Nähe</h3>
+      <p class="small muted nearby-sub">Diese Quests warten gerade um die Ecke:</p>
+      <div id="nearby-list"></div>
+      <button class="btn ghost" id="btn-nearby-close">Alles klar</button>
+    </div>
+  </div>
+
   <div class="overlay center-modal" id="ov-team">
     <div class="modal">
       <h3 class="team-q"></h3>

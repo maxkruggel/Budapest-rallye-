@@ -42,6 +42,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
 
+/* Dunkler Grund auch außerhalb des Layout-Viewports (iOS-Safe-Area unten):
+   verhindert den hellen Balken unter dem Launch-Screen */
+html { background: #0a0c1f; }
 html, body { height: 100%; }
 body {
   font-family: var(--font-b);
@@ -372,6 +375,22 @@ h1, h2, h3 { font-family: var(--font-d); letter-spacing: -.01em; }
   box-shadow: var(--shadow); animation: sheet .2s ease-out;
 }
 .modal h3 { text-align: center; font-size: 1.1rem; }
+
+/* ---------- Beiläufig-Modus: „In eurer Nähe" ---------- */
+.nearby-sub { text-align: center; margin-top: -6px; }
+.nearby-row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  background: var(--surface-2); border: 1.5px solid var(--line);
+  border-radius: 14px; padding: 12px 14px; text-align: left;
+  transition: transform .12s;
+}
+.nearby-row:active { transform: scale(.97); }
+.nearby-ico { font-size: 24px; }
+.nearby-txt { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.nearby-txt b { font-size: .98rem; }
+.nearby-txt small { opacity: .7; font-size: .78rem; }
+.nearby-go { font-size: 24px; opacity: .45; }
+#nearby-list { display: grid; gap: 8px; }
 
 /* ---------- Stempel-Toast ---------- */
 #stamp-toast {
@@ -1008,6 +1027,9 @@ video.proof-thumb { width: 100%; border-radius: 14px; border: 1px solid var(--li
    Taps gehen sofort an die App darunter durch. */
 #launch {
   position: fixed; inset: 0; z-index: 300;
+  /* iOS: bis unter den Home-Indikator durchziehen – sonst blitzt dort
+     ein heller Streifen der App auf (Safe-Area unterhalb des Viewports) */
+  min-height: calc(100lvh + env(safe-area-inset-bottom, 0px));
   background: radial-gradient(circle at 50% 42%, #141838, #0a0c1f 70%);
   display: grid; place-items: center;
   pointer-events: none;

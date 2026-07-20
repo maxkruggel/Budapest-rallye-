@@ -23,7 +23,8 @@ const DEFAULT_STATE = () => ({
     mode: 'coop',            // 'coop' | 'versus'
     teams: [[], []],         // Spieler-Indizes bei versus
     durationMin: 120,
-    gamemode: 'night'        // 'day' | 'night' | 'daynight'
+    gamemode: 'night',       // 'day' | 'night' | 'daynight'
+    playstyle: 'aktiv'       // 'aktiv' | 'beilaeufig' (Nähe-Vorschläge beim App-Öffnen)
   },
   game: null                 // siehe newGame() in app.js
 });
@@ -47,6 +48,7 @@ function loadState() {
         if (s.apiKey === undefined) s.apiKey = null;
         if (!Array.isArray(s.archive)) s.archive = [];
         if (s.settings && s.settings.gamemode === undefined) s.settings.gamemode = 'night';
+        if (s.settings && s.settings.playstyle === undefined) s.settings.playstyle = 'aktiv';
         return s;
       }
     }

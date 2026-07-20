@@ -72,6 +72,10 @@ function bindStatic() {
     // Team-Wahl abbrechen: Quest bleibt offen, nichts wird gewertet
     if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
   });
+  $('#btn-nearby-close').onclick = () => $('#ov-nearby').classList.remove('open');
+  $('#ov-nearby').addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+  });
   $('#ov-pause').addEventListener('click', e => {
     // Tap neben das Bierglas = „Weiter geht's!"
     if (e.target === e.currentTarget) resumeGame();
@@ -270,10 +274,54 @@ document.addEventListener('visibilitychange', () => {
     if (S.screen === 'game') requestWakeLock();
     // App kommt aus dem Hintergrund: frische Position erzwingen,
     // Watch neu aufsetzen (iOS legt watchPosition im Hintergrund schlafen)
-    refreshPosition(() => onGeoUpdate());
+    refreshPosition(() => { onGeoUpdate(); maybeShowNearby(); });
     restartGeoWatch(onGeoUpdate);
+    maybeShowNearby();   // auch ohne GPS-Fix: Vorschläge mit letzter Position
   }
 });
+
+/* ---------- Beiläufig-Modus: „In eurer Nähe" beim App-Öffnen ---------- */
+
+let nearbyShownAt = 0;
+
+/* Offene, gerade spielbare Quests – ortsgebundene nach Distanz sortiert,
+   „überall lösbar" hinten angestellt. */
+function nearbyCandidates() {
+  const g = S.game;
+  if (!g) return [];
+  const open = gameTasks().filter(t =>
+    !g.completed[t.id] && !taskLocked(t) && !timeLocked(t) && !attemptsLocked(t));
+  const located = open.filter(t => !t.free && t.lat != null && lastPos)
+    .map(t => ({ t, dist: distMeters(lastPos, t) }))
+    .sort((a, b) => a.dist - b.dist);
+  const free = open.filter(t => t.free || t.lat == null).map(t => ({ t, dist: null }));
+  return [...located, ...free].slice(0, 3);
+}
+
+function maybeShowNearby(force) {
+  if ((S.settings.playstyle || 'aktiv') !== 'beilaeufig') return;
+  const g = S.game;
+  if (!g || g.finished || g.pausedAt || S.screen !== 'game') return;
+  if (!force && Date.now() - nearbyShownAt < 60000) return;      // nicht nerven
+  if (document.querySelector('.overlay.open')) return;           // nichts überdecken
+  const cand = nearbyCandidates();
+  if (!cand.length) return;
+  $('#nearby-list').innerHTML = cand.map(({ t, dist }) => `
+    <button class="nearby-row" data-id="${t.id}">
+      <span class="nearby-ico">${CATS[t.cat].icon}</span>
+      <span class="nearby-txt"><b>${escapeHtml(t.title)}</b>
+        <small>${dist != null ? `${fmtDist(dist)} · 🚶 ~${walkMinutes(dist)} min` : '🃏 überall lösbar'} · +${t.points} XP</small></span>
+      <span class="nearby-go">›</span>
+    </button>`).join('');
+  $$('#nearby-list .nearby-row').forEach(b => b.onclick = () => {
+    $('#ov-nearby').classList.remove('open');
+    SFX.tap();
+    openTask(b.dataset.id);
+  });
+  nearbyShownAt = Date.now();
+  $('#ov-nearby').classList.add('open');
+  SFX.sparkle();
+}
 
 /* ---------------- Setup ---------------- */
 
@@ -310,6 +358,13 @@ function renderSetup() {
     c.classList.toggle('sel', c.dataset.gm === (st.gamemode || 'night'));
     c.onclick = () => { st.gamemode = c.dataset.gm; saveState(); renderSetup(); };
   });
+  $$('#playstyle-picker .chip').forEach(c => {
+    c.classList.toggle('sel', c.dataset.ps === (st.playstyle || 'aktiv'));
+    c.onclick = () => { st.playstyle = c.dataset.ps; saveState(); renderSetup(); };
+  });
+  $('#ps-info').textContent = (st.playstyle || 'aktiv') === 'beilaeufig'
+    ? 'Beiläufig: Beim Öffnen der App poppt automatisch auf, welche offenen Quests gerade in eurer Nähe liegen – ganz ohne Suchen.'
+    : 'Aktiv: Ihr stöbert selbst im Quest-Log und sucht euch die nächste Quest aus.';
   const gmInfo = {
     day:      '☀️ Nur Aufgaben, die tagsüber funktionieren – inklusive Markthalle, Passagen & Schatten-Kunst.',
     night:    '🌙 Der Klassiker: alles, was nach Einbruch der Dunkelheit spielbar ist.',
@@ -555,6 +610,8 @@ function enterGame() {
   tick();
   // App wurde mitten in der Barpause geschlossen? Dann direkt zurück ins Pausen-Overlay.
   if (S.game.pausedAt) openPauseOverlay();
+  // Beiläufig-Modus: direkt beim Betreten zeigen, was in der Nähe wartet
+  setTimeout(() => maybeShowNearby(true), 900);
 }
 
 function gameTasks() {
@@ -1650,6 +1707,15 @@ function renderCrew() {
     : '❌ Vibration: vom iPhone-Browser gesperrt (Apple-Limit, kein App-Fehler)';
   html += `
     <div class="card audio-card">
+      <h3>🧭 Spielstil</h3>
+      <label class="toggle-row"><span>🚶 Beiläufig-Modus</span>
+        <button class="tbtn a ${st.playstyle === 'beilaeufig' ? 'sel' : ''}" id="tog-playstyle">${st.playstyle === 'beilaeufig' ? 'an' : 'aus'}</button></label>
+      <p class="small muted">Beiläufig: Beim Öffnen der App poppt automatisch auf, welche offenen
+      Quests gerade in eurer Nähe liegen – ohne Suchen im Quest-Log. Aus = Aktiv-Modus,
+      ihr wählt eure Quests selbst.</p>
+    </div>`;
+  html += `
+    <div class="card audio-card">
       <h3>🛡️ Alarm & Benachrichtigungen</h3>
       <label class="toggle-row"><span>🔊 Hintergrund-Wächter</span>
         <button class="tbtn a ${S.guard ? 'sel' : ''}" id="tog-guard">${S.guard ? 'an' : 'aus'}</button></label>
@@ -1716,6 +1782,11 @@ function renderCrew() {
       renderCrew();
       if (n) { SFX.unlock(); Narrator.playClip('welcome'); }
     });
+  };
+  $('#tog-playstyle').onclick = () => {
+    S.settings.playstyle = S.settings.playstyle === 'beilaeufig' ? 'aktiv' : 'beilaeufig';
+    saveState(); renderCrew();
+    if (S.settings.playstyle === 'beilaeufig') maybeShowNearby(true);
   };
   $('#tog-guard').onclick = () => {
     S.guard = !S.guard;
